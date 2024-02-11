@@ -1,7 +1,7 @@
 package collector
 
 import (
-	"github.com/lesovsky/pgscv/internal/model"
+	"github.com/cherts/pgscv/internal/model"
 	"testing"
 )
 

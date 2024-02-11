@@ -2,10 +2,10 @@ package pgscv
 
 import (
 	"context"
-	"github.com/lesovsky/pgscv/internal/http"
-	"github.com/lesovsky/pgscv/internal/model"
-	"github.com/lesovsky/pgscv/internal/service"
-	"github.com/lesovsky/pgscv/internal/store"
+	"github.com/cherts/pgscv/internal/http"
+	"github.com/cherts/pgscv/internal/model"
+	"github.com/cherts/pgscv/internal/service"
+	"github.com/cherts/pgscv/internal/store"
 	"github.com/stretchr/testify/assert"
 	"io"
 	"sync"
@@ -56,7 +56,7 @@ func Test_runMetricsListener(t *testing.T) {
 	assert.Equal(t, resp.StatusCode, http.StatusOK)
 	body, err := io.ReadAll(resp.Body)
 	assert.NoError(t, err)
-	assert.Contains(t, string(body), `pgSCV / PostgreSQL metrics collector, for more info visit <a href="https://github.com/lesovsky/pgscv">Github</a> page.`)
+	assert.Contains(t, string(body), `pgSCV / PostgreSQL metrics collector, for more info visit <a href="https://github.com/cherts/pgscv">Github</a> page.`)
 	assert.NoError(t, resp.Body.Close())
 
 	// Make request to '/metrics' and assert response.

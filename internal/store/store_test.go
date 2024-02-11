@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"github.com/jackc/pgproto3/v2"
 	"github.com/jackc/pgx/v4"
-	"github.com/lesovsky/pgscv/internal/model"
+	"github.com/cherts/pgscv/internal/model"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )

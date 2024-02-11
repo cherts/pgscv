@@ -7,6 +7,7 @@ builds:
     main: ./cmd
     goarch:
       - amd64
+      - arm64
     goos:
       - linux
     env:
@@ -17,15 +18,39 @@ builds:
 
 archives:
   - builds: [pgscv]
+    builds_info:
+      group: root
+      owner: root
+    wrap_in_directory: false
+    files:
+      - LICENSE
+      - src: "deploy/pgscv.yaml"
+        strip_parent: true
+        info:
+          owner: root
+          group: root
+          mode: 0640
+      - src: "deploy/pgscv.service"
+        strip_parent: true
+        info:
+          owner: root
+          group: root
+          mode: 0644
+      - src: "deploy/pgscv.default"
+        strip_parent: true
+        info:
+          owner: root
+          group: root
+          mode: 0644
 
 changelog:
   sort: asc
 
 nfpms:
   - vendor: pgscv
-    homepage: https://github.com/lesovsky/pgscv
-    maintainer: Alexey Lesovsky
-    description: pgSCV is a multi-purpose monitoring agent and metrics exporter
+    homepage: https://github.com/cherts/pgscv
+    maintainer: Mikhail Grigorev
+    description: pgSCV - PostgreSQL ecosystem metrics collector.
     license: BSD-3
     formats: []
-    bindir: /usr/bin
+    bindir: /usr/sbin

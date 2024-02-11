@@ -1,0 +1,18 @@
+services:
+  pgscv:
+    image: cherts/pgscv:latest
+    container_name: pgscv
+    restart: always
+    privileged: true
+    #cpus: 1
+    #mem_limit: 1g
+    ports:
+      - 9890:9890
+    environment:
+      PGSCV_DISABLE_COLLECTORS: "system"
+      PGSCV_LISTEN_ADDRESS: "0.0.0.0:9890"
+      DATABASE_DSN: "postgresql://postgres:password@dbhost:5432/postgres"
+#    command:
+#      - --config-file=/app/conf/pgscv.yaml
+#    volumes:
+#      - /etc/pgscv:/app/conf

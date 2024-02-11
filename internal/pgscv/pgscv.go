@@ -3,9 +3,9 @@ package pgscv
 import (
 	"context"
 	"errors"
-	"github.com/lesovsky/pgscv/internal/http"
-	"github.com/lesovsky/pgscv/internal/log"
-	"github.com/lesovsky/pgscv/internal/service"
+	"github.com/cherts/pgscv/internal/http"
+	"github.com/cherts/pgscv/internal/log"
+	"github.com/cherts/pgscv/internal/service"
 	"sync"
 )
 

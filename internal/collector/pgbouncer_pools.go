@@ -1,9 +1,9 @@
 package collector
 
 import (
-	"github.com/lesovsky/pgscv/internal/log"
-	"github.com/lesovsky/pgscv/internal/model"
-	"github.com/lesovsky/pgscv/internal/store"
+	"github.com/cherts/pgscv/internal/log"
+	"github.com/cherts/pgscv/internal/model"
+	"github.com/cherts/pgscv/internal/store"
 	"github.com/prometheus/client_golang/prometheus"
 	"strconv"
 	"strings"

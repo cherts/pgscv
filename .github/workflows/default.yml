@@ -1,16 +1,32 @@
 ---
 name: Default
 
-on: push
+on:
+  push:
+    branches:
+     - 'dev'
+    paths-ignore:
+      - ".github/**"
+      - "deploy/**"
+      - "testing/**"
+      - "README*"
+  pull_request:
+    types: [opened, synchronize, reopened]
+  workflow_dispatch:
+    inputs:
+      reason:
+        description: 'Launch reason'
+        required: true
+        default: 'Run tests'
 
 jobs:
   test:
     runs-on: ubuntu-latest
-    container: lesovsky/pgscv-test-runner:0.0.9
+    container: cherts/pgscv-test-runner:1.0.0
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
       - name: Prepare test environment
         run: prepare-test-environment.sh
       - name: Run lint

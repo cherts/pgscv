@@ -4,7 +4,7 @@ import (
 	"bufio"
 	"bytes"
 	"fmt"
-	"github.com/lesovsky/pgscv/internal/log"
+	"github.com/cherts/pgscv/internal/log"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"io"
 	"net/http"
@@ -94,9 +94,9 @@ func (s *Server) Serve() error {
 // handleRoot defines handler for '/' endpoint.
 func handleRoot() http.Handler {
 	const htmlTemplate = `<html>
-<head><title>pgSCV / Weaponry metrics collector</title></head>
+<head><title>pgSCV / PostgreSQL metrics collector</title></head>
 <body>
-pgSCV / PostgreSQL metrics collector, for more info visit <a href="https://github.com/lesovsky/pgscv">Github</a> page.
+pgSCV / PostgreSQL metrics collector, for more info visit <a href="https://github.com/cherts/pgscv">Github</a> page.
 <p><a href="/metrics">Metrics</a></p>
 </body>
 </html>

@@ -1,6 +1,6 @@
 package service
 
-import "github.com/lesovsky/pgscv/internal/model"
+import "github.com/cherts/pgscv/internal/model"
 
 // TestSystemService returns system service for testing purposes
 func TestSystemService() Service {
@@ -29,7 +29,7 @@ func TestPgbouncerService() Service {
 		ServiceID: "pgbouncer:6432",
 		ConnSettings: ConnSetting{
 			ServiceType: model.ServiceTypePgbouncer,
-			Conninfo:    "host=127.0.0.1 port=6432 user=pgscv dbname=pgbouncer",
+			Conninfo:    "host=127.0.0.1 port=6432 user=pgscv dbname=pgbouncer password=pgscv",
 		},
 	}
 }

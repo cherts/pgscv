@@ -1,0 +1,102 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pgscv
+  namespace: default
+  labels:
+    link-app: pgscv
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      link-app: pgscv
+  template:
+    metadata:
+      labels:
+        link-app: pgscv
+    spec:
+      #hostNetwork: true
+      dnsPolicy: ClusterFirst
+      containers:
+        - name: pgscv
+          image: cherts/pgscv:latest
+          imagePullPolicy: Always
+          args:
+            - --config-file=/app/conf/pgscv.yaml
+#          env:
+#          - name: PGSCV_DISABLE_COLLECTORS
+#            value: "system"
+#          - name: PGSCV_LISTEN_ADDRESS
+#            value: "0.0.0.0:9890"
+#          - name: DATABASE_DSN
+#            value: "postgresql://postgres:password@127.0.0.1:5432/postgres"
+          ports:
+            - name: http
+              containerPort: 9890
+              protocol: TCP
+          # Set up resources
+          resources:
+            limits:
+              cpu: "1"
+              memory: 500Mi
+              ephemeral-storage: "100Mi"
+          #securityContext:
+          #  privileged: true
+          volumeMounts:
+              - name: pgscv-config
+                mountPath: /app/conf/
+      # Disable automatic injection of service information into environment variables
+      enableServiceLinks: false
+      restartPolicy: Always
+      terminationGracePeriodSeconds: 30
+      nodeSelector:
+        kubernetes.io/os: linux
+      securityContext: { }
+      tolerations:
+        - operator: Exists
+      # Set priority
+      priorityClassName: system-cluster-critical
+      # Volume
+      volumes:
+      - name: pgscv-config
+        configMap:
+          name: pgscv-configmap
+          items:
+            - key: pgscv.yaml
+              path: pgscv.yaml
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: pgscv
+  namespace: default
+  labels:
+    link-app: pgscv
+spec:
+  ports:
+    - name: http
+      port: 9890
+      targetPort: 9890
+      protocol: TCP
+  selector:
+    link-app: pgscv
+  sessionAffinity: ClientIP
+  type: ClusterIP
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: pgscv-configmap
+  namespace: default
+data:
+  pgscv.yaml: |
+    listen_address: 0.0.0.0:9890
+    services:
+      "postgres:5432":
+        service_type: "postgres"
+        conninfo: "postgres://postgres:password@127.0.0.1:5432/postgres"
+      "pgbouncer:6432": 
+        service_type: "pgbouncer"
+        conninfo: "postgres://pgbouncer:password@127.0.0.1:6432/pgbouncer"

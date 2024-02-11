@@ -5,8 +5,8 @@ import (
 	"database/sql"
 	"fmt"
 	"github.com/jackc/pgx/v4"
-	"github.com/lesovsky/pgscv/internal/log"
-	"github.com/lesovsky/pgscv/internal/model"
+	"github.com/cherts/pgscv/internal/log"
+	"github.com/cherts/pgscv/internal/model"
 )
 
 const (

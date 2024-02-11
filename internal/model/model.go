@@ -3,7 +3,7 @@ package model
 import (
 	"database/sql"
 	"github.com/jackc/pgproto3/v2"
-	"github.com/lesovsky/pgscv/internal/filter"
+	"github.com/cherts/pgscv/internal/filter"
 	"regexp"
 )
 

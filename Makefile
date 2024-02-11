@@ -1,4 +1,4 @@
-DOCKER_ACCOUNT = lesovsky
+DOCKER_ACCOUNT = cherts
 APPNAME = pgscv
 
 TAG=$(shell git describe --tags --abbrev=0)
@@ -9,7 +9,7 @@ LDFLAGS = -a -installsuffix cgo -ldflags "-X main.appName=${APPNAME} -X main.git
 
 .PHONY: help \
 		clean lint test race \
-		build migrate docker-build docker-push deploy
+		build docker-build docker-push go-update
 
 .DEFAULT_GOAL := help
 
@@ -21,10 +21,18 @@ clean: ## Clean
 	rm -f ./bin/${APPNAME} ./bin/${APPNAME}.tar.gz ./bin/${APPNAME}.version ./bin/${APPNAME}.sha256
 	rmdir ./bin
 
+go-update: # Update go mod
+	go mod tidy -compat=1.22
+	go get -u ./cmd
+	go mod download
+	go get -u ./cmd
+	go mod download
+
 dep: ## Get the dependencies
 	go mod download
 
 lint: ## Lint the source files
+	go env -w GOFLAGS="-buildvcs=false"
 	golangci-lint run --timeout 5m -E golint -e '(struct field|type|method|func) [a-zA-Z`]+ should be [a-zA-Z`]+'
 	gosec -quiet ./...
 

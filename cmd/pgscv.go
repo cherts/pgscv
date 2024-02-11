@@ -3,8 +3,8 @@ package main
 import (
 	"context"
 	"fmt"
-	"github.com/lesovsky/pgscv/internal/log"
-	"github.com/lesovsky/pgscv/internal/pgscv"
+	"github.com/cherts/pgscv/internal/log"
+	"github.com/cherts/pgscv/internal/pgscv"
 	"gopkg.in/alecthomas/kingpin.v2"
 	"os"
 	"os/signal"

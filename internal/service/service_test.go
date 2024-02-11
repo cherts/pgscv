@@ -1,7 +1,7 @@
 package service
 
 import (
-	"github.com/lesovsky/pgscv/internal/model"
+	"github.com/cherts/pgscv/internal/model"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/stretchr/testify/assert"
 	"testing"

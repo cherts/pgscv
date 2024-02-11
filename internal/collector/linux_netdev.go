@@ -3,9 +3,9 @@ package collector
 import (
 	"bufio"
 	"fmt"
-	"github.com/lesovsky/pgscv/internal/filter"
-	"github.com/lesovsky/pgscv/internal/log"
-	"github.com/lesovsky/pgscv/internal/model"
+	"github.com/cherts/pgscv/internal/filter"
+	"github.com/cherts/pgscv/internal/log"
+	"github.com/cherts/pgscv/internal/model"
 	"github.com/prometheus/client_golang/prometheus"
 	"io"
 	"os"

@@ -2,16 +2,18 @@ package pgscv
 
 import (
 	"fmt"
-	"github.com/jackc/pgx/v4"
-	"github.com/lesovsky/pgscv/internal/http"
-	"github.com/lesovsky/pgscv/internal/log"
-	"github.com/lesovsky/pgscv/internal/model"
-	"github.com/lesovsky/pgscv/internal/service"
-	"gopkg.in/yaml.v2"
+	"io/fs"
 	"os"
 	"path/filepath"
 	"regexp"
 	"strings"
+
+	"github.com/cherts/pgscv/internal/http"
+	"github.com/cherts/pgscv/internal/log"
+	"github.com/cherts/pgscv/internal/model"
+	"github.com/cherts/pgscv/internal/service"
+	"github.com/jackc/pgx/v4"
+	"gopkg.in/yaml.v2"
 )
 
 const (
@@ -41,8 +43,12 @@ func NewConfig(configFilePath string) (*Config, error) {
 		return newConfigFromEnv()
 	}
 
-	log.Infoln("read configuration from ", configFilePath)
-	content, err := os.ReadFile(filepath.Clean(configFilePath))
+	configRealPath, err := RealPath(configFilePath)
+	if err != nil {
+		return nil, err
+	}
+	log.Infoln("read configuration from ", configRealPath)
+	content, err := os.ReadFile(filepath.Clean(configRealPath))
 	if err != nil {
 		return nil, err
 	}
@@ -55,6 +61,35 @@ func NewConfig(configFilePath string) (*Config, error) {
 	}
 
 	return config, nil
+}
+
+// Read real config file path
+func RealPath(filePath string) (string, error) {
+	log.Infoln("reading file information ", filePath)
+	fileInfo, err := os.Lstat(filepath.Clean(filePath))
+	if err != nil {
+		return filePath, err
+	}
+	if fileInfo.Mode()&fs.ModeSymlink != 0 {
+		log.Debugln("is symlink")
+		link, err := filepath.EvalSymlinks(filePath)
+		if err != nil {
+			return filePath, err
+		}
+		log.Debugln("resolved symlink to ", link)
+		return link, nil
+	} else if fileInfo.Mode().IsRegular() {
+		log.Debugln("is regular file")
+		return filePath, nil
+	} else if fileInfo.Mode()&fs.ModeNamedPipe != 0 {
+		log.Debugln("is named pipe")
+		return filePath, nil
+	} else if fileInfo.Mode().IsDir() {
+		log.Debugln("is directory")
+		return filePath, err
+	} else {
+		return filePath, err
+	}
 }
 
 // Validate checks configuration for stupid values and set defaults
@@ -136,7 +171,7 @@ func (c *Config) Validate() error {
 
 // validateCollectorSettings validates collectors settings passed from main YAML configuration.
 func validateCollectorSettings(cs model.CollectorsSettings) error {
-	if cs == nil || len(cs) == 0 {
+	if len(cs) == 0 {
 		return nil
 	}
 
@@ -269,22 +304,6 @@ func newConfigFromEnv() (*Config, error) {
 	}
 
 	return config, nil
-}
-
-// toggleAutoupdate control auto-update setting.
-func toggleAutoupdate(value string) (string, error) {
-	// Empty value explicitly set to 'off'.
-	if value == "" {
-		return "off", nil
-	}
-
-	// Valid values are 'devel', 'stable' and 'off'. All other are invalid.
-	switch value {
-	case "devel", "stable", "off":
-		return value, nil
-	default:
-		return "", fmt.Errorf("invalid value '%s' for 'autoupdate'", value)
-	}
 }
 
 // newDatabasesRegexp creates new regexp depending on passed string.
