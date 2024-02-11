@@ -1,0 +1,71 @@
+﻿listen_address: 127.0.0.1:9890
+#authentication:
+#  username: monitoring
+#  password: supersecretpassword
+#  keyfile: /etc/ssl/private/ssl-cert-snakeoil.key
+#  certfile: /etc/ssl/certs/ssl-cert-snakeoil.pem
+#no_track_mode: false
+services:
+  "postgres:5432":
+    service_type: "postgres"
+    conninfo: "postgres://postgres:password@127.0.0.1:5432/postgres"
+  "pgbouncer:6432": 
+    service_type: "pgbouncer"
+    conninfo: "postgres://pgbouncer:password@127.0.0.1:6432/pgbouncer"
+#disable_collectors:
+#  - system/loadaverage
+#  - system/cpu
+#  - system/diskstats
+#  - system/filesystems
+#  - system/netdev
+#  - system/network
+#  - system/memory
+#  - system/sysconfig
+#  - postgres/activity
+#  - postgres/archiver
+#  - postgres/bgwriter
+#  - postgres/conflicts
+#  - postgres/databases
+#  - postgres/indexes
+#  - postgres/functions
+#  - postgres/locks
+#  - postgres/logs
+#  - postgres/replication
+#  - postgres/replication_slots
+#  - postgres/statements
+#  - postgres/schemas
+#  - postgres/settings
+#  - postgres/storage
+#  - postgres/tables
+#  - postgres/wal
+#  - postgres/custom
+#  - pgbouncer/pools
+#  - pgbouncer/stats
+#  - pgbouncer/settings
+#  - system/pgscv
+#databases: "^(a-z_)+_prod$"
+#collectors:
+#  postgres/custom:
+#    filters:
+#      database:
+#        exclude: "^(uat|dev|stage)_.+$"
+#    subsystems:
+#      table:
+#        databases: "test[0-9]+|pgbench"
+#        query: "select schemaname,relname,seq_scan,n_tup_ins,n_tup_upd,n_tup_del from pg_stat_user_tables"
+#        metrics:
+#          - name: seq_scans
+#            usage: COUNTER
+#            value: seq_scan
+#            labels:
+#              - schemaname
+#              - relname
+#            description: "Total number of tuples by operation."
+#          - name: tuples_totals
+#            usage: COUNTER
+#            labeled_values:
+#              tuples: [ n_tup_ins, n_tup_upd, n_tup_del ]
+#            labels:
+#              - schemaname
+#              - relname
+#            description: "Total number of tuples by operation."

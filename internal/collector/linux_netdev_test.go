@@ -1,8 +1,8 @@
 package collector
 
 import (
-	"github.com/lesovsky/pgscv/internal/filter"
-	"github.com/lesovsky/pgscv/internal/model"
+	"github.com/cherts/pgscv/internal/filter"
+	"github.com/cherts/pgscv/internal/model"
 	"github.com/stretchr/testify/assert"
 	"os"
 	"path/filepath"

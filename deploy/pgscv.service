@@ -1,0 +1,25 @@
+[Unit]
+Description=pgSCV - PostgreSQL ecosystem metrics collector
+Documentation=https://github.com/cherts/pgscv
+Requires=network-online.target
+After=network-online.target
+
+[Service]
+Type=simple
+User=postgres
+Group=postgres
+EnvironmentFile=-/etc/default/pgscv
+# Start the agent process
+ExecStart=/usr/sbin/pgscv $ARGS
+# Kill all processes in the cgroup
+KillMode=control-group
+# Wait reasonable amount of time for agent up/down
+TimeoutSec=5
+# Restart agent if it crashes
+Restart=on-failure
+RestartSec=10
+# if agent leaks during long period of time, let him to be the first person for eviction
+OOMScoreAdjust=1000
+
+[Install]
+WantedBy=multi-user.target

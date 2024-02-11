@@ -2,9 +2,9 @@ package collector
 
 import (
 	"context"
-	"github.com/lesovsky/pgscv/internal/log"
-	"github.com/lesovsky/pgscv/internal/model"
-	"github.com/lesovsky/pgscv/internal/store"
+	"github.com/cherts/pgscv/internal/log"
+	"github.com/cherts/pgscv/internal/model"
+	"github.com/cherts/pgscv/internal/store"
 	"strconv"
 	"strings"
 )
@@ -18,6 +18,8 @@ const (
 	PostgresV12 = 120000
 	PostgresV13 = 130000
 	PostgresV14 = 140000
+	PostgresV15 = 150000
+	PostgresV16 = 160000
 
 	// Minimal required version is 9.5.
 	PostgresVMinNum = PostgresV95

@@ -2,8 +2,8 @@ package collector
 
 import (
 	"fmt"
-	"github.com/lesovsky/pgscv/internal/log"
-	"github.com/lesovsky/pgscv/internal/model"
+	"github.com/cherts/pgscv/internal/log"
+	"github.com/cherts/pgscv/internal/model"
 	"github.com/prometheus/client_golang/prometheus"
 	"os"
 	"strconv"

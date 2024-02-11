@@ -1,10 +1,10 @@
 package pgscv
 
 import (
-	"github.com/lesovsky/pgscv/internal/filter"
-	"github.com/lesovsky/pgscv/internal/http"
-	"github.com/lesovsky/pgscv/internal/model"
-	"github.com/lesovsky/pgscv/internal/service"
+	"github.com/cherts/pgscv/internal/filter"
+	"github.com/cherts/pgscv/internal/http"
+	"github.com/cherts/pgscv/internal/model"
+	"github.com/cherts/pgscv/internal/service"
 	"github.com/stretchr/testify/assert"
 	"os"
 	"testing"
@@ -47,7 +47,7 @@ func TestNewConfig(t *testing.T) {
 				Defaults:      map[string]string{},
 				ServicesConnsSettings: service.ConnsSettings{
 					"postgres:5432":  {ServiceType: model.ServiceTypePostgresql, Conninfo: "host=127.0.0.1 port=5432 dbname=pgscv_fixtures user=pgscv"},
-					"pgbouncer:6432": {ServiceType: model.ServiceTypePgbouncer, Conninfo: "host=127.0.0.1 port=6432 dbname=pgbouncer user=pgscv"},
+					"pgbouncer:6432": {ServiceType: model.ServiceTypePgbouncer, Conninfo: "host=127.0.0.1 port=6432 dbname=pgbouncer user=pgscv password=pgscv"},
 				},
 			},
 		},
@@ -151,7 +151,7 @@ func TestConfig_Validate(t *testing.T) {
 			valid: true,
 			in: &Config{ListenAddress: "127.0.0.1:8080", ServicesConnsSettings: service.ConnsSettings{
 				"postgres:5432":  {ServiceType: model.ServiceTypePostgresql, Conninfo: "host=127.0.0.1 dbname=pgscv_fixtures user=pgscv"},
-				"pgbouncer:6432": {ServiceType: model.ServiceTypePgbouncer, Conninfo: "host=127.0.0.1 port=6432 dbname=pgbouncer user=pgscv"},
+				"pgbouncer:6432": {ServiceType: model.ServiceTypePgbouncer, Conninfo: "host=127.0.0.1 port=6432 dbname=pgbouncer user=pgscv password=pgscv"},
 			}},
 		},
 		{
@@ -447,30 +447,6 @@ func Test_newConfigFromEnv(t *testing.T) {
 
 		for k := range tc.envvars {
 			assert.NoError(t, os.Unsetenv(k))
-		}
-	}
-}
-
-func Test_toggleAutoupdate(t *testing.T) {
-	testcases := []struct {
-		valid bool
-		in    string
-		want  string
-	}{
-		{valid: true, in: "", want: "off"},
-		{valid: true, in: "off", want: "off"},
-		{valid: true, in: "devel", want: "devel"},
-		{valid: true, in: "stable", want: "stable"},
-		{valid: false, in: "invalid"},
-	}
-
-	for _, tc := range testcases {
-		got, err := toggleAutoupdate(tc.in)
-		if tc.valid {
-			assert.NoError(t, err)
-			assert.Equal(t, tc.want, got)
-		} else {
-			assert.Error(t, err)
 		}
 	}
 }

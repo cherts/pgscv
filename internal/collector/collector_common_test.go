@@ -3,9 +3,9 @@ package collector
 import (
 	"database/sql"
 	"fmt"
-	"github.com/lesovsky/pgscv/internal/filter"
-	"github.com/lesovsky/pgscv/internal/model"
-	"github.com/lesovsky/pgscv/internal/store"
+	"github.com/cherts/pgscv/internal/filter"
+	"github.com/cherts/pgscv/internal/model"
+	"github.com/cherts/pgscv/internal/store"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/stretchr/testify/assert"
 	"regexp"
@@ -278,7 +278,7 @@ func Test_updateFromSingleDatabase(t *testing.T) {
 	for m := range ch {
 		//fmt.Println(m.Desc().String())
 		counter++
-		for _, s := range []string{"postgres_example1_value1", `const="example"`, `variableLabels: [label1]`} {
+		for _, s := range []string{"postgres_example1_value1", `const="example"`, `variableLabels: {label1}`} {
 			assert.True(t, strings.Contains(m.Desc().String(), s))
 		}
 	}

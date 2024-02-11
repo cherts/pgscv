@@ -1,8 +1,8 @@
 package collector
 
 import (
-	"github.com/lesovsky/pgscv/internal/log"
-	"github.com/lesovsky/pgscv/internal/model"
+	"github.com/cherts/pgscv/internal/log"
+	"github.com/cherts/pgscv/internal/model"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/stretchr/testify/assert"
 	"regexp"
@@ -44,7 +44,7 @@ func pipeline(t *testing.T, input pipelineInput) {
 		assert.NoError(t, err)
 		config.postgresServiceConfig = cfg
 	case model.ServiceTypePgbouncer:
-		config.ConnString = "postgres://pgscv@127.0.0.1:6432/pgbouncer"
+		config.ConnString = "postgres://pgscv:pgscv@127.0.0.1:6432/pgbouncer"
 	}
 
 	go func() {
