@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "pgscv.fullname" . }}-configmap
+  labels:
+  {{- include "pgscv.labels" . | nindent 4 }}
+data:
+  pgscv.yaml: {{ .Values.configmap.pgscvYaml | toYaml | indent 1 }}

@@ -29,7 +29,7 @@
 Загрузите архив со страницы [releases](https://github.com/cherts/pgscv/releases). Распакуйте архив. Создайте минимальный файл конфигураации. Запустите pgSCV под пользователем postgres.
 
 ```bash
-curl -s -L https://github.com/cherts/pgscv/releases/download/v0.8.1/pgscv_0.8.1_linux_amd64.tar.gz -o - | tar xzf - -C /tmp && \
+curl -s -L https://github.com/cherts/pgscv/releases/download/v0.8.0/pgscv_0.8.0_linux_amd64.tar.gz -o - | tar xzf - -C /tmp && \
 mv /tmp/pgscv.yaml /etc && \
 mv /tmp/pgscv.service /etc/systemd/system &&  \
 mv /tmp/pgscv.default /etc/default/pgscv && \
@@ -71,10 +71,17 @@ docker-compose up -d
 
 После запуска pgSCV он готов принимать HTTP-запросы по адресу `http://127.0.0.1:9890/metrics`
 
-или используя k8s
+или используя развертывание приложения в k8s
 ```bash
 curl -s -L https://raw.githubusercontent.com/CHERTS/pgscv/master/deploy/deployment.yaml -o ~/deployment.yaml
 kubectl apply -f ~/deployment.yaml
+```
+
+или используя helm chart для k8s
+```bash
+git clone https://github.com/CHERTS/pgscv.git && cd pgscv
+kubectl create ns pgscv-ns
+helm install -n pgscv-ns pgscv deploy/helm-chart/
 ```
 
 ### Полная настройка

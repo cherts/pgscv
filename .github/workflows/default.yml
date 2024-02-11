@@ -3,21 +3,19 @@ name: Default
 
 on:
   push:
-    branches:
-     - 'dev'
-    paths-ignore:
-      - ".github/**"
-      - "deploy/**"
-      - "testing/**"
-      - "README*"
+    paths:
+      - "cmd/**"
+      - "internal/**"
+      - "Makefile"
+      - "go.mod"
+      - "go.sum"
   pull_request:
-    types: [opened, synchronize, reopened]
-  workflow_dispatch:
-    inputs:
-      reason:
-        description: 'Launch reason'
-        required: true
-        default: 'Run tests'
+    paths:
+      - "cmd/**"
+      - "internal/**"
+      - "Makefile"
+      - "go.mod"
+      - "go.sum"
 
 jobs:
   test:

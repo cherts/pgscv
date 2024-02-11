@@ -1,0 +1,33 @@
+configmap:
+  pgscvYaml: |-
+    listen_address: 0.0.0.0:9890
+    services:
+      "postgres:5432":
+        service_type: "postgres"
+        conninfo: "postgres://postgres:password@127.0.0.1:5432/postgres"
+      "pgbouncer:6432":
+        service_type: "pgbouncer"
+        conninfo: "postgres://pgbouncer:password@127.0.0.1:6432/pgbouncer"
+kubernetesClusterDomain: cluster.local
+pgscv:
+  nodeSelector:
+    kubernetes.io/os: linux
+  pgscv:
+    args:
+    - --config-file=/app/conf/pgscv.yaml
+    image:
+      repository: cherts/pgscv
+      tag: latest
+    imagePullPolicy: Always
+    resources:
+      limits:
+        cpu: "1"
+        ephemeral-storage: 100Mi
+        memory: 500Mi
+  ports:
+  - name: http
+    port: 9890
+    protocol: TCP
+    targetPort: 9890
+  replicas: 1
+  type: ClusterIP

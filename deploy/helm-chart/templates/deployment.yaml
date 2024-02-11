@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "pgscv.fullname" . }}-pgscv
+  labels:
+    link-app: pgscv
+  {{- include "pgscv.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.pgscv.replicas }}
+  selector:
+    matchLabels:
+      link-app: pgscv
+    {{- include "pgscv.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        link-app: pgscv
+      {{- include "pgscv.selectorLabels" . | nindent 8 }}
+    spec:
+      containers:
+      - args: {{- toYaml .Values.pgscv.pgscv.args | nindent 8 }}
+        env:
+        - name: KUBERNETES_CLUSTER_DOMAIN
+          value: {{ quote .Values.kubernetesClusterDomain }}
+        image: {{ .Values.pgscv.pgscv.image.repository }}:{{ .Values.pgscv.pgscv.image.tag
+          | default .Chart.AppVersion }}
+        imagePullPolicy: {{ .Values.pgscv.pgscv.imagePullPolicy }}
+        name: pgscv
+        ports:
+        - containerPort: 9890
+          name: http
+          protocol: TCP
+        resources: {{- toYaml .Values.pgscv.pgscv.resources | nindent 10 }}
+        volumeMounts:
+        - mountPath: /app/conf/
+          name: pgscv-config
+      dnsPolicy: ClusterFirst
+      enableServiceLinks: false
+      nodeSelector: {{- toYaml .Values.pgscv.nodeSelector | nindent 8 }}
+      priorityClassName: system-cluster-critical
+      restartPolicy: Always
+      securityContext: {}
+      terminationGracePeriodSeconds: 30
+      tolerations:
+      - operator: Exists
+      volumes:
+      - configMap:
+          items:
+          - key: pgscv.yaml
+            path: pgscv.yaml
+          name: {{ include "pgscv.fullname" . }}-configmap
+        name: pgscv-config
