@@ -19,7 +19,7 @@ help: ## Display this help screen
 
 clean: ## Clean
 	rm -f ./bin/${APPNAME} ./bin/${APPNAME}.tar.gz ./bin/${APPNAME}.version ./bin/${APPNAME}.sha256
-	rmdir ./bin
+	rm -rf ./bin
 
 go-update: # Update go mod
 	go mod tidy -compat=1.22
