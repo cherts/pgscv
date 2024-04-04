@@ -34,3 +34,5 @@ Temporary Items
 debug_run.sh
 # Bin
 bin/*
+# Test
+.test_coverage.txt
