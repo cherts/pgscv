@@ -1,0 +1,36 @@
+# MacOS General
+.DS_Store
+.AppleDouble
+.LSOverride
+# MacOS Icon must end with two \r
+Icon
+# MacOS Thumbnails
+._*
+# MacOS Files that might appear in the root of a volume
+.DocumentRevisions-V100
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+# MacOS Directories potentially created on remote AFP share
+.AppleDB
+.AppleDesktop
+Network Trash Folder
+Temporary Items
+.apdisk
+# Linux
+*~
+# Linux temporary files which can be created if a process still has a handle open of a deleted file
+.fuse_hidden*
+# Linux KDE directory preferences
+.directory
+# Linux trash folder which might appear on any partition or disk
+.Trash-*
+# Linux .nfs files are created when an open file is removed but is still being accessed
+.nfs*
+# Debug
+debug_run.sh
+# Bin
+bin/*

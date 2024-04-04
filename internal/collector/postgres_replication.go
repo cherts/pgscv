@@ -10,7 +10,7 @@ import (
 
 const (
 	// Query for Postgres version 9.6 and older.
-	postgresReplicationQuery96 = "SELECT pid, coalesce(host(client_addr), '127.0.0.1') AS client_addr, usename AS user, application_name, state, " +
+	postgresReplicationQuery96 = "SELECT pid, coalesce(host(client_addr), '127.0.0.1') AS client_addr, coalesce(client_port, '0') AS client_port, usename AS user, application_name, state, " +
 		"pg_current_xlog_location() - sent_location AS pending_lag_bytes, " +
 		"sent_location - write_location AS write_lag_bytes, " +
 		"write_location - flush_location AS flush_lag_bytes, " +
@@ -20,7 +20,7 @@ const (
 		"FROM pg_stat_replication"
 
 	// Query for Postgres versions from 10 and newer.
-	postgresReplicationQueryLatest = "SELECT pid, coalesce(host(client_addr), '127.0.0.1') AS client_addr, usename AS user, application_name, state, " +
+	postgresReplicationQueryLatest = "SELECT pid, coalesce(host(client_addr), '127.0.0.1') AS client_addr, coalesce(client_port, '0') AS client_port, usename AS user, application_name, state, " +
 		"pg_current_wal_lsn() - sent_lsn AS pending_lag_bytes, " +
 		"sent_lsn - write_lsn AS write_lag_bytes, " +
 		"write_lsn - flush_lsn AS flush_lag_bytes, " +
@@ -44,7 +44,7 @@ type postgresReplicationCollector struct {
 // NewPostgresReplicationCollector returns a new Collector exposing postgres replication stats.
 // For details see https://www.postgresql.org/docs/current/monitoring-stats.html#PG-STAT-REPLICATION-VIEW
 func NewPostgresReplicationCollector(constLabels labels, settings model.CollectorSettings) (Collector, error) {
-	var labelNames = []string{"client_addr", "user", "application_name", "state", "lag"}
+	var labelNames = []string{"client_addr", "client_port", "user", "application_name", "state", "lag"}
 
 	return &postgresReplicationCollector{
 		labelNames: labelNames,
@@ -63,13 +63,13 @@ func NewPostgresReplicationCollector(constLabels labels, settings model.Collecto
 		lagtotalbytes: newBuiltinTypedDesc(
 			descOpts{"postgres", "replication", "lag_all_bytes", "Number of bytes standby is behind than primary including all phases.", 0},
 			prometheus.GaugeValue,
-			[]string{"client_addr", "user", "application_name", "state"}, constLabels,
+			[]string{"client_addr", "client_port", "user", "application_name", "state"}, constLabels,
 			settings.Filters,
 		),
 		lagtotalseconds: newBuiltinTypedDesc(
 			descOpts{"postgres", "replication", "lag_all_seconds", "Number of seconds standby is behind than primary including all phases.", 0},
 			prometheus.GaugeValue,
-			[]string{"client_addr", "user", "application_name", "state"}, constLabels,
+			[]string{"client_addr", "client_port", "user", "application_name", "state"}, constLabels,
 			settings.Filters,
 		),
 	}, nil
@@ -94,31 +94,31 @@ func (c *postgresReplicationCollector) Update(config Config, ch chan<- prometheu
 
 	for _, stat := range stats {
 		if value, ok := stat.values["pending_lag_bytes"]; ok {
-			ch <- c.lagbytes.newConstMetric(value, stat.clientaddr, stat.user, stat.applicationName, stat.state, "pending")
+			ch <- c.lagbytes.newConstMetric(value, stat.clientaddr, stat.clientport, stat.user, stat.applicationName, stat.state, "pending")
 		}
 		if value, ok := stat.values["write_lag_bytes"]; ok {
-			ch <- c.lagbytes.newConstMetric(value, stat.clientaddr, stat.user, stat.applicationName, stat.state, "write")
+			ch <- c.lagbytes.newConstMetric(value, stat.clientaddr, stat.clientport, stat.user, stat.applicationName, stat.state, "write")
 		}
 		if value, ok := stat.values["flush_lag_bytes"]; ok {
-			ch <- c.lagbytes.newConstMetric(value, stat.clientaddr, stat.user, stat.applicationName, stat.state, "flush")
+			ch <- c.lagbytes.newConstMetric(value, stat.clientaddr, stat.clientport, stat.user, stat.applicationName, stat.state, "flush")
 		}
 		if value, ok := stat.values["replay_lag_bytes"]; ok {
-			ch <- c.lagbytes.newConstMetric(value, stat.clientaddr, stat.user, stat.applicationName, stat.state, "replay")
+			ch <- c.lagbytes.newConstMetric(value, stat.clientaddr, stat.clientport, stat.user, stat.applicationName, stat.state, "replay")
 		}
 		if value, ok := stat.values["write_lag_seconds"]; ok {
-			ch <- c.lagseconds.newConstMetric(value, stat.clientaddr, stat.user, stat.applicationName, stat.state, "write")
+			ch <- c.lagseconds.newConstMetric(value, stat.clientaddr, stat.clientport, stat.user, stat.applicationName, stat.state, "write")
 		}
 		if value, ok := stat.values["flush_lag_seconds"]; ok {
-			ch <- c.lagseconds.newConstMetric(value, stat.clientaddr, stat.user, stat.applicationName, stat.state, "flush")
+			ch <- c.lagseconds.newConstMetric(value, stat.clientaddr, stat.clientport, stat.user, stat.applicationName, stat.state, "flush")
 		}
 		if value, ok := stat.values["replay_lag_seconds"]; ok {
-			ch <- c.lagseconds.newConstMetric(value, stat.clientaddr, stat.user, stat.applicationName, stat.state, "replay")
+			ch <- c.lagseconds.newConstMetric(value, stat.clientaddr, stat.clientport, stat.user, stat.applicationName, stat.state, "replay")
 		}
 		if value, ok := stat.values["total_lag_bytes"]; ok {
-			ch <- c.lagtotalbytes.newConstMetric(value, stat.clientaddr, stat.user, stat.applicationName, stat.state)
+			ch <- c.lagtotalbytes.newConstMetric(value, stat.clientaddr, stat.clientport, stat.user, stat.applicationName, stat.state)
 		}
 		if value, ok := stat.values["total_lag_seconds"]; ok {
-			ch <- c.lagtotalseconds.newConstMetric(value, stat.clientaddr, stat.user, stat.applicationName, stat.state)
+			ch <- c.lagtotalseconds.newConstMetric(value, stat.clientaddr, stat.clientport, stat.user, stat.applicationName, stat.state)
 		}
 	}
 
@@ -129,6 +129,7 @@ func (c *postgresReplicationCollector) Update(config Config, ch chan<- prometheu
 type postgresReplicationStat struct {
 	pid             string
 	clientaddr      string
+	clientport      string
 	user            string
 	applicationName string
 	state           string
@@ -151,6 +152,8 @@ func parsePostgresReplicationStats(r *model.PGResult, labelNames []string) map[s
 				stat.pid = row[i].String
 			case "client_addr":
 				stat.clientaddr = row[i].String
+			case "client_port":
+				stat.clientport = row[i].String
 			case "user":
 				stat.user = row[i].String
 			case "application_name":
