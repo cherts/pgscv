@@ -41,7 +41,8 @@ func TestMeminfoCollector_Update(t *testing.T) {
 			"node_memory_WritebackTmp", "node_memory_NFS_Unstable", "node_memory_DirectMap2M", "node_memory_Hugetlb",
 			"node_memory_CmaTotal", "node_memory_Mlocked", "node_memory_ShmemPmdMapped", "node_memory_SUnreclaim",
 			"node_memory_KernelStack", "node_memory_VmallocChunk", "node_memory_Percpu", "node_memory_HardwareCorrupted",
-			"node_memory_CmaFree", "node_memory_CmaTotal", "node_memory_Zswap", "node_memory_Zswapped", "node_memory_SecPageTables",
+			"node_memory_CmaFree", "node_memory_CmaTotal", "node_memory_Zswap", "node_memory_Zswapped",
+			"node_memory_SecPageTables", "node_memory_Unaccepted",
 			// vmstat
 			"node_vmstat_nr_free_pages", "node_vmstat_nr_zone_inactive_anon", "node_vmstat_nr_zone_active_anon",
 			"node_vmstat_nr_zone_inactive_file", "node_vmstat_nr_zone_active_file", "node_vmstat_nr_zone_unevictable",
@@ -100,7 +101,7 @@ func TestMeminfoCollector_Update(t *testing.T) {
 			"node_vmstat_pgpromote_candidate", "node_vmstat_pgscan_khugepaged", "node_vmstat_zswpin",
 			"node_vmstat_thp_scan_exceed_swap_pte", "node_vmstat_allocstall_device", "node_vmstat_pgpromote_success",
 			"node_vmstat_pgalloc_device", "node_vmstat_nr_sec_page_table_pages", "node_vmstat_cow_ksm",
-			"node_vmstat_ksm_swpin_copy", "node_vmstat_zswpout",
+			"node_vmstat_ksm_swpin_copy", "node_vmstat_zswpout", "node_vmstat_nr_unaccepted",
 		},
 		collector: NewMeminfoCollector,
 	}
