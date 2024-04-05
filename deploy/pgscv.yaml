@@ -41,10 +41,10 @@ services:
 #  - postgres/tables
 #  - postgres/wal
 #  - postgres/custom
+#  - postgres/pgscv
 #  - pgbouncer/pools
 #  - pgbouncer/stats
 #  - pgbouncer/settings
-#  - system/pgscv
 #databases: "^(a-z_)+_prod$"
 #collectors:
 #  postgres/custom:
