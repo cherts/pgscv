@@ -13,6 +13,7 @@ services:
     service_type: "pgbouncer"
     conninfo: "postgres://pgbouncer:password@127.0.0.1:6432/pgbouncer"
 #disable_collectors:
+#  - system
 #  - system/loadaverage
 #  - system/cpu
 #  - system/diskstats
@@ -21,6 +22,7 @@ services:
 #  - system/network
 #  - system/memory
 #  - system/sysconfig
+#  - system/sysinfo
 #  - postgres/activity
 #  - postgres/archiver
 #  - postgres/bgwriter
