@@ -31,8 +31,8 @@ Temporary Items
 # Linux .nfs files are created when an open file is removed but is still being accessed
 .nfs*
 # Debug
-debug_run.sh
+debug_run.*
 # Bin
 bin/*
 # Test
-.test_coverage.txt
+.test_coverage.*
