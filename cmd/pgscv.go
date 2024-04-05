@@ -30,6 +30,8 @@ func main() {
 		os.Exit(0)
 	}
 
+	log.Infoln("starting ", appName, " ", gitTag, " ", gitCommit, "-", gitBranch)
+
 	config, err := pgscv.NewConfig(*configFile)
 	if err != nil {
 		log.Errorln("create config failed: ", err)
