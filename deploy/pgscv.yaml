@@ -49,7 +49,7 @@ services:
 #collectors:
 #  postgres/custom:
 #    filters:
-#      database:
+#      schemaname:
 #        exclude: "^(uat|dev|stage)_.+$"
 #    subsystems:
 #      table:
