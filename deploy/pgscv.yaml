@@ -14,6 +14,7 @@ services:
     conninfo: "postgres://pgbouncer:password@127.0.0.1:6432/pgbouncer"
 #disable_collectors:
 #  - system
+#  - system/pgscv
 #  - system/loadaverage
 #  - system/cpu
 #  - system/diskstats
@@ -23,6 +24,7 @@ services:
 #  - system/memory
 #  - system/sysconfig
 #  - system/sysinfo
+#  - postgres/pgscv
 #  - postgres/activity
 #  - postgres/archiver
 #  - postgres/bgwriter
@@ -41,16 +43,16 @@ services:
 #  - postgres/tables
 #  - postgres/wal
 #  - postgres/custom
-#  - postgres/pgscv
+#  - pgbouncer/pgscv
 #  - pgbouncer/pools
 #  - pgbouncer/stats
 #  - pgbouncer/settings
-#databases: "^(a-z_)+_prod$"
+#databases: "^([a-zA-Z0-9])+_(prod|PROD)$"
 #collectors:
 #  postgres/custom:
 #    filters:
 #      schemaname:
-#        exclude: "^(uat|dev|stage)_.+$"
+#        exclude: "^.+_(uat|dev|stage|UAT|DEV|STAGE)$"
 #    subsystems:
 #      table:
 #        databases: "test[0-9]+|pgbench"
