@@ -1,10 +1,14 @@
 package service
 
 import (
+	"fmt"
 	"regexp"
+	"strings"
 	"sync"
+	"time"
 
 	"github.com/cherts/pgscv/internal/collector"
+	"github.com/cherts/pgscv/internal/http"
 	"github.com/cherts/pgscv/internal/log"
 	"github.com/cherts/pgscv/internal/model"
 	"github.com/cherts/pgscv/internal/store"
@@ -124,22 +128,36 @@ func (repo *Repository) addServicesFromConfig(config Config) {
 	// Check all passed connection settings and try to connect using them. In case of success, create a 'Service' instance
 	// in the repo.
 	for k, cs := range config.ConnsSettings {
-		// each ConnSetting struct is used for
-		//   1) doing connection;
-		//   2) getting connection properties to define service-specific parameters.
-		pgconfig, err := pgx.ParseConfig(cs.Conninfo)
-		if err != nil {
-			log.Warnf("%s: %s, skip", cs.Conninfo, err)
-			continue
-		}
+		var msg string
 
-		// Check connection using created *ConnConfig, go next if connection failed.
-		db, err := store.NewWithConfig(pgconfig)
-		if err != nil {
-			log.Warnf("%s: %s, skip", cs.Conninfo, err)
-			continue
+		if cs.ServiceType == model.ServiceTypePatroni {
+			err := attemptRequest(cs.BaseURL)
+			if err != nil {
+				log.Warnf("%s: %s, skip", cs.BaseURL, err)
+				continue
+			}
+
+			msg = fmt.Sprintf("service [%s] available through: %s", k, cs.BaseURL)
+		} else {
+			// each ConnSetting struct is used for
+			//   1) doing connection;
+			//   2) getting connection properties to define service-specific parameters.
+			pgconfig, err := pgx.ParseConfig(cs.Conninfo)
+			if err != nil {
+				log.Warnf("%s: %s, skip", cs.Conninfo, err)
+				continue
+			}
+
+			// Check connection using created *ConnConfig, go next if connection failed.
+			db, err := store.NewWithConfig(pgconfig)
+			if err != nil {
+				log.Warnf("%s: %s, skip", cs.Conninfo, err)
+				continue
+			}
+			db.Close()
+
+			msg = fmt.Sprintf("service [%s] available through: %s@%s:%d/%s", k, pgconfig.User, pgconfig.Host, pgconfig.Port, pgconfig.Database)
 		}
-		db.Close()
 
 		// Connection was successful, create 'Service' struct with service-related properties and add it to service repo.
 		s := Service{
@@ -152,7 +170,8 @@ func (repo *Repository) addServicesFromConfig(config Config) {
 		repo.addService(s)
 
 		log.Infof("registered new service [%s]", s.ServiceID)
-		log.Debugf("service [%s] available through: %s@%s:%d/%s", s.ServiceID, pgconfig.User, pgconfig.Host, pgconfig.Port, pgconfig.Database)
+
+		log.Debugln(msg)
 	}
 }
 
@@ -199,6 +218,29 @@ func (repo *Repository) setupServices(config Config) error {
 			repo.addService(service)
 			log.Debugf("service configured [%s]", id)
 		}
+	}
+
+	return nil
+}
+
+// attemptRequest tries to make a real HTTP request using passed URL string.
+func attemptRequest(baseurl string) error {
+	url := baseurl + "/health"
+	log.Debugln("making test http request: ", url)
+
+	var client = http.NewClient(http.ClientConfig{Timeout: time.Second})
+
+	if strings.HasPrefix(url, "https://") {
+		client.EnableTLSInsecure()
+	}
+
+	resp, err := client.Get(url) // #nosec G107
+	if err != nil {
+		return err
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		return fmt.Errorf("bad response: %s", resp.Status)
 	}
 
 	return nil
