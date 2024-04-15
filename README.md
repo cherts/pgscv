@@ -7,7 +7,7 @@
 - exposes metrics through the HTTP `/metrics` endpoint in [Prometheus metrics exposition format](https://prometheus.io/docs/concepts/data_model/).
 
 **IMPORTANT NOTES**
-This project is a continuation of the development of the original pgSCV by [Lesovsky Alexey](https://github.com/lesovsky)
+This project is a continuation of the development of the original pgSCV by [Alexey Lesovsky](https://github.com/lesovsky)
 
 ### Features
 - **Supported services:** support collecting metrics of PostgreSQL and Pgbouncer.
@@ -95,7 +95,7 @@ If you need help using pgSCV feel free to open discussion via [email](sleuthhoun
 
 ### Development and contribution
 To help development you are encouraged to:
-- provide feedback via [email](sleuthhound@gmail.com) or Telegram [@cherts](https://t.me/cherts) or create an [issue](https://github.com/cherts/pgscv/issues)
+- provide feedback via [email](mailto:sleuthhound@gmail.com) or Telegram [@cherts](https://t.me/cherts) or create an [issue](https://github.com/cherts/pgscv/issues)
 - pull requests for new features
 - star the project
 
