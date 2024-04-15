@@ -2,7 +2,7 @@ DOCKER_ACCOUNT = cherts
 APPNAME = pgscv
 APPOS = linux
 
-TAG=$(shell git describe --tags --abbrev=0)
+TAG=$(shell git tag -l --sort=-creatordate | head -n 1)
 COMMIT=$(shell git rev-parse --short HEAD)
 BRANCH=$(shell git rev-parse --abbrev-ref HEAD)
 
