@@ -1,14 +1,12 @@
 package http
 
 import (
-	"bufio"
-	"bytes"
 	"fmt"
-	"github.com/cherts/pgscv/internal/log"
-	"github.com/prometheus/client_golang/prometheus/promhttp"
-	"io"
 	"net/http"
 	"time"
+
+	"github.com/cherts/pgscv/internal/log"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
 // AuthConfig defines configuration settings for authentication.
@@ -124,50 +122,4 @@ func basicAuth(cfg AuthConfig, next http.Handler) http.Handler {
 		w.Header().Set("WWW-Authenticate", `Basic realm="restricted", charset="UTF-8"`)
 		http.Error(w, "Unauthorized", StatusUnauthorized)
 	})
-}
-
-// NewPushRequest creates new HTTP request for sending metrics into remote service.
-func NewPushRequest(url, apiKey, hostname string, payload []byte) (*http.Request, error) {
-	req, err := http.NewRequest("POST", url, bytes.NewReader(payload))
-	if err != nil {
-		return nil, err
-	}
-
-	req.Header.Set("Content-Type", "application/text")
-	req.Header.Set("User-Agent", "pgSCV")
-	req.Header.Add("X-Weaponry-Api-Key", apiKey)
-
-	q := req.URL.Query()
-	q.Add("extra_label", fmt.Sprintf("instance=%s", hostname))
-	req.URL.RawQuery = q.Encode()
-
-	return req, nil
-}
-
-// DoPushRequest sends prepared request with metrics into remote service.
-func DoPushRequest(cl *Client, req *http.Request) error {
-	log.Debugln("send metrics")
-
-	resp, err := cl.Do(req)
-	if err != nil {
-		return fmt.Errorf("send failed: %s", err)
-	}
-
-	defer func() {
-		_, _ = io.Copy(io.Discard, resp.Body)
-		_ = resp.Body.Close()
-	}()
-
-	if resp.StatusCode/100 != 2 {
-		scanner := bufio.NewScanner(io.LimitReader(resp.Body, 512))
-		line := ""
-		if scanner.Scan() {
-			line = scanner.Text()
-		}
-		return fmt.Errorf("send failed: %s (%s)", resp.Status, line)
-	}
-
-	log.Debugf("send success: %s", resp.Status)
-
-	return nil
 }

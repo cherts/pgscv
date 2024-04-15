@@ -1,14 +1,14 @@
 package http
 
 import (
-	"github.com/stretchr/testify/assert"
 	"io"
 	"net/http"
 	"net/http/httptest"
-	"regexp"
 	"sync"
 	"testing"
 	"time"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestAuthConfig_Validate(t *testing.T) {
@@ -139,37 +139,4 @@ func Test_basicAuth(t *testing.T) {
 			res.Flush()
 		})
 	}
-}
-
-func TestNewPushRequest(t *testing.T) {
-	req, err := NewPushRequest("https://example.org", "example", "example", []byte("example"))
-	assert.NoError(t, err)
-
-	assert.Equal(t, "pgSCV", req.Header.Get("User-Agent"))
-	assert.Equal(t, "example", req.Header.Get("X-Weaponry-Api-Key"))
-
-	re := regexp.MustCompile(`^https://example.org\?extra_label=instance%3Dexample$`)
-	assert.True(t, re.MatchString(req.URL.String()))
-
-	// test with invalid url
-	_, err = NewPushRequest("https://[[", "example", "example", []byte("example"))
-	assert.Error(t, err)
-}
-
-func TestDoPushRequest(t *testing.T) {
-	ts := TestServer(t, StatusOK, "")
-	defer ts.Close()
-
-	ts2 := TestServer(t, StatusBadRequest, "invalid data")
-	defer ts2.Close()
-
-	cl := NewClient(ClientConfig{})
-
-	req, err := NewPushRequest(ts.URL, "example", "example", []byte("example"))
-	assert.NoError(t, err)
-	assert.NoError(t, DoPushRequest(cl, req))
-
-	req, err = NewPushRequest(ts2.URL, "example", "example", []byte("example"))
-	assert.NoError(t, err)
-	assert.Error(t, DoPushRequest(cl, req))
 }

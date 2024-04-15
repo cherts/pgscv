@@ -1,5 +1,6 @@
 DOCKER_ACCOUNT = cherts
 APPNAME = pgscv
+APPOS = linux
 
 TAG=$(shell git describe --tags --abbrev=0)
 COMMIT=$(shell git rev-parse --short HEAD)
@@ -46,7 +47,7 @@ race: dep ## Run data race detector
 
 build: dep ## Build
 	mkdir -p ./bin
-	CGO_ENABLED=0 GOOS=linux GOARCH=${GOARCH} go build ${LDFLAGS} -o bin/${APPNAME} ./cmd
+	CGO_ENABLED=0 GOOS=${APPOS} GOARCH=${GOARCH} go build ${LDFLAGS} -o bin/${APPNAME} ./cmd
 
 docker-build: ## Build docker image
 	docker build -t ${DOCKER_ACCOUNT}/${APPNAME}:${TAG} .
