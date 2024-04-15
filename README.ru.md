@@ -7,7 +7,7 @@
 - предоставляет метрики по HTTP через эндпойнт `/metrics` в [формат Prometheus](https://prometheus.io/docs/concepts/data_model/);
 
 **IMPORTANT NOTES**
-Данный проект является продолжением развития оригинального pgSCV авторства [Lesovsky Alexey](https://github.com/lesovsky)
+Данный проект является продолжением развития оригинального pgSCV авторства [Alexey Lesovsky](https://github.com/lesovsky)
 
 ### Основные возможности
 - **Поддерживаемые сервисы**: поддержка сбора показателей работы PostgreSQL и Pgbouncer;
@@ -95,7 +95,7 @@ helm install -n pgscv-ns pgscv deploy/helm-chart/
 
 ### Развитие и вклад
 Для содействия развитию проекта Вы можете:
-- написать мне на [email](sleuthhound@gmail.com) или в Telegram [@cherts](https://t.me/cherts) или создать [issue](https://github.com/cherts/pgscv/issues)
+- написать мне на [email](mailto:sleuthhound@gmail.com) или в Telegram [@cherts](https://t.me/cherts) или создать [issue](https://github.com/cherts/pgscv/issues)
 - запросить новую функциональность;
 - поставить звезду проекту на Github;
 
