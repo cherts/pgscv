@@ -1,6 +1,6 @@
 [Unit]
 Description=pgSCV - PostgreSQL ecosystem metrics collector
-Documentation=https://github.com/cherts/pgscv
+Documentation=https://github.com/cherts/pgscv/wiki
 Requires=network-online.target
 After=network-online.target
 
