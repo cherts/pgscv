@@ -1,8 +1,9 @@
 package service
 
 import (
-	"github.com/stretchr/testify/assert"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func Test_ParsePostgresDSNEnv(t *testing.T) {
@@ -57,6 +58,35 @@ func Test_parseDSNEnv(t *testing.T) {
 			assert.NoError(t, err)
 			assert.Equal(t, tc.wantId, gotID)
 			assert.Equal(t, ConnSetting{ServiceType: tc.wantType, Conninfo: "conninfo"}, gotCS)
+		} else {
+			assert.Error(t, err)
+		}
+	}
+}
+
+func Test_parseURLEnv(t *testing.T) {
+	testcases := []struct {
+		valid    bool
+		prefix   string
+		key      string
+		wantId   string
+		wantType string
+	}{
+		{valid: true, prefix: "PATRONI_URL", key: "PATRONI_URL", wantId: "patroni", wantType: "patroni"},
+		{valid: true, prefix: "PATRONI_URL", key: "PATRONI_URL1", wantId: "1", wantType: "patroni"},
+		{valid: true, prefix: "PATRONI_URL", key: "PATRONI_URL_PATRONI_123", wantId: "PATRONI_123", wantType: "patroni"},
+		//
+		{valid: false, prefix: "PATRONI_URL", key: "PATRONI_URL_"},
+		{valid: false, prefix: "PATRONI_URL", key: "INVALID"},
+		{valid: false, prefix: "INVALID", key: "INVALID"},
+	}
+
+	for _, tc := range testcases {
+		gotID, gotCS, err := parseURLEnv(tc.prefix, tc.key, "baseurl")
+		if tc.valid {
+			assert.NoError(t, err)
+			assert.Equal(t, tc.wantId, gotID)
+			assert.Equal(t, ConnSetting{ServiceType: tc.wantType, BaseURL: "baseurl"}, gotCS)
 		} else {
 			assert.Error(t, err)
 		}

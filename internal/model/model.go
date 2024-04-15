@@ -2,9 +2,10 @@ package model
 
 import (
 	"database/sql"
-	"github.com/jackc/pgproto3/v2"
-	"github.com/cherts/pgscv/internal/filter"
 	"regexp"
+
+	"github.com/cherts/pgscv/internal/filter"
+	"github.com/jackc/pgproto3/v2"
 )
 
 const (
@@ -14,6 +15,8 @@ const (
 	ServiceTypePostgresql = "postgres"
 	// ServiceTypePgbouncer defines label string for Pgbouncer services.
 	ServiceTypePgbouncer = "pgbouncer"
+	// ServiceTypePatroni defines label string for Patroni services.
+	ServiceTypePatroni = "patroni"
 )
 
 // PGResult is the iterable store that contains query result (data and metadata) returned from Postgres

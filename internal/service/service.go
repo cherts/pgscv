@@ -1,14 +1,15 @@
 package service
 
 import (
-	"github.com/jackc/pgx/v4"
+	"regexp"
+	"sync"
+
 	"github.com/cherts/pgscv/internal/collector"
 	"github.com/cherts/pgscv/internal/log"
 	"github.com/cherts/pgscv/internal/model"
 	"github.com/cherts/pgscv/internal/store"
+	"github.com/jackc/pgx/v4"
 	"github.com/prometheus/client_golang/prometheus"
-	"regexp"
-	"sync"
 )
 
 // Service struct describes service - the target from which should be collected metrics.
@@ -178,6 +179,9 @@ func (repo *Repository) setupServices(config Config) error {
 				factories.RegisterPostgresCollectors(config.DisabledCollectors)
 			case model.ServiceTypePgbouncer:
 				factories.RegisterPgbouncerCollectors(config.DisabledCollectors)
+			case model.ServiceTypePatroni:
+				factories.RegisterPatroniCollectors(config.DisabledCollectors)
+				collectorConfig.BaseURL = service.ConnSettings.BaseURL
 			default:
 				continue
 			}

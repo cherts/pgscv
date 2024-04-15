@@ -1,11 +1,12 @@
 package collector
 
 import (
+	"sync"
+
 	"github.com/cherts/pgscv/internal/filter"
 	"github.com/cherts/pgscv/internal/log"
 	"github.com/cherts/pgscv/internal/model"
 	"github.com/prometheus/client_golang/prometheus"
-	"sync"
 )
 
 // Factories defines collector functions which used for collecting metrics.
@@ -93,6 +94,29 @@ func (f Factories) RegisterPgbouncerCollectors(disabled []string) {
 		"pgbouncer/pools":    NewPgbouncerPoolsCollector,
 		"pgbouncer/stats":    NewPgbouncerStatsCollector,
 		"pgbouncer/settings": NewPgbouncerSettingsCollector,
+	}
+
+	for name, fn := range funcs {
+		if stringsContains(disabled, name) {
+			log.Debugln("disable ", name)
+			continue
+		}
+
+		log.Debugln("enable ", name)
+		f.register(name, fn)
+	}
+}
+
+// RegisterPatroniCollectors unions all patroni-related collectors and registers them in single place.
+func (f Factories) RegisterPatroniCollectors(disabled []string) {
+	if stringsContains(disabled, "patroni") {
+		log.Debugln("disable all patroni collectors")
+		return
+	}
+
+	funcs := map[string]func(labels, model.CollectorSettings) (Collector, error){
+		"patroni/pgscv":  NewPgscvServicesCollector,
+		"patroni/common": NewPatroniCommonCollector,
 	}
 
 	for name, fn := range funcs {
