@@ -2,6 +2,7 @@ package collector
 
 import (
 	"context"
+	"fmt"
 	"net"
 	"regexp"
 	"strconv"
@@ -82,7 +83,7 @@ func newPostgresServiceConfig(connStr string) (postgresServiceConfig, error) {
 	// Get Postgres block size.
 	err = conn.Conn().QueryRow(context.Background(), "SELECT setting FROM pg_settings WHERE name = 'block_size'").Scan(&setting)
 	if err != nil {
-		return config, err
+		return config, fmt.Errorf("failed to get info from pg_settings (block_size), error: %s", err)
 	}
 	bsize, err := strconv.ParseUint(setting, 10, 64)
 	if err != nil {
@@ -94,7 +95,7 @@ func newPostgresServiceConfig(connStr string) (postgresServiceConfig, error) {
 	// Get Postgres WAL segment size.
 	err = conn.Conn().QueryRow(context.Background(), "SELECT setting FROM pg_settings WHERE name = 'wal_segment_size'").Scan(&setting)
 	if err != nil {
-		return config, err
+		return config, fmt.Errorf("failed to get info from pg_settings (wal_segment_size), error: %s", err)
 	}
 	walSegSize, err := strconv.ParseUint(setting, 10, 64)
 	if err != nil {
@@ -106,7 +107,7 @@ func newPostgresServiceConfig(connStr string) (postgresServiceConfig, error) {
 	// Get Postgres server version
 	err = conn.Conn().QueryRow(context.Background(), "SELECT setting FROM pg_settings WHERE name = 'server_version_num'").Scan(&setting)
 	if err != nil {
-		return config, err
+		return config, fmt.Errorf("failed to get info from pg_settings (server_version_num), error: %s", err)
 	}
 	version, err := strconv.Atoi(setting)
 	if err != nil {
@@ -122,7 +123,7 @@ func newPostgresServiceConfig(connStr string) (postgresServiceConfig, error) {
 	// Get Postgres data directory
 	err = conn.Conn().QueryRow(context.Background(), "SELECT setting FROM pg_settings WHERE name = 'data_directory'").Scan(&setting)
 	if err != nil {
-		return config, err
+		return config, fmt.Errorf("failed to get info from pg_settings (data_directory), error: %s", err)
 	}
 
 	config.dataDirectory = setting
@@ -130,7 +131,7 @@ func newPostgresServiceConfig(connStr string) (postgresServiceConfig, error) {
 	// Get setting of 'logging_collector' GUC.
 	err = conn.Conn().QueryRow(context.Background(), "SELECT setting FROM pg_settings WHERE name = 'logging_collector'").Scan(&setting)
 	if err != nil {
-		return config, err
+		return config, fmt.Errorf("failed to get info from pg_settings (logging_collector), error: %s", err)
 	}
 
 	if setting == "on" {
