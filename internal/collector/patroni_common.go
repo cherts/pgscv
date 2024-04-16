@@ -13,29 +13,34 @@ import (
 )
 
 type patroniCommonCollector struct {
-	client            *http.Client
-	up                typedDesc
-	name              typedDesc
-	version           typedDesc
-	pgup              typedDesc
-	pgstart           typedDesc
-	roleMaster        typedDesc
-	roleStandbyLeader typedDesc
-	roleReplica       typedDesc
-	xlogLoc           typedDesc
-	xlogRecvLoc       typedDesc
-	xlogReplLoc       typedDesc
-	xlogReplTs        typedDesc
-	xlogPaused        typedDesc
-	pgversion         typedDesc
-	unlocked          typedDesc
-	timeline          typedDesc
-	dcslastseen       typedDesc
-	changetime        typedDesc
-	replicationState  typedDesc
-	pendingRestart    typedDesc
-	pause             typedDesc
-	inArchiveRecovery typedDesc
+	client               *http.Client
+	up                   typedDesc
+	name                 typedDesc
+	version              typedDesc
+	pgup                 typedDesc
+	pgstart              typedDesc
+	roleMaster           typedDesc
+	roleStandbyLeader    typedDesc
+	roleReplica          typedDesc
+	xlogLoc              typedDesc
+	xlogRecvLoc          typedDesc
+	xlogReplLoc          typedDesc
+	xlogReplTs           typedDesc
+	xlogPaused           typedDesc
+	pgversion            typedDesc
+	unlocked             typedDesc
+	timeline             typedDesc
+	dcslastseen          typedDesc
+	changetime           typedDesc
+	replicationState     typedDesc
+	pendingRestart       typedDesc
+	pause                typedDesc
+	inArchiveRecovery    typedDesc
+	failsafeMode         typedDesc
+	loopWait             typedDesc
+	maximumLagOnFailover typedDesc
+	retryTimeout         typedDesc
+	ttl                  typedDesc
 }
 
 // NewPatroniCommonCollector returns a new Collector exposing Patroni common info.
@@ -177,6 +182,36 @@ func NewPatroniCommonCollector(constLabels labels, settings model.CollectorSetti
 			varLabels, constLabels,
 			settings.Filters,
 		),
+		failsafeMode: newBuiltinTypedDesc(
+			descOpts{"patroni", "", "failsafe_mode_is_active", "Value is 1 if failsafe mode is active, 0 if inactive.", 0},
+			prometheus.CounterValue,
+			varLabels, constLabels,
+			settings.Filters,
+		),
+		loopWait: newBuiltinTypedDesc(
+			descOpts{"patroni", "", "loop_wait", "Current loop_wait setting of the Patroni configuration.", 0},
+			prometheus.GaugeValue,
+			varLabels, constLabels,
+			settings.Filters,
+		),
+		maximumLagOnFailover: newBuiltinTypedDesc(
+			descOpts{"patroni", "", "maximum_lag_on_failover", "Current maximum_lag_on_failover setting of the Patroni configuration.", 0},
+			prometheus.GaugeValue,
+			varLabels, constLabels,
+			settings.Filters,
+		),
+		retryTimeout: newBuiltinTypedDesc(
+			descOpts{"patroni", "", "retry_timeout", "Current retry_timeout setting of the Patroni configuration.", 0},
+			prometheus.GaugeValue,
+			varLabels, constLabels,
+			settings.Filters,
+		),
+		ttl: newBuiltinTypedDesc(
+			descOpts{"patroni", "", "ttl", "Current ttl setting of the Patroni configuration.", 0},
+			prometheus.GaugeValue,
+			varLabels, constLabels,
+			settings.Filters,
+		),
 	}, nil
 }
 
@@ -228,6 +263,21 @@ func (c *patroniCommonCollector) Update(config Config, ch chan<- prometheus.Metr
 	ch <- c.pendingRestart.newConstMetric(info.pendingRestart, info.scope)
 	ch <- c.pause.newConstMetric(info.pause, info.scope)
 	ch <- c.inArchiveRecovery.newConstMetric(info.inArchiveRecovery, info.scope)
+
+	// Request and parse config.
+	respConfig, err := requestApiPatroniConfig(c.client, config.BaseURL)
+	if err != nil {
+		return err
+	}
+
+	patroniConfig, err := parsePatroniConfigResponse(respConfig)
+	if err == nil {
+		ch <- c.failsafeMode.newConstMetric(patroniConfig.failsafeMode, info.scope)
+		ch <- c.loopWait.newConstMetric(patroniConfig.loopWait, info.scope)
+		ch <- c.maximumLagOnFailover.newConstMetric(patroniConfig.maximumLagOnFailover, info.scope)
+		ch <- c.retryTimeout.newConstMetric(patroniConfig.retryTimeout, info.scope)
+		ch <- c.ttl.newConstMetric(patroniConfig.ttl, info.scope)
+	}
 
 	// Request and parse history.
 	respHist, err := requestApiHistory(c.client, config.BaseURL)
@@ -309,6 +359,68 @@ type patroniInfo struct {
 	pendingRestart    float64
 	pause             float64
 	inArchiveRecovery float64
+}
+
+// apiPatroniResponse implements API response returned by '/config' endpoint.
+type apiPatroniConfigResponse struct {
+	FailSafeMode     bool `json:"failsafe_mode"`
+	LoopWait         int  `json:"loop_wait"`
+	MaxLagOnFailover int  `json:"maximum_lag_on_failover"`
+	RetryTimeout     int  `json:"retry_timeout"`
+	Ttl              int  `json:"ttl"`
+}
+
+// patroniConfigInfo implements metrics values extracted from the response of '/config' endpoint.
+type patroniConfigInfo struct {
+	failsafeMode         float64
+	loopWait             float64
+	maximumLagOnFailover float64
+	retryTimeout         float64
+	ttl                  float64
+}
+
+// requestPatroniConfigInfo requests to /config endpoint of API and returns parsed response.
+func requestApiPatroniConfig(c *http.Client, baseurl string) (*apiPatroniConfigResponse, error) {
+	resp, err := c.Get(baseurl + "/config")
+	if err != nil {
+		return nil, err
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("bad response: %s", resp.Status)
+	}
+
+	content, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	_ = resp.Body.Close()
+
+	r := &apiPatroniConfigResponse{}
+
+	err = json.Unmarshal(content, r)
+	if err != nil {
+		return nil, err
+	}
+
+	return r, nil
+}
+
+// parsePatroniConfigResponse parses info from API response and returns info object.
+func parsePatroniConfigResponse(resp *apiPatroniConfigResponse) (*patroniConfigInfo, error) {
+	var failsafeMode float64
+	if resp.FailSafeMode {
+		failsafeMode = 1
+	}
+
+	return &patroniConfigInfo{
+		failsafeMode:         failsafeMode,
+		loopWait:             float64(resp.LoopWait),
+		maximumLagOnFailover: float64(resp.MaxLagOnFailover),
+		retryTimeout:         float64(resp.RetryTimeout),
+		ttl:                  float64(resp.Ttl),
+	}, nil
 }
 
 // requestPatroniInfo requests to /patroni endpoint of API and returns parsed response.
