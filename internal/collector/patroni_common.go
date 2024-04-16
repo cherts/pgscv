@@ -15,6 +15,7 @@ import (
 type patroniCommonCollector struct {
 	client            *http.Client
 	up                typedDesc
+	name              typedDesc
 	version           typedDesc
 	pgup              typedDesc
 	pgstart           typedDesc
@@ -29,7 +30,12 @@ type patroniCommonCollector struct {
 	pgversion         typedDesc
 	unlocked          typedDesc
 	timeline          typedDesc
+	dcslastseen       typedDesc
 	changetime        typedDesc
+	replicationState  typedDesc
+	pendingRestart    typedDesc
+	pause             typedDesc
+	inArchiveRecovery typedDesc
 }
 
 // NewPatroniCommonCollector returns a new Collector exposing Patroni common info.
@@ -45,6 +51,12 @@ func NewPatroniCommonCollector(constLabels labels, settings model.CollectorSetti
 			nil, constLabels,
 			settings.Filters,
 		),
+		name: newBuiltinTypedDesc(
+			descOpts{"patroni", "node", "name", "Node name.", 0},
+			prometheus.GaugeValue,
+			[]string{"scope", "node_name"}, constLabels,
+			settings.Filters,
+		),
 		version: newBuiltinTypedDesc(
 			descOpts{"patroni", "", "version", "Numeric representation of Patroni version.", 0},
 			prometheus.GaugeValue,
@@ -52,7 +64,7 @@ func NewPatroniCommonCollector(constLabels labels, settings model.CollectorSetti
 			settings.Filters,
 		),
 		pgup: newBuiltinTypedDesc(
-			descOpts{"patroni", "postgres", "running", "State of Postgres service: 1 is up, 0 otherwise.", 0},
+			descOpts{"patroni", "postgres", "running", "Value is 1 if Postgres is running, 0 otherwise.", 0},
 			prometheus.GaugeValue,
 			varLabels, constLabels,
 			settings.Filters,
@@ -123,15 +135,44 @@ func NewPatroniCommonCollector(constLabels labels, settings model.CollectorSetti
 			varLabels, constLabels,
 			settings.Filters,
 		),
-
 		timeline: newBuiltinTypedDesc(
 			descOpts{"patroni", "postgres", "timeline", "Postgres timeline of this node (if running), 0 otherwise.", 0},
 			prometheus.CounterValue,
 			varLabels, constLabels,
 			settings.Filters,
 		),
+		replicationState: newBuiltinTypedDesc(
+			descOpts{"patroni", "postgres", "streaming", "Value is 1 if Postgres is streaming, 0 otherwise.", 0},
+			prometheus.CounterValue,
+			varLabels, constLabels,
+			settings.Filters,
+		),
+		dcslastseen: newBuiltinTypedDesc(
+			descOpts{"patroni", "", "dcs_last_seen", "Epoch timestamp when DCS was last contacted successfully by Patroni.", 0},
+			prometheus.CounterValue,
+			varLabels, constLabels,
+			settings.Filters,
+		),
 		changetime: newBuiltinTypedDesc(
 			descOpts{"patroni", "last_timeline", "change_seconds", "Epoch seconds since latest timeline switched.", 0},
+			prometheus.CounterValue,
+			varLabels, constLabels,
+			settings.Filters,
+		),
+		pendingRestart: newBuiltinTypedDesc(
+			descOpts{"patroni", "", "pending_restart", "Value is 1 if the node needs a restart, 0 otherwise.", 0},
+			prometheus.CounterValue,
+			varLabels, constLabels,
+			settings.Filters,
+		),
+		pause: newBuiltinTypedDesc(
+			descOpts{"patroni", "", "is_paused", "Value is 1 if auto failover is disabled, 0 otherwise.", 0},
+			prometheus.CounterValue,
+			varLabels, constLabels,
+			settings.Filters,
+		),
+		inArchiveRecovery: newBuiltinTypedDesc(
+			descOpts{"patroni", "postgres", "in_archive_recovery", "Value is 1 if Postgres is replicating from archive, 0 otherwise.", 0},
 			prometheus.CounterValue,
 			varLabels, constLabels,
 			settings.Filters,
@@ -164,17 +205,7 @@ func (c *patroniCommonCollector) Update(config Config, ch chan<- prometheus.Metr
 		return err
 	}
 
-	// Request and parse history.
-	respHist, err := requestApiHistory(c.client, config.BaseURL)
-	if err != nil {
-		return err
-	}
-
-	history, err := parseHistoryResponse(respHist)
-	if err != nil {
-		return err
-	}
-
+	ch <- c.name.newConstMetric(0, info.scope, info.name)
 	ch <- c.version.newConstMetric(info.version, info.scope, info.versionStr)
 	ch <- c.pgup.newConstMetric(info.running, info.scope)
 	ch <- c.pgstart.newConstMetric(info.startTime, info.scope)
@@ -192,8 +223,22 @@ func (c *patroniCommonCollector) Update(config Config, ch chan<- prometheus.Metr
 	ch <- c.pgversion.newConstMetric(info.pgversion, info.scope)
 	ch <- c.unlocked.newConstMetric(info.unlocked, info.scope)
 	ch <- c.timeline.newConstMetric(info.timeline, info.scope)
+	ch <- c.dcslastseen.newConstMetric(info.dcslastseen, info.scope)
+	ch <- c.replicationState.newConstMetric(info.replicationState, info.scope)
+	ch <- c.pendingRestart.newConstMetric(info.pendingRestart, info.scope)
+	ch <- c.pause.newConstMetric(info.pause, info.scope)
+	ch <- c.inArchiveRecovery.newConstMetric(info.inArchiveRecovery, info.scope)
 
-	ch <- c.changetime.newConstMetric(history.lastTimelineChangeUnix, info.scope)
+	// Request and parse history.
+	respHist, err := requestApiHistory(c.client, config.BaseURL)
+	if err != nil {
+		return err
+	} else {
+		history, err := parseHistoryResponse(respHist)
+		if err == nil {
+			ch <- c.changetime.newConstMetric(history.lastTimelineChangeUnix, info.scope)
+		}
+	}
 
 	return nil
 }
@@ -212,6 +257,7 @@ func requestApiLiveness(c *http.Client, baseurl string) error {
 type patroni struct {
 	Version string `json:"version"`
 	Scope   string `json:"scope"`
+	Name    string `json:"name"`
 }
 
 // patroniXlogInfo implements 'xlog' object of API response.
@@ -225,34 +271,44 @@ type patroniXlogInfo struct {
 
 // apiPatroniResponse implements API response returned by '/patroni' endpoint.
 type apiPatroniResponse struct {
-	State         string          `json:"state"`
-	Unlocked      bool            `json:"cluster_unlocked"`
-	Timeline      int             `json:"timeline"`
-	PmStartTime   string          `json:"postmaster_start_time"`
-	ServerVersion int             `json:"server_version"`
-	Patroni       patroni         `json:"patroni"`
-	Role          string          `json:"role"`
-	Xlog          patroniXlogInfo `json:"xlog"`
+	State            string          `json:"state"`
+	Unlocked         bool            `json:"cluster_unlocked"`
+	Timeline         int             `json:"timeline"`
+	PmStartTime      string          `json:"postmaster_start_time"`
+	ServerVersion    int             `json:"server_version"`
+	Patroni          patroni         `json:"patroni"`
+	Role             string          `json:"role"`
+	Xlog             patroniXlogInfo `json:"xlog"`
+	DcsLastSeen      int             `json:"dcs_last_seen"`
+	ReplicationState string          `json:"replication_state"`
+	PendingRestart   bool            `json:"pending_restart"`
+	Pause            bool            `json:"pause"`
 }
 
 // patroniInfo implements metrics values extracted from the response of '/patroni' endpoint.
 type patroniInfo struct {
-	scope         string
-	version       float64
-	versionStr    string
-	running       float64
-	startTime     float64
-	master        float64
-	standbyLeader float64
-	replica       float64
-	xlogLoc       float64
-	xlogRecvLoc   float64
-	xlogReplLoc   float64
-	xlogReplTs    float64
-	xlogPaused    float64
-	pgversion     float64
-	unlocked      float64
-	timeline      float64
+	name              string
+	scope             string
+	version           float64
+	versionStr        string
+	running           float64
+	startTime         float64
+	master            float64
+	standbyLeader     float64
+	replica           float64
+	xlogLoc           float64
+	xlogRecvLoc       float64
+	xlogReplLoc       float64
+	xlogReplTs        float64
+	xlogPaused        float64
+	pgversion         float64
+	unlocked          float64
+	timeline          float64
+	dcslastseen       float64
+	replicationState  float64
+	pendingRestart    float64
+	pause             float64
+	inArchiveRecovery float64
 }
 
 // requestPatroniInfo requests to /patroni endpoint of API and returns parsed response.
@@ -319,9 +375,9 @@ func parsePatroniResponse(resp *apiPatroniResponse) (*patroniInfo, error) {
 		xlogReplTimeSecs = float64(t.UnixNano()) / 1000000000
 	}
 
-	var paused float64
+	var xlog_paused float64
 	if resp.Xlog.Paused {
-		paused = 1
+		xlog_paused = 1
 	}
 
 	var unlocked float64
@@ -329,23 +385,49 @@ func parsePatroniResponse(resp *apiPatroniResponse) (*patroniInfo, error) {
 		unlocked = 1
 	}
 
+	var replication_state float64
+	if resp.ReplicationState == "streaming" {
+		replication_state = 1
+	}
+
+	var pending_restart float64
+	if resp.PendingRestart {
+		pending_restart = 1
+	}
+
+	var pause float64
+	if resp.Pause {
+		pause = 1
+	}
+
+	var in_archive_recovery float64
+	if resp.ReplicationState == "in archive recovery" {
+		in_archive_recovery = 1
+	}
+
 	return &patroniInfo{
-		scope:         resp.Patroni.Scope,
-		version:       float64(version),
-		versionStr:    resp.Patroni.Version,
-		running:       running,
-		startTime:     float64(t1.UnixNano()) / 1000000000,
-		master:        master,
-		standbyLeader: stdleader,
-		replica:       replica,
-		xlogLoc:       float64(resp.Xlog.Location),
-		xlogRecvLoc:   float64(resp.Xlog.ReceivedLocation),
-		xlogReplLoc:   float64(resp.Xlog.ReplayedLocation),
-		xlogReplTs:    xlogReplTimeSecs,
-		xlogPaused:    paused,
-		pgversion:     float64(resp.ServerVersion),
-		unlocked:      unlocked,
-		timeline:      float64(resp.Timeline),
+		name:              resp.Patroni.Name,
+		scope:             resp.Patroni.Scope,
+		version:           float64(version),
+		versionStr:        resp.Patroni.Version,
+		running:           running,
+		startTime:         float64(t1.UnixNano()) / 1000000000,
+		master:            master,
+		standbyLeader:     stdleader,
+		replica:           replica,
+		xlogLoc:           float64(resp.Xlog.Location),
+		xlogRecvLoc:       float64(resp.Xlog.ReceivedLocation),
+		xlogReplLoc:       float64(resp.Xlog.ReplayedLocation),
+		xlogReplTs:        xlogReplTimeSecs,
+		xlogPaused:        xlog_paused,
+		pgversion:         float64(resp.ServerVersion),
+		unlocked:          unlocked,
+		timeline:          float64(resp.Timeline),
+		dcslastseen:       float64(resp.DcsLastSeen),
+		replicationState:  replication_state,
+		pendingRestart:    pending_restart,
+		pause:             pause,
+		inArchiveRecovery: in_archive_recovery,
 	}, nil
 }
 
