@@ -2,14 +2,16 @@ package collector
 
 import (
 	"context"
-	"github.com/jackc/pgx/v4"
-	"github.com/cherts/pgscv/internal/log"
-	"github.com/cherts/pgscv/internal/model"
-	"github.com/cherts/pgscv/internal/store"
+	"fmt"
 	"net"
 	"regexp"
 	"strconv"
 	"strings"
+
+	"github.com/cherts/pgscv/internal/log"
+	"github.com/cherts/pgscv/internal/model"
+	"github.com/cherts/pgscv/internal/store"
+	"github.com/jackc/pgx/v4"
 )
 
 // Config defines collector's global configuration.
@@ -19,6 +21,8 @@ type Config struct {
 	ServiceType string
 	// ConnString defines a connection string used to connecting to the service
 	ConnString string
+	// BaseURL defines a URL string for connecting to HTTP service
+	BaseURL string
 	// NoTrackMode controls collector to gather and send sensitive information, such as queries texts.
 	NoTrackMode bool
 	// postgresServiceConfig defines collector's options specific for Postgres service
@@ -79,7 +83,7 @@ func newPostgresServiceConfig(connStr string) (postgresServiceConfig, error) {
 	// Get Postgres block size.
 	err = conn.Conn().QueryRow(context.Background(), "SELECT setting FROM pg_settings WHERE name = 'block_size'").Scan(&setting)
 	if err != nil {
-		return config, err
+		return config, fmt.Errorf("failed to get block_size setting from pg_settings, %s, please check user grants", err)
 	}
 	bsize, err := strconv.ParseUint(setting, 10, 64)
 	if err != nil {
@@ -91,7 +95,7 @@ func newPostgresServiceConfig(connStr string) (postgresServiceConfig, error) {
 	// Get Postgres WAL segment size.
 	err = conn.Conn().QueryRow(context.Background(), "SELECT setting FROM pg_settings WHERE name = 'wal_segment_size'").Scan(&setting)
 	if err != nil {
-		return config, err
+		return config, fmt.Errorf("failed to get wal_segment_size setting from pg_settings, %s, please check user grants", err)
 	}
 	walSegSize, err := strconv.ParseUint(setting, 10, 64)
 	if err != nil {
@@ -103,7 +107,7 @@ func newPostgresServiceConfig(connStr string) (postgresServiceConfig, error) {
 	// Get Postgres server version
 	err = conn.Conn().QueryRow(context.Background(), "SELECT setting FROM pg_settings WHERE name = 'server_version_num'").Scan(&setting)
 	if err != nil {
-		return config, err
+		return config, fmt.Errorf("failed to get server_version_num setting from pg_settings, %s, please check user grants", err)
 	}
 	version, err := strconv.Atoi(setting)
 	if err != nil {
@@ -119,7 +123,7 @@ func newPostgresServiceConfig(connStr string) (postgresServiceConfig, error) {
 	// Get Postgres data directory
 	err = conn.Conn().QueryRow(context.Background(), "SELECT setting FROM pg_settings WHERE name = 'data_directory'").Scan(&setting)
 	if err != nil {
-		return config, err
+		return config, fmt.Errorf("failed to get data_directory setting from pg_settings, %s, please check user grants", err)
 	}
 
 	config.dataDirectory = setting
@@ -127,7 +131,7 @@ func newPostgresServiceConfig(connStr string) (postgresServiceConfig, error) {
 	// Get setting of 'logging_collector' GUC.
 	err = conn.Conn().QueryRow(context.Background(), "SELECT setting FROM pg_settings WHERE name = 'logging_collector'").Scan(&setting)
 	if err != nil {
-		return config, err
+		return config, fmt.Errorf("failed to get logging_collector setting from pg_settings, %s, please check user grants", err)
 	}
 
 	if setting == "on" {

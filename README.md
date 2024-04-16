@@ -10,7 +10,7 @@
 This project is a continuation of the development of the original pgSCV by [Alexey Lesovsky](https://github.com/lesovsky)
 
 ### Features
-- **Supported services:** support collecting metrics of PostgreSQL and Pgbouncer.
+- **Supported services:** support collecting metrics of PostgreSQL, Pgbouncer and Patroni.
 - **OS metrics:** support collecting metrics of operating system.
 - **TLS and authentication**. `/metrics` endpoint could be protected with basic authentication and TLS.
 - **Collecting metrics from multiple services**. pgSCV can collect metrics from many databases instances.
