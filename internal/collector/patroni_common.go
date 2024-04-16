@@ -233,11 +233,11 @@ func (c *patroniCommonCollector) Update(config Config, ch chan<- prometheus.Metr
 	respHist, err := requestApiHistory(c.client, config.BaseURL)
 	if err != nil {
 		return err
-	} else {
-		history, err := parseHistoryResponse(respHist)
-		if err == nil {
-			ch <- c.changetime.newConstMetric(history.lastTimelineChangeUnix, info.scope)
-		}
+	}
+
+	history, err := parseHistoryResponse(respHist)
+	if err == nil {
+		ch <- c.changetime.newConstMetric(history.lastTimelineChangeUnix, info.scope)
 	}
 
 	return nil
@@ -375,9 +375,9 @@ func parsePatroniResponse(resp *apiPatroniResponse) (*patroniInfo, error) {
 		xlogReplTimeSecs = float64(t.UnixNano()) / 1000000000
 	}
 
-	var xlog_paused float64
+	var xlogPaused float64
 	if resp.Xlog.Paused {
-		xlog_paused = 1
+		xlogPaused = 1
 	}
 
 	var unlocked float64
@@ -385,14 +385,14 @@ func parsePatroniResponse(resp *apiPatroniResponse) (*patroniInfo, error) {
 		unlocked = 1
 	}
 
-	var replication_state float64
+	var replicationState float64
 	if resp.ReplicationState == "streaming" {
-		replication_state = 1
+		replicationState = 1
 	}
 
-	var pending_restart float64
+	var pendingRestart float64
 	if resp.PendingRestart {
-		pending_restart = 1
+		pendingRestart = 1
 	}
 
 	var pause float64
@@ -400,9 +400,9 @@ func parsePatroniResponse(resp *apiPatroniResponse) (*patroniInfo, error) {
 		pause = 1
 	}
 
-	var in_archive_recovery float64
+	var inArchiveRecovery float64
 	if resp.ReplicationState == "in archive recovery" {
-		in_archive_recovery = 1
+		inArchiveRecovery = 1
 	}
 
 	return &patroniInfo{
@@ -419,15 +419,15 @@ func parsePatroniResponse(resp *apiPatroniResponse) (*patroniInfo, error) {
 		xlogRecvLoc:       float64(resp.Xlog.ReceivedLocation),
 		xlogReplLoc:       float64(resp.Xlog.ReplayedLocation),
 		xlogReplTs:        xlogReplTimeSecs,
-		xlogPaused:        xlog_paused,
+		xlogPaused:        xlogPaused,
 		pgversion:         float64(resp.ServerVersion),
 		unlocked:          unlocked,
 		timeline:          float64(resp.Timeline),
 		dcslastseen:       float64(resp.DcsLastSeen),
-		replicationState:  replication_state,
-		pendingRestart:    pending_restart,
+		replicationState:  replicationState,
+		pendingRestart:    pendingRestart,
 		pause:             pause,
-		inArchiveRecovery: in_archive_recovery,
+		inArchiveRecovery: inArchiveRecovery,
 	}, nil
 }
 
