@@ -14,4 +14,3 @@ COPY --from=build /app/bin/pgscv /bin/pgscv
 EXPOSE 9890
 ENTRYPOINT ["/bin/pgscv"]
 #ENTRYPOINT ["/bin/docker_entrypoint.sh"]
-CMD ["--log-level=info"]
