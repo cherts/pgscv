@@ -57,7 +57,7 @@ func Test_parsePostgresBloatTableStats(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			got := parsePostgresTableStats(tc.res, []string{"database", "schema", "table"})
+			got := parsePostgresBloatTableStats(tc.res, []string{"database", "schema", "table"})
 			assert.EqualValues(t, tc.want, got)
 		})
 	}
