@@ -12,6 +12,15 @@ services:
   "pgbouncer:6432": 
     service_type: "pgbouncer"
     conninfo: "postgres://pgbouncer:password@127.0.0.1:6432/pgbouncer"
+#  "patroni1":
+#    service_type: "patroni"
+#    baseurl: "http://127.0.0.1:8008"
+#  "patroni2":
+#    service_type: "patroni"
+#    baseurl: "http://127.0.0.1:8009"
+#  "patroni3":
+#    service_type: "patroni"
+#    baseurl: "http://127.0.0.1:8010"
 #disable_collectors:
 #  - system
 #  - system/pgscv
@@ -41,12 +50,15 @@ services:
 #  - postgres/settings
 #  - postgres/storage
 #  - postgres/tables
+#  - postgres/tables_bloat
 #  - postgres/wal
 #  - postgres/custom
 #  - pgbouncer/pgscv
 #  - pgbouncer/pools
 #  - pgbouncer/stats
 #  - pgbouncer/settings
+#  - patroni/pgscv
+#  - patroni/common
 #databases: "^([a-zA-Z0-9])+_(prod|PROD)$"
 #collectors:
 #  postgres/custom:
