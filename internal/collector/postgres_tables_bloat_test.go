@@ -12,10 +12,10 @@ import (
 func TestPostgresBloatTablesCollector_Update(t *testing.T) {
 	var input = pipelineInput{
 		required: []string{
-			"postgres_table_est_rows",
-			"postgres_table_pct_bloat",
-			"postgres_table_bloat_bytes",
-			"postgres_table_table_bytes",
+			"postgres_table_bloat_est_rows",
+			"postgres_table_bloat_pct_bloat",
+			"postgres_table_bloat_table_bytes",
+			"postgres_table_bloat_bloat_bytes",
 		},
 		collector: NewPostgresBloatTablesCollector,
 		service:   model.ServiceTypePostgresql,
