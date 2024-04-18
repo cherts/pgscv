@@ -71,7 +71,9 @@ func NewConfig(configFilePath string) (*Config, error) {
 	if configFromEnv.ListenAddress != "" {
 		configFromFile.ListenAddress = configFromEnv.ListenAddress
 	}
-	configFromFile.ServicesConnsSettings = mergeConnsSettings(configFromFile.ServicesConnsSettings, configFromEnv.ServicesConnsSettings)
+	if len(configFromEnv.ServicesConnsSettings) > 0 {
+		configFromFile.ServicesConnsSettings = configFromEnv.ServicesConnsSettings
+	}
 	for key, value := range configFromEnv.Defaults {
 		configFromFile.Defaults[key] = value
 	}
@@ -94,16 +96,6 @@ func NewConfig(configFilePath string) (*Config, error) {
 }
 
 return configFromEnv, nil
-}
-
-func mergeConnsSettings(dest, src service.ConnsSettings) service.ConnsSettings {
-    if dest == nil {
-        return src
-    }
-    for key, value := range src {
-        dest[key] = value
-    }
-    return dest
 }
 
 func mergeCollectorsSettings(dest, src model.CollectorsSettings) model.CollectorsSettings {
