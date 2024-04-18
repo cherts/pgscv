@@ -71,16 +71,13 @@ func NewConfig(configFilePath string) (*Config, error) {
 	if configFromEnv.ListenAddress != "" {
 		configFromFile.ListenAddress = configFromEnv.ListenAddress
 	}
-	if !reflect.DeepEqual(configFromEnv.ServicesConnsSettings, service.ConnsSettings{}) {
-		configFromFile.ServicesConnsSettings = configFromEnv.ServicesConnsSettings
-	}
+	configFromFile.ServicesConnsSettings = mergeConnsSettings(configFromFile.ServicesConnsSettings, configFromEnv.ServicesConnsSettings)
 	for key, value := range configFromEnv.Defaults {
 		configFromFile.Defaults[key] = value
 	}
 	configFromFile.DisableCollectors = append(configFromFile.DisableCollectors, configFromEnv.DisableCollectors...)
-	if !reflect.DeepEqual(configFromEnv.CollectorsSettings, model.CollectorsSettings{}) {
-		configFromFile.CollectorsSettings = configFromEnv.CollectorsSettings
-	}
+	configFromFile.CollectorsSettings = mergeCollectorsSettings(configFromFile.CollectorsSettings, configFromEnv.CollectorsSettings)
+
 	// Устанавливаем нужные значения в поле Databases
 	if configFromFile.Databases == "" {
 		configFromFile.Databases = configFromEnv.Databases
@@ -97,6 +94,26 @@ func NewConfig(configFilePath string) (*Config, error) {
 }
 
 return configFromEnv, nil
+}
+
+func mergeConnsSettings(dest, src service.ConnsSettings) service.ConnsSettings {
+    if dest == nil {
+        dest = make(service.ConnsSettings)
+    }
+    for key, value := range src {
+        dest[key] = value
+    }
+    return dest
+}
+
+func mergeCollectorsSettings(dest, src model.CollectorsSettings) model.CollectorsSettings {
+    if dest == nil {
+        dest = make(model.CollectorsSettings)
+    }
+    for key, value := range src {
+        dest[key] = value
+    }
+    return dest
 }
 
 // Read real config file path
