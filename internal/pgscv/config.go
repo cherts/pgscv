@@ -66,6 +66,8 @@ func NewConfig(configFilePath string) (*Config, error) {
 
 	// Применить значения из переменных окружения к конфигурации из файла
 	if configFromFile != nil {
+		log.Infoln("configFromEnv:", configFromEnv) 
+		log.Infoln("configFromFile:", configFromFile) 
 		// Обновляем только те значения, которые не были установлены в конфигурации из файла
 		for key, value := range configFromEnv.Defaults {
 			if _, ok := configFromFile.Defaults[key]; !ok {
