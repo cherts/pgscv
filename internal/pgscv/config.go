@@ -77,7 +77,7 @@ func NewConfig(configFilePath string) (*Config, error) {
 	for key, value := range configFromEnv.Defaults {
 		configFromFile.Defaults[key] = value
 	}
-	configFromFile.DisableCollectors = append(configFromFile.DisableCollectors, configFromEnv.DisableCollectors)
+	configFromFile.DisableCollectors = append(configFromFile.DisableCollectors, configFromEnv.DisableCollectors...)
 	if !reflect.DeepEqual(configFromEnv.CollectorsSettings, model.CollectorsSettings{}) {
 		configFromFile.CollectorsSettings = configFromEnv.CollectorsSettings
 	}
@@ -92,8 +92,7 @@ func NewConfig(configFilePath string) (*Config, error) {
 	// Устанавливаем нужные значения в поле AuthConfig
 	if configFromEnv.AuthConfig != (http.AuthConfig{}) {
 		configFromFile.AuthConfig = configFromEnv.AuthConfig
-	}
-	log.Infoln("Merged configuration:", configFromFile)
+.	}
 	return configFromFile, nil
 }
 
