@@ -39,28 +39,43 @@ type Config struct {
 
 // NewConfig creates new config based on config file or return default config if config file is not specified.
 func NewConfig(configFilePath string) (*Config, error) {
-	if configFilePath == "" {
-		return newConfigFromEnv()
+	// Получить конфигурацию из файла
+	var configFromFile *Config
+	if configFilePath != "" {
+		configRealPath, err := RealPath(configFilePath)
+		if err != nil {
+			return nil, err
+		}
+		log.Infoln("read configuration from ", configRealPath)
+		content, err := os.ReadFile(filepath.Clean(configRealPath))
+		if err != nil {
+			return nil, err
+		}
+		configFromFile = &Config{Defaults: map[string]string{}}
+		err = yaml.Unmarshal(content, configFromFile)
+		if err != nil {
+			return nil, err
+		}
 	}
 
-	configRealPath, err := RealPath(configFilePath)
+	// Получить конфигурацию из переменных окружения
+	configFromEnv, err := newConfigFromEnv()
 	if err != nil {
 		return nil, err
 	}
-	log.Infoln("read configuration from ", configRealPath)
-	content, err := os.ReadFile(filepath.Clean(configRealPath))
-	if err != nil {
-		return nil, err
+
+	// Применить значения из переменных окружения к конфигурации из файла
+	if configFromFile != nil {
+		// Обновляем только те значения, которые не были установлены в конфигурации из файла
+		for key, value := range configFromEnv.Defaults {
+			if _, ok := configFromFile.Defaults[key]; !ok {
+				configFromFile.Defaults[key] = value
+			}
+		}
+		return configFromFile, nil
 	}
 
-	config := &Config{Defaults: map[string]string{}}
-
-	err = yaml.Unmarshal(content, config)
-	if err != nil {
-		return nil, err
-	}
-
-	return config, nil
+	return configFromEnv, nil
 }
 
 // Read real config file path
