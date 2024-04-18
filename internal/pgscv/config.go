@@ -72,9 +72,10 @@ func NewConfig(configFilePath string) (*Config, error) {
 				configFromFile.Defaults[key] = value
 			}
 		}
+		// Todo Remove after debug
+		log.Infoln("Merged configuration:", configFromFile) 
 		return configFromFile, nil
 	}
-
 	return configFromEnv, nil
 }
 
