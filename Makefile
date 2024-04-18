@@ -1,4 +1,4 @@
-DOCKER_ACCOUNT = cherts
+DOCKER_ACCOUNT = sstolbov
 APPNAME = pgscv
 APPOS = linux
 #APPOS = ${GOOS}
