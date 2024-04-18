@@ -64,32 +64,40 @@ func NewConfig(configFilePath string) (*Config, error) {
 		return nil, err
 	}
 
-    // Объединить значения из configFromFile и configFromEnv
-    if configFromFile != nil {
-        // Объединяем значения
-        mergedValues := mergeValues(configFromFile.Values, configFromEnv.Values)
-        // Создаем новую структуру Config для объединенных значений
-        mergedConfig := &Config{Values: mergedValues}
-		// Todo remove
-        log.Infoln("Merged configuration:", mergedConfig)
-        return mergedConfig, nil
-    }
-
-    return configFromEnv, nil
+   // Объединить значения из configFromFile и configFromEnv
+   if configFromFile != nil {
+	// Обновляем значения из configFromEnv в configFromFile
+	configFromFile.NoTrackMode = configFromEnv.NoTrackMode
+	if configFromEnv.ListenAddress != "" {
+		configFromFile.ListenAddress = configFromEnv.ListenAddress
+	}
+	if !reflect.DeepEqual(configFromEnv.ServicesConnsSettings, service.ConnsSettings{}) {
+		configFromFile.ServicesConnsSettings = configFromEnv.ServicesConnsSettings
+	}
+	for key, value := range configFromEnv.Defaults {
+		configFromFile.Defaults[key] = value
+	}
+	configFromFile.DisableCollectors = append(configFromFile.DisableCollectors, configFromEnv.DisableCollectors)
+	if !reflect.DeepEqual(configFromEnv.CollectorsSettings, model.CollectorsSettings{}) {
+		configFromFile.CollectorsSettings = configFromEnv.CollectorsSettings
+	}
+	// Устанавливаем нужные значения в поле Databases
+	if configFromFile.Databases == "" {
+		configFromFile.Databases = configFromEnv.Databases
+	}
+	// Устанавливаем нужные значения в поле DatabasesRE
+	if configFromEnv.DatabasesRE != nil {
+		configFromFile.DatabasesRE = configFromEnv.DatabasesRE
+	}
+	// Устанавливаем нужные значения в поле AuthConfig
+	if configFromEnv.AuthConfig != (http.AuthConfig{}) {
+		configFromFile.AuthConfig = configFromEnv.AuthConfig
+	}
+	log.Infoln("Merged configuration:", configFromFile)
+	return configFromFile, nil
 }
 
-// mergeValues объединяет значения из двух мапов.
-func mergeValues(map1, map2 map[string]string) map[string]string {
-    merged := make(map[string]string)
-    // Копируем значения из первого мапа
-    for k, v := range map1 {
-        merged[k] = v
-    }
-    // Добавляем или перезаписываем значения из второго мапа
-    for k, v := range map2 {
-        merged[k] = v
-    }
-    return merged
+return configFromEnv, nil
 }
 
 // Read real config file path
