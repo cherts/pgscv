@@ -98,7 +98,7 @@ return configFromEnv, nil
 
 func mergeConnsSettings(dest, src service.ConnsSettings) service.ConnsSettings {
     if dest == nil {
-        dest = make(service.ConnsSettings)
+        return src
     }
     for key, value := range src {
         dest[key] = value
@@ -108,7 +108,7 @@ func mergeConnsSettings(dest, src service.ConnsSettings) service.ConnsSettings {
 
 func mergeCollectorsSettings(dest, src model.CollectorsSettings) model.CollectorsSettings {
     if dest == nil {
-        dest = make(model.CollectorsSettings)
+        return src
     }
     for key, value := range src {
         dest[key] = value
