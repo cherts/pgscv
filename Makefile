@@ -55,6 +55,11 @@ docker-build: ## Build docker image
 	docker image prune --force --filter label=stage=intermediate
 	docker tag ${DOCKER_ACCOUNT}/${APPNAME}:${TAG} ${DOCKER_ACCOUNT}/${APPNAME}:latest
 
+docker-build-branch: ## Build docker image
+	docker build -t ${DOCKER_ACCOUNT}/${APPNAME}:${BRANCH} .
+	docker image prune --force --filter label=stage=intermediate
+	docker push ${DOCKER_ACCOUNT}/${APPNAME}:${BRANCH}
+
 docker-push: ## Push docker image
 	docker push ${DOCKER_ACCOUNT}/${APPNAME}:${TAG}
 	docker push ${DOCKER_ACCOUNT}/${APPNAME}:latest
