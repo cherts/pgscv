@@ -64,21 +64,32 @@ func NewConfig(configFilePath string) (*Config, error) {
 		return nil, err
 	}
 
-	// Применить значения из переменных окружения к конфигурации из файла
-	if configFromFile != nil {
-		log.Infoln("configFromEnv:", configFromEnv) 
-		log.Infoln("configFromFile:", configFromFile) 
-		// Обновляем только те значения, которые не были установлены в конфигурации из файла
-		for key, value := range configFromEnv.Defaults {
-			if _, ok := configFromFile.Defaults[key]; !ok {
-				configFromFile.Defaults[key] = value
-			}
-		}
-		// Todo Remove after debug
-		log.Infoln("Merged configuration:", configFromFile) 
-		return configFromFile, nil
-	}
-	return configFromEnv, nil
+    // Объединить значения из configFromFile и configFromEnv
+    if configFromFile != nil {
+        // Объединяем значения
+        mergedValues := mergeValues(configFromFile.Values, configFromEnv.Values)
+        // Создаем новую структуру Config для объединенных значений
+        mergedConfig := &Config{Values: mergedValues}
+		// Todo remove
+        log.Infoln("Merged configuration:", mergedConfig)
+        return mergedConfig, nil
+    }
+
+    return configFromEnv, nil
+}
+
+// mergeValues объединяет значения из двух мапов.
+func mergeValues(map1, map2 map[string]string) map[string]string {
+    merged := make(map[string]string)
+    // Копируем значения из первого мапа
+    for k, v := range map1 {
+        merged[k] = v
+    }
+    // Добавляем или перезаписываем значения из второго мапа
+    for k, v := range map2 {
+        merged[k] = v
+    }
+    return merged
 }
 
 // Read real config file path
