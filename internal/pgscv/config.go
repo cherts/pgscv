@@ -92,7 +92,7 @@ func NewConfig(configFilePath string) (*Config, error) {
 	// Устанавливаем нужные значения в поле AuthConfig
 	if configFromEnv.AuthConfig != (http.AuthConfig{}) {
 		configFromFile.AuthConfig = configFromEnv.AuthConfig
-.	}
+	}
 	return configFromFile, nil
 }
 
