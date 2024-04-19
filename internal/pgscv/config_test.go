@@ -134,9 +134,8 @@ func TestNewConfigWithEnvs(t *testing.T) {
 				"DATABASE_DSN_demo_master": "example_dsn_2:5433",
 			},
 			want: &Config{
-				ListenAddress:     "127.0.0.1:8080",
-				Defaults:          map[string]string{},
-				DisableCollectors: []string{"example/1", "example/2", "example/3"},
+				ListenAddress: "127.0.0.1:8080",
+				Defaults:      map[string]string{},
 				ServicesConnsSettings: service.ConnsSettings{
 					"postgres:5432":  {ServiceType: model.ServiceTypePostgresql, Conninfo: "host=127.0.0.1 port=5432 dbname=pgscv_fixtures user=pgscv"},
 					"pgbouncer:6432": {ServiceType: model.ServiceTypePgbouncer, Conninfo: "host=127.0.0.1 port=6432 dbname=pgbouncer user=pgscv password=pgscv"},
@@ -159,7 +158,6 @@ func TestNewConfigWithEnvs(t *testing.T) {
 				assert.Error(t, err)
 			}
 		})
-		// Clean envs
 		for k := range tc.envvars {
 			assert.NoError(t, os.Unsetenv(k))
 		}
