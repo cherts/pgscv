@@ -615,7 +615,6 @@ func Test_newConfigFromEnv(t *testing.T) {
 		for k := range tc.envvars {
 			assert.NoError(t, os.Unsetenv(k))
 		}
-		defer os.Clearenv()
 	}
 }
 
