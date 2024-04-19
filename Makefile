@@ -1,13 +1,29 @@
-DOCKER_ACCOUNT = sstolbov
+DOCKER_ACCOUNT = cherts
 APPNAME = pgscv
 APPOS = linux
-#APPOS = ${GOOS}
+APPOS = ${GOOS}
 
-TAG=$(shell git tag -l --sort=-creatordate | head -n 1)
-COMMIT=$(shell git rev-parse --short HEAD)
+TAG_COMMIT := $(shell git rev-list --abbrev-commit --tags --max-count=1)
+TAG := $(shell git describe --abbrev=0 --tags ${TAG_COMMIT} 2>/dev/null || true)
+COMMIT := $(shell git rev-parse --short HEAD)
+DATE := $(shell git log -1 --format=%cd --date=format:"%Y%m%d")
+ifeq ($(TAG),)
+	VERSION := 0.8
+else
+	VERSION := $(TAG:v%=%)
+endif
+ifneq ($(COMMIT), $(TAG_COMMIT))
+    VERSION := $(VERSION)-next-$(DATE)
+endif
+ifeq ($(VERSION),)
+    VERSION := $(COMMIT)-$(DATA)
+endif
+ifneq ($(shell git status --porcelain),)
+    VERSION := $(VERSION)-dirty
+endif
 BRANCH=$(shell git rev-parse --abbrev-ref HEAD)
 
-LDFLAGS = -a -installsuffix cgo -ldflags "-X main.appName=${APPNAME} -X main.gitTag=${TAG} -X main.gitCommit=${COMMIT} -X main.gitBranch=${BRANCH}"
+LDFLAGS = -a -installsuffix cgo -ldflags "-X main.appName=${APPNAME} -X main.gitTag=${VERSION} -X main.gitCommit=${COMMIT} -X main.gitBranch=${BRANCH}"
 
 .PHONY: help \
 		clean lint test race \
@@ -58,7 +74,7 @@ docker-build: ## Build docker image
 docker-build-branch: ## Build docker image from branch for test purposes
 	docker build -t ${DOCKER_ACCOUNT}/${APPNAME}:${BRANCH} .
 	docker image prune --force --filter label=stage=intermediate
-	docker push ${DOCKER_ACCOUNT}/${APPNAME}:${BRANCH}
+	#docker push ${DOCKER_ACCOUNT}/${APPNAME}:${BRANCH}
 
 docker-push: ## Push docker image
 	docker push ${DOCKER_ACCOUNT}/${APPNAME}:${TAG}
