@@ -64,48 +64,64 @@ func NewConfig(configFilePath string) (*Config, error) {
 		return nil, err
 	}
 
-   // Объединить значения из configFromFile и configFromEnv
-   if configFromFile != nil {
-	// Обновляем значения из configFromEnv в configFromFile
-	configFromFile.NoTrackMode = configFromEnv.NoTrackMode
-	if configFromEnv.ListenAddress != "" {
-		configFromFile.ListenAddress = configFromEnv.ListenAddress
-	}
-	if len(configFromEnv.ServicesConnsSettings) > 0 {
-		configFromFile.ServicesConnsSettings = configFromEnv.ServicesConnsSettings
-	}
-	for key, value := range configFromEnv.Defaults {
-		configFromFile.Defaults[key] = value
-	}
-	configFromFile.DisableCollectors = append(configFromFile.DisableCollectors, configFromEnv.DisableCollectors...)
-	configFromFile.CollectorsSettings = mergeCollectorsSettings(configFromFile.CollectorsSettings, configFromEnv.CollectorsSettings)
+	// Объединить значения из configFromFile и configFromEnv
+	if configFromFile != nil {
+		// Обновляем значения из configFromEnv в configFromFile
+		if configFromEnv.NoTrackMode {
+			configFromFile.NoTrackMode = configFromEnv.NoTrackMode
+		}
+		if configFromEnv.ListenAddress != "" {
+			configFromFile.ListenAddress = configFromEnv.ListenAddress
+		}
+		if len(configFromEnv.ServicesConnsSettings) > 0 {
+			configFromFile.ServicesConnsSettings = mergeServicesConnsSettings(configFromFile.ServicesConnsSettings, configFromEnv.ServicesConnsSettings)
+		}
+		for key, value := range configFromEnv.Defaults {
+			configFromFile.Defaults[key] = value
+		}
+		configFromFile.DisableCollectors = append(configFromFile.DisableCollectors, configFromEnv.DisableCollectors...)
+		configFromFile.CollectorsSettings = mergeCollectorsSettings(configFromFile.CollectorsSettings, configFromEnv.CollectorsSettings)
 
-	// Устанавливаем нужные значения в поле Databases
-	if configFromFile.Databases == "" {
-		configFromFile.Databases = configFromEnv.Databases
+		// Объединяем значения полей Databases
+		if configFromEnv.Databases != "" {
+			// Проверяем, что значение в configFromFile уже не содержит значение из configFromEnv
+			if !strings.Contains(configFromFile.Databases, configFromEnv.Databases) {
+				configFromFile.Databases += configFromEnv.Databases
+			}
+		}
+		// Устанавливаем нужные значения в поле DatabasesRE
+		if configFromEnv.DatabasesRE != nil {
+			configFromFile.DatabasesRE = configFromEnv.DatabasesRE
+		}
+		// Устанавливаем нужные значения в поле AuthConfig
+		if configFromEnv.AuthConfig != (http.AuthConfig{}) {
+			configFromFile.AuthConfig = configFromEnv.AuthConfig
+		}
+		return configFromFile, nil
 	}
-	// Устанавливаем нужные значения в поле DatabasesRE
-	if configFromEnv.DatabasesRE != nil {
-		configFromFile.DatabasesRE = configFromEnv.DatabasesRE
-	}
-	// Устанавливаем нужные значения в поле AuthConfig
-	if configFromEnv.AuthConfig != (http.AuthConfig{}) {
-		configFromFile.AuthConfig = configFromEnv.AuthConfig
-	}
-	return configFromFile, nil
-}
 
-return configFromEnv, nil
+	return configFromEnv, nil
 }
 
 func mergeCollectorsSettings(dest, src model.CollectorsSettings) model.CollectorsSettings {
-    if dest == nil {
-        return src
-    }
-    for key, value := range src {
-        dest[key] = value
-    }
-    return dest
+	if dest == nil {
+		return src
+	}
+	for key, value := range src {
+		dest[key] = value
+	}
+	return dest
+}
+
+func mergeServicesConnsSettings(dest, src service.ConnsSettings) service.ConnsSettings {
+	if dest == nil {
+		return src
+	}
+	for key, value := range src {
+		dest[key] = value
+	}
+
+	return dest
 }
 
 // Read real config file path

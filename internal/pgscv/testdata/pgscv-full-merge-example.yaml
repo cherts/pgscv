@@ -1,0 +1,45 @@
+listen_address: "127.0.0.1:8888"
+services:
+  "postgres":
+    service_type: "postgres"
+    conninfo: "host=127.0.0.1 port=5432 dbname=pgscv_fixtures user=pgscv"
+defaults:
+  postgres_username: "testuser"
+  postgres_password: "testpassword"
+  pgbouncer_username: "testuser2"
+  pgbouncer_password: "testapassword2"
+disable_collectors:
+  - fisrt-disabled-collector
+  - second-disabled-collector
+collectors:
+  postgres/custom:
+    echo: "example"
+    subsystems:
+      activity:
+        query: "select datname as database,xact_commit,xact_rollback,blks_read as read,blks_write as write from pg_stat_database"
+        metrics:
+          - name: xact_commit_total
+            usage: COUNTER
+            labels:
+              - database
+            value: xact_commit
+            description: "description"
+          - name: "blocks_total"
+            usage: COUNTER
+            labels:
+              - database
+            labeled_values:
+              access: [ "read", "write" ]
+            description: "description"
+      bgwriter:
+        query: "select maxwritten_clean from pg_stat_bgwriter"
+        metrics:
+          - name: "maxwritten_clean_total"
+            usage: COUNTER
+            value: maxwritten_clean
+            description: "description"
+authentication:
+  username: user
+  password: supersecret
+  keyfile: example.key
+  certfile: example.cert

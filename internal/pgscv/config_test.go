@@ -11,6 +11,162 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func TestMergsConfigWithEnvs(t *testing.T) {
+	var testcases = []struct {
+		name    string
+		valid   bool
+		file    string
+		envvars map[string]string
+		want    *Config
+	}{
+		{
+			valid: true, // Completely valid variables
+			file:  "testdata/pgscv-full-merge-example.yaml",
+			envvars: map[string]string{
+				"PGSCV_LISTEN_ADDRESS":     "127.0.0.1:12345",
+				"PGSCV_NO_TRACK_MODE":      "yes",
+				"PGSCV_DATABASES":          "exampledb-envs",
+				"PGSCV_DISABLE_COLLECTORS": "example/1,example/2, example/3",
+				"POSTGRES_DSN_EXAMPLE1":    "postgres://pgscv1:password1@example_dsn1:5432",
+				"PATRONI_URL":              "example_url",
+				"PATRONI_URL_EXAMPLE3":     "postgres://pgscv3:password3@example_dsn3:5432",
+				"PGSCV_AUTH_USERNAME":      "user",
+				"PGSCV_AUTH_PASSWORD":      "pass",
+				"PGSCV_AUTH_KEYFILE":       "keyfile1.key",
+				"PGSCV_AUTH_CERTFILE":      "certfile1.cert",
+			},
+			want: &Config{
+				ListenAddress:     "127.0.0.1:12345",
+				NoTrackMode:       true,
+				Databases:         "exampledb-envs",
+				DisableCollectors: []string{"fisrt-disabled-collector", "second-disabled-collector", "example/1", "example/2", "example/3"},
+				ServicesConnsSettings: map[string]service.ConnSetting{
+					"EXAMPLE1": {ServiceType: "postgres", Conninfo: "postgres://pgscv1:password1@example_dsn1:5432", BaseURL: ""},
+					"EXAMPLE3": {ServiceType: "patroni", Conninfo: "", BaseURL: "postgres://pgscv3:password3@example_dsn3:5432"},
+					"patroni":  {ServiceType: "patroni", Conninfo: "", BaseURL: "example_url"},
+					"postgres": {ServiceType: model.ServiceTypePostgresql, Conninfo: "host=127.0.0.1 port=5432 dbname=pgscv_fixtures user=pgscv", BaseURL: ""},
+				},
+				CollectorsSettings: model.CollectorsSettings{
+					"postgres/custom": {
+						Subsystems: map[string]model.MetricsSubsystem{
+							"activity": {
+								Query: "select datname as database,xact_commit,xact_rollback,blks_read as read,blks_write as write from pg_stat_database",
+								Metrics: model.Metrics{
+									{ShortName: "xact_commit_total", Usage: "COUNTER", Labels: []string{"database"}, Value: "xact_commit", Description: "description"},
+									{ShortName: "blocks_total", Usage: "COUNTER", Labels: []string{"database"},
+										LabeledValues: map[string][]string{"access": {"read", "write"}}, Description: "description",
+									},
+								},
+							},
+							"bgwriter": {
+								Query: "select maxwritten_clean from pg_stat_bgwriter",
+								Metrics: model.Metrics{
+									{ShortName: "maxwritten_clean_total", Usage: "COUNTER", Value: "maxwritten_clean", Description: "description"},
+								},
+							},
+						},
+					},
+				},
+				AuthConfig: http.AuthConfig{
+					Username: "user",
+					Password: "pass",
+					Keyfile:  "keyfile1.key",
+					Certfile: "certfile1.cert",
+				},
+				Defaults: map[string]string{
+					"postgres_username": "testuser", "postgres_password": "testpassword",
+					"pgbouncer_username": "testuser2", "pgbouncer_password": "testapassword2",
+				},
+			},
+		},
+	}
+	for _, tc := range testcases {
+		for k, v := range tc.envvars {
+			assert.NoError(t, os.Setenv(k, v))
+		}
+
+		t.Run(tc.name, func(t *testing.T) {
+			got, err := NewConfig(tc.file)
+			if tc.valid {
+				assert.NoError(t, err)
+				assert.Equal(t, tc.want, got)
+			} else {
+				assert.Error(t, err)
+			}
+		})
+	}
+}
+
+func TestNewConfigWithEnvs(t *testing.T) {
+	var testcases = []struct {
+		name    string
+		valid   bool
+		file    string
+		envvars map[string]string
+		want    *Config
+	}{
+		{
+			valid: true, // Completely valid variables
+			file:  "testdata/pgscv-disable-collectors-example.yaml",
+			envvars: map[string]string{
+				"PGSCV_DISABLE_COLLECTORS": "example/1,example/2, example/3",
+			},
+			want: &Config{
+				ListenAddress:     "127.0.0.1:12345",
+				NoTrackMode:       false,
+				Databases:         "",
+				DisableCollectors: []string{"system", "another-disabled-collector", "example/1", "example/2", "example/3"},
+				ServicesConnsSettings: map[string]service.ConnSetting{
+					"postgres":       {ServiceType: model.ServiceTypePostgresql, Conninfo: "host=127.0.0.1 port=5432 dbname=pgscv_fixtures user=pgscv", BaseURL: ""},
+					"pgbouncer:6432": {ServiceType: model.ServiceTypePgbouncer, Conninfo: "host=127.0.0.1 port=6432 dbname=pgbouncer user=pgscv password=pgscv"},
+				},
+				Defaults: map[string]string{},
+			},
+		},
+		{
+			name:  "valid: with services in envs",
+			valid: true,
+			file:  "testdata/pgscv-services-example.yaml",
+			envvars: map[string]string{
+				"DATABASE_DSN_demo_master": "example_dsn_2:5433",
+			},
+			want: &Config{
+				ListenAddress:     "127.0.0.1:8080",
+				Defaults:          map[string]string{},
+				DisableCollectors: []string{"example/1", "example/2", "example/3"},
+				ServicesConnsSettings: service.ConnsSettings{
+					"postgres:5432":  {ServiceType: model.ServiceTypePostgresql, Conninfo: "host=127.0.0.1 port=5432 dbname=pgscv_fixtures user=pgscv"},
+					"pgbouncer:6432": {ServiceType: model.ServiceTypePgbouncer, Conninfo: "host=127.0.0.1 port=6432 dbname=pgbouncer user=pgscv password=pgscv"},
+					"demo_master":    service.ConnSetting{ServiceType: "postgres", Conninfo: "example_dsn_2:5433", BaseURL: ""},
+				},
+			},
+		},
+	}
+	for _, tc := range testcases {
+		for k, v := range tc.envvars {
+			assert.NoError(t, os.Setenv(k, v))
+		}
+
+		t.Run(tc.name, func(t *testing.T) {
+			got, err := NewConfig(tc.file)
+			if tc.valid {
+				assert.NoError(t, err)
+				assert.Equal(t, tc.want, got)
+			} else {
+				assert.Error(t, err)
+			}
+		})
+	}
+
+	// try to open unknown file
+	_, err := NewConfig("testdata/nonexistent.yaml")
+	assert.Error(t, err)
+
+	// try to open invalid file
+	_, err = NewConfig("testdata/invalid.txt")
+	assert.Error(t, err)
+}
+
 func TestNewConfig(t *testing.T) {
 	var testcases = []struct {
 		name  string
