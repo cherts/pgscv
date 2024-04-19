@@ -10,6 +10,7 @@ DATE := $(shell git log -1 --format=%cd --date=format:"%Y%m%d")
 ifeq ($(TAG),)
 	VERSION := 0.8
 else
+	#VERSION := $(TAG:v%=%)
 	VERSION := $(TAG)
 endif
 ifneq ($(COMMIT), $(TAG_COMMIT))
