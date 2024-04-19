@@ -94,6 +94,7 @@ func TestMergsConfigWithEnvs(t *testing.T) {
 				assert.Error(t, err)
 			}
 		})
+		defer os.Clearenv()
 	}
 }
 
@@ -156,6 +157,7 @@ func TestNewConfigWithEnvs(t *testing.T) {
 				assert.Error(t, err)
 			}
 		})
+		defer os.Clearenv()
 	}
 
 	// try to open unknown file
@@ -613,6 +615,7 @@ func Test_newConfigFromEnv(t *testing.T) {
 		for k := range tc.envvars {
 			assert.NoError(t, os.Unsetenv(k))
 		}
+		defer os.Clearenv()
 	}
 }
 
