@@ -121,7 +121,7 @@ func newPostgresServiceConfig(connStr string) (postgresServiceConfig, error) {
 	config.serverVersionNum = version
 
 	// Get Postgres data directory
-	err = conn.Conn().QueryRow(context.Background(), "SELECT setting FROM pg_settings WHERE name = 'data_directory'").Scan(&setting)
+	err = conn.Conn().QueryRow(context.Background(), "SELECT COALESCE((SELECT setting FROM pg_settings WHERE name = 'data_directory'), 'empty') AS data_directory").Scan(&setting)
 	if err != nil {
 		return config, fmt.Errorf("failed to get data_directory setting from pg_settings, %s, please check user grants", err)
 	}
