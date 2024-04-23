@@ -39,28 +39,88 @@ type Config struct {
 
 // NewConfig creates new config based on config file or return default config if config file is not specified.
 func NewConfig(configFilePath string) (*Config, error) {
-	if configFilePath == "" {
-		return newConfigFromEnv()
+	// Get configuration from file
+	var configFromFile *Config
+	if configFilePath != "" {
+		configRealPath, err := RealPath(configFilePath)
+		if err != nil {
+			return nil, err
+		}
+		log.Infoln("read configuration from ", configRealPath)
+		content, err := os.ReadFile(filepath.Clean(configRealPath))
+		if err != nil {
+			return nil, err
+		}
+		configFromFile = &Config{Defaults: map[string]string{}}
+		err = yaml.Unmarshal(content, configFromFile)
+		if err != nil {
+			return nil, err
+		}
 	}
 
-	configRealPath, err := RealPath(configFilePath)
+	// Get configuration from environment variables
+	configFromEnv, err := newConfigFromEnv()
 	if err != nil {
 		return nil, err
 	}
-	log.Infoln("read configuration from ", configRealPath)
-	content, err := os.ReadFile(filepath.Clean(configRealPath))
-	if err != nil {
-		return nil, err
+
+	// Merge values from configFromFile and configFromEnv
+	if configFromFile != nil {
+		if configFromEnv.NoTrackMode {
+			configFromFile.NoTrackMode = configFromEnv.NoTrackMode
+		}
+		if configFromEnv.ListenAddress != "" {
+			configFromFile.ListenAddress = configFromEnv.ListenAddress
+		}
+		if len(configFromEnv.ServicesConnsSettings) > 0 {
+			configFromFile.ServicesConnsSettings = mergeServicesConnsSettings(configFromFile.ServicesConnsSettings, configFromEnv.ServicesConnsSettings)
+		}
+		for key, value := range configFromEnv.Defaults {
+			configFromFile.Defaults[key] = value
+		}
+		configFromFile.DisableCollectors = append(configFromFile.DisableCollectors, configFromEnv.DisableCollectors...)
+		configFromFile.CollectorsSettings = mergeCollectorsSettings(configFromFile.CollectorsSettings, configFromEnv.CollectorsSettings)
+
+		if configFromEnv.Databases != "" {
+			// If set environment variable PGSCV_DATABASES and 'databases' settings from file is empty, then use PGSCV_DATABASES
+			if configFromFile.Databases == "" {
+				configFromFile.Databases = configFromEnv.Databases
+			} else {
+				// If set environment variable PGSCV_DATABASES and 'databases' settings from file is not empty, then use 'databases' settings from file
+				log.Debug("PGSCV_DATABASES environment setting was ignored, the settings from configuration file were used.")
+			}
+		}
+		// Set AuthConfig settings
+		if configFromEnv.AuthConfig != (http.AuthConfig{}) {
+			configFromFile.AuthConfig = configFromEnv.AuthConfig
+		}
+		return configFromFile, nil
 	}
 
-	config := &Config{Defaults: map[string]string{}}
+	return configFromEnv, nil
+}
 
-	err = yaml.Unmarshal(content, config)
-	if err != nil {
-		return nil, err
+// Merge CollectorsSettings
+func mergeCollectorsSettings(dest, src model.CollectorsSettings) model.CollectorsSettings {
+	if dest == nil {
+		return src
+	}
+	for key, value := range src {
+		dest[key] = value
+	}
+	return dest
+}
+
+// Merge services ConnsSettings
+func mergeServicesConnsSettings(dest, src service.ConnsSettings) service.ConnsSettings {
+	if dest == nil {
+		return src
+	}
+	for key, value := range src {
+		dest[key] = value
 	}
 
-	return config, nil
+	return dest
 }
 
 // Read real config file path

@@ -1,0 +1,11 @@
+disable_collectors:
+  - system
+  - another-disabled-collector
+listen_address: "127.0.0.1:12345"
+services:
+  "postgres":
+    service_type: "postgres"
+    conninfo: "host=127.0.0.1 port=5432 dbname=pgscv_fixtures user=pgscv"
+  "pgbouncer:6432":
+    service_type: "pgbouncer"
+    conninfo: "host=127.0.0.1 port=6432 dbname=pgbouncer user=pgscv password=pgscv"
