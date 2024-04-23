@@ -39,7 +39,7 @@ type Config struct {
 
 // NewConfig creates new config based on config file or return default config if config file is not specified.
 func NewConfig(configFilePath string) (*Config, error) {
-	// Получить конфигурацию из файла
+	// Get configuration from file
 	var configFromFile *Config
 	if configFilePath != "" {
 		configRealPath, err := RealPath(configFilePath)
@@ -58,15 +58,14 @@ func NewConfig(configFilePath string) (*Config, error) {
 		}
 	}
 
-	// Получить конфигурацию из переменных окружения
+	// Get configuration from environment variables
 	configFromEnv, err := newConfigFromEnv()
 	if err != nil {
 		return nil, err
 	}
 
-	// Объединить значения из configFromFile и configFromEnv
+	// Merge values from configFromFile and configFromEnv
 	if configFromFile != nil {
-		// Обновляем значения из configFromEnv в configFromFile
 		if configFromEnv.NoTrackMode {
 			configFromFile.NoTrackMode = configFromEnv.NoTrackMode
 		}
@@ -82,18 +81,16 @@ func NewConfig(configFilePath string) (*Config, error) {
 		configFromFile.DisableCollectors = append(configFromFile.DisableCollectors, configFromEnv.DisableCollectors...)
 		configFromFile.CollectorsSettings = mergeCollectorsSettings(configFromFile.CollectorsSettings, configFromEnv.CollectorsSettings)
 
-		// Объединяем значения полей Databases
 		if configFromEnv.Databases != "" {
-			// Проверяем, что значение в configFromFile уже не содержит значение из configFromEnv
-			if !strings.Contains(configFromFile.Databases, configFromEnv.Databases) {
-				configFromFile.Databases += configFromEnv.Databases
+			// If set environment variable PGSCV_DATABASES and 'databases' settings from file is empty, then use PGSCV_DATABASES
+			if configFromFile.Databases == "" {
+				configFromFile.Databases = configFromEnv.Databases
+			} else {
+				// If set environment variable PGSCV_DATABASES and 'databases' settings from file is not empty, then use 'databases' settings from file
+				log.Debug("PGSCV_DATABASES environment setting was ignored, the settings from configuration file were used.")
 			}
 		}
-		// Устанавливаем нужные значения в поле DatabasesRE
-		if configFromEnv.DatabasesRE != nil {
-			configFromFile.DatabasesRE = configFromEnv.DatabasesRE
-		}
-		// Устанавливаем нужные значения в поле AuthConfig
+		// Set AuthConfig settings
 		if configFromEnv.AuthConfig != (http.AuthConfig{}) {
 			configFromFile.AuthConfig = configFromEnv.AuthConfig
 		}
@@ -103,6 +100,7 @@ func NewConfig(configFilePath string) (*Config, error) {
 	return configFromEnv, nil
 }
 
+// Merge CollectorsSettings
 func mergeCollectorsSettings(dest, src model.CollectorsSettings) model.CollectorsSettings {
 	if dest == nil {
 		return src
@@ -113,6 +111,7 @@ func mergeCollectorsSettings(dest, src model.CollectorsSettings) model.Collector
 	return dest
 }
 
+// Merge services ConnsSettings
 func mergeServicesConnsSettings(dest, src service.ConnsSettings) service.ConnsSettings {
 	if dest == nil {
 		return src
