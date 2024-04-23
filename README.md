@@ -1,7 +1,7 @@
 # pgSCV - PostgreSQL ecosystem metrics collector
 
-[![Go](https://github.com/cherts/pgscv/workflows/Release/badge.svg?branch=master)](https://github.com/cherts/pgscv/actions)
-![GitHub release](https://img.shields.io/github/v/release/cherts/pgscv)
+[![Go](https://github.com/CHERTS/pgscv/actions/workflows/release.yml/badge.svg)](https://github.com/CHERTS/pgscv/actions)
+![GitHub Release](https://img.shields.io/github/v/release/CHERTS/pgscv)
 ![GitHub downloads total)](https://img.shields.io/github/downloads/cherts/pgscv/total)
 ![GitHub Downloads (all assets, latest release)](https://img.shields.io/github/downloads/cherts/pgscv/latest/total)
 [![Docker pulls)](https://img.shields.io/docker/pulls/cherts/pgscv.svg)](https://hub.docker.com/r/cherts/pgscv)
