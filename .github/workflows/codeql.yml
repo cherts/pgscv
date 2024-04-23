@@ -13,7 +13,7 @@ jobs:
       actions: read
       contents: read
       security-events: write
-	  packages: read
+      packages: read
     strategy:
       fail-fast: false
       matrix:
