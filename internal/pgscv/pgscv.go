@@ -14,14 +14,15 @@ func Start(ctx context.Context, config *Config) error {
 	log.Debug("start application")
 
 	serviceRepo := service.NewRepository()
-
 	serviceConfig := service.Config{
-		NoTrackMode:        config.NoTrackMode,
-		ConnDefaults:       config.Defaults,
-		ConnsSettings:      config.ServicesConnsSettings,
-		DatabasesRE:        config.DatabasesRE,
-		DisabledCollectors: config.DisableCollectors,
-		CollectorsSettings: config.CollectorsSettings,
+		NoTrackMode:            config.NoTrackMode,
+		ConnDefaults:           config.Defaults,
+		ConnsSettings:          config.ServicesConnsSettings,
+		DatabasesRE:            config.DatabasesRE,
+		DisabledCollectors:     config.DisableCollectors,
+		CollectorsSettings:     config.CollectorsSettings,
+		MemProfile:             config.MemProfile,
+		LogCollectorStatistics: config.LogCollectorStatistics,
 	}
 
 	if len(config.ServicesConnsSettings) == 0 {

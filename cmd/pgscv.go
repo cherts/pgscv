@@ -8,6 +8,7 @@ import (
 	"gopkg.in/alecthomas/kingpin.v2"
 	"os"
 	"os/signal"
+	"runtime/pprof"
 	"syscall"
 )
 
@@ -36,6 +37,20 @@ func main() {
 	if err != nil {
 		log.Errorln("create config failed: ", err)
 		os.Exit(1)
+	}
+
+	if config.CpuProfile != "" {
+		f, err := os.Create(config.CpuProfile)
+		if err != nil {
+			log.Errorln(err)
+			os.Exit(1)
+		}
+		err = pprof.StartCPUProfile(f)
+		if err != nil {
+			log.Errorln(err)
+			os.Exit(1)
+		}
+		defer pprof.StopCPUProfile()
 	}
 
 	if err := config.Validate(); err != nil {

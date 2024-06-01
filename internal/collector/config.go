@@ -31,6 +31,10 @@ type Config struct {
 	DatabasesRE *regexp.Regexp
 	// Settings defines collectors settings propagated from main YAML configuration.
 	Settings model.CollectorsSettings
+	// path to store heap profile
+	MemProfile string
+	// logging: collecting duration, mem allocation
+	LogCollectorStatistics bool
 }
 
 // postgresServiceConfig defines Postgres-specific stuff required during collecting Postgres metrics.

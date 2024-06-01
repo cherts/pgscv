@@ -1,7 +1,12 @@
 package collector
 
 import (
+	"fmt"
+	"os"
+	"runtime"
+	"runtime/pprof"
 	"sync"
+	"time"
 
 	"github.com/cherts/pgscv/internal/filter"
 	"github.com/cherts/pgscv/internal/log"
@@ -201,13 +206,37 @@ func (n PgscvCollector) Collect(out chan<- prometheus.Metric) {
 	pipelineIn := make(chan prometheus.Metric)
 
 	// Run collectors.
-	wgCollector.Add(len(n.Collectors))
-	for name, c := range n.Collectors {
-		go func(name string, c Collector) {
+	wgCollector.Add(1)
+	go func(n PgscvCollector) {
+		defer wgCollector.Done()
+		for name, c := range n.Collectors {
+			var m runtime.MemStats
+			var start time.Time
+			if n.Config.LogCollectorStatistics {
+				start = time.Now()
+				runtime.ReadMemStats(&m)
+				log.Info(fmt.Sprintf("Start Collector: %s, Alloc = %v MiB", name, m.Alloc/1024/1024))
+			}
 			collect(name, n.Config, c, pipelineIn)
-			wgCollector.Done()
-		}(name, c)
-	}
+			runtime.GC()
+			if n.Config.LogCollectorStatistics {
+				runtime.ReadMemStats(&m)
+				log.Info(fmt.Sprintf("Stop Collector: %s, Alloc = %v MiB, duration = %s", name, m.Alloc/1024/1024, time.Since(start)))
+			}
+		}
+		if n.Config.MemProfile != "" {
+			f, err := os.Create(n.Config.MemProfile)
+			if err != nil {
+				log.Errorln(err)
+				os.Exit(1)
+			}
+			if pprof.WriteHeapProfile(f) != nil {
+				log.Errorln(err)
+				os.Exit(1)
+			}
+			_ = f.Close()
+		}
+	}(n)
 
 	// Run sender.
 	wgSender.Add(1)

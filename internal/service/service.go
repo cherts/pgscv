@@ -33,7 +33,6 @@ type Service struct {
 
 // Config defines service's configuration.
 type Config struct {
-	RuntimeMode   int
 	NoTrackMode   bool
 	ConnDefaults  map[string]string `yaml:"defaults"` // Defaults
 	ConnsSettings ConnsSettings
@@ -42,6 +41,10 @@ type Config struct {
 	DisabledCollectors []string
 	// CollectorsSettings defines all collector settings propagated from main YAML configuration.
 	CollectorsSettings model.CollectorsSettings
+	// path to store heap profile
+	MemProfile string
+	// logging: collecting duration, mem allocation
+	LogCollectorStatistics bool
 }
 
 // Collector is an interface for prometheus.Collector.
@@ -184,11 +187,13 @@ func (repo *Repository) setupServices(config Config) error {
 		if service.Collector == nil {
 			factories := collector.Factories{}
 			collectorConfig := collector.Config{
-				NoTrackMode: config.NoTrackMode,
-				ServiceType: service.ConnSettings.ServiceType,
-				ConnString:  service.ConnSettings.Conninfo,
-				Settings:    config.CollectorsSettings,
-				DatabasesRE: config.DatabasesRE,
+				NoTrackMode:            config.NoTrackMode,
+				ServiceType:            service.ConnSettings.ServiceType,
+				ConnString:             service.ConnSettings.Conninfo,
+				Settings:               config.CollectorsSettings,
+				DatabasesRE:            config.DatabasesRE,
+				MemProfile:             config.MemProfile,
+				LogCollectorStatistics: config.LogCollectorStatistics,
 			}
 
 			switch service.ConnSettings.ServiceType {

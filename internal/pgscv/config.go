@@ -26,15 +26,18 @@ const (
 
 // Config defines application's configuration.
 type Config struct {
-	NoTrackMode           bool                     `yaml:"no_track_mode"`      // controls tracking sensitive information (query texts, etc)
-	ListenAddress         string                   `yaml:"listen_address"`     // Network address and port where the application should listen on
-	ServicesConnsSettings service.ConnsSettings    `yaml:"services"`           // All connections settings for exact services
-	Defaults              map[string]string        `yaml:"defaults"`           // Defaults
-	DisableCollectors     []string                 `yaml:"disable_collectors"` // List of collectors which should be disabled. DEPRECATED in favor collectors settings
-	CollectorsSettings    model.CollectorsSettings `yaml:"collectors"`         // Collectors settings propagated from main YAML configuration
-	Databases             string                   `yaml:"databases"`          // Regular expression string specifies databases from which metrics should be collected
-	DatabasesRE           *regexp.Regexp           // Regular expression object compiled from Databases
-	AuthConfig            http.AuthConfig          `yaml:"authentication"` // TLS and Basic auth configuration
+	NoTrackMode            bool                     `yaml:"no_track_mode"`      // controls tracking sensitive information (query texts, etc)
+	ListenAddress          string                   `yaml:"listen_address"`     // Network address and port where the application should listen on
+	ServicesConnsSettings  service.ConnsSettings    `yaml:"services"`           // All connections settings for exact services
+	Defaults               map[string]string        `yaml:"defaults"`           // Defaults
+	DisableCollectors      []string                 `yaml:"disable_collectors"` // List of collectors which should be disabled. DEPRECATED in favor collectors settings
+	CollectorsSettings     model.CollectorsSettings `yaml:"collectors"`         // Collectors settings propagated from main YAML configuration
+	Databases              string                   `yaml:"databases"`          // Regular expression string specifies databases from which metrics should be collected
+	DatabasesRE            *regexp.Regexp           // Regular expression object compiled from Databases
+	AuthConfig             http.AuthConfig          `yaml:"authentication"`           // TLS and Basic auth configuration
+	CpuProfile             string                   `yaml:"cpu_profile"`              // path to store cpu profile
+	MemProfile             string                   `yaml:"mem_profile"`              // path to store heap profile
+	LogCollectorStatistics bool                     `yaml:"log_collector_statistics"` // logging: collecting duration, mem allocation
 }
 
 // NewConfig creates new config based on config file or return default config if config file is not specified.
@@ -93,6 +96,15 @@ func NewConfig(configFilePath string) (*Config, error) {
 		// Set AuthConfig settings
 		if configFromEnv.AuthConfig != (http.AuthConfig{}) {
 			configFromFile.AuthConfig = configFromEnv.AuthConfig
+		}
+		if configFromEnv.MemProfile != "" {
+			configFromFile.MemProfile = configFromEnv.MemProfile
+		}
+		if configFromEnv.CpuProfile != "" {
+			configFromFile.CpuProfile = configFromEnv.CpuProfile
+		}
+		if configFromEnv.LogCollectorStatistics {
+			configFromFile.LogCollectorStatistics = configFromEnv.LogCollectorStatistics
 		}
 		return configFromFile, nil
 	}
@@ -226,6 +238,15 @@ func (c *Config) Validate() error {
 	c.AuthConfig.EnableAuth = enableAuth
 	c.AuthConfig.EnableTLS = enableTLS
 
+	if c.LogCollectorStatistics {
+		log.Infoln("Enabled LogCollectorStatistics")
+	}
+	if c.MemProfile != "" {
+		log.Infoln("Enabled MemProfile")
+	}
+	if c.CpuProfile != "" {
+		log.Infoln("Enabled CpuProfile")
+	}
 	return nil
 }
 
@@ -370,6 +391,17 @@ func newConfigFromEnv() (*Config, error) {
 			config.AuthConfig.Keyfile = value
 		case "PGSCV_AUTH_CERTFILE":
 			config.AuthConfig.Certfile = value
+		case "PGSCV_CPUPROFILE_FILE":
+			config.CpuProfile = value
+		case "PGSCV_MEMPROFILE_FILE":
+			config.MemProfile = value
+		case "PGSCV_LOG_COLLECTOR":
+			switch value {
+			case "y", "yes", "Yes", "YES", "t", "true", "True", "TRUE", "1", "on":
+				config.LogCollectorStatistics = true
+			default:
+				config.LogCollectorStatistics = false
+			}
 		}
 	}
 
