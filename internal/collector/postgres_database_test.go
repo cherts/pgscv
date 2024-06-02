@@ -2,8 +2,8 @@ package collector
 
 import (
 	"database/sql"
-	"github.com/jackc/pgproto3/v2"
 	"github.com/cherts/pgscv/internal/model"
+	"github.com/jackc/pgproto3/v2"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
@@ -115,7 +115,10 @@ func Test_parsePostgresDatabasesStats(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			got := parsePostgresDatabasesStats(tc.res, []string{"database"})
+			got := make(map[string]postgresDatabaseStat)
+			for k, v := range parsePostgresDatabasesStats(tc.res, []string{"database"}) {
+				got[k] = v
+			}
 			assert.EqualValues(t, tc.want, got)
 		})
 	}

@@ -1,11 +1,12 @@
 package collector
 
 import (
-	"github.com/jackc/pgx/v4"
 	"github.com/cherts/pgscv/internal/log"
 	"github.com/cherts/pgscv/internal/model"
 	"github.com/cherts/pgscv/internal/store"
+	"github.com/jackc/pgx/v4"
 	"github.com/prometheus/client_golang/prometheus"
+	"iter"
 	"strconv"
 	"strings"
 )
@@ -213,9 +214,7 @@ func (c *postgresTablesCollector) Update(config Config, ch chan<- prometheus.Met
 			continue
 		}
 
-		stats := parsePostgresTableStats(res, c.labelNames)
-
-		for _, stat := range stats {
+		for _, stat := range parsePostgresTableStats(res, c.labelNames) {
 			// scan stats
 			ch <- c.seqscan.newConstMetric(stat.seqscan, stat.database, stat.schema, stat.table)
 			ch <- c.seqtupread.newConstMetric(stat.seqtupread, stat.database, stat.schema, stat.table)
@@ -330,117 +329,113 @@ type postgresTableStat struct {
 }
 
 // parsePostgresTableStats parses PGResult and returns structs with stats values.
-func parsePostgresTableStats(r *model.PGResult, labelNames []string) map[string]postgresTableStat {
-	log.Debug("parse postgres tables stats")
+func parsePostgresTableStats(r *model.PGResult, labelNames []string) iter.Seq2[string, postgresTableStat] {
+	return func(yield func(string, postgresTableStat) bool) {
 
-	var stats = make(map[string]postgresTableStat)
+		log.Debug("parse postgres tables stats")
 
-	var tablename string
+		var tablename string
 
-	for _, row := range r.Rows {
-		table := postgresTableStat{}
-		for i, colname := range r.Colnames {
-			switch string(colname.Name) {
-			case "database":
-				table.database = row[i].String
-			case "schema":
-				table.schema = row[i].String
-			case "table":
-				table.table = row[i].String
-			}
-		}
-
-		// create a table name consisting of trio database/schema/table
-		tablename = strings.Join([]string{table.database, table.schema, table.table}, "/")
-
-		stats[tablename] = table
-
-		for i, colname := range r.Colnames {
-			// skip columns if its value used as a label
-			if stringsContains(labelNames, string(colname.Name)) {
-				continue
+		for _, row := range r.Rows {
+			s := postgresTableStat{}
+			for i, colname := range r.Colnames {
+				switch string(colname.Name) {
+				case "database":
+					s.database = row[i].String
+				case "schema":
+					s.schema = row[i].String
+				case "table":
+					s.table = row[i].String
+				}
 			}
 
-			// Skip empty (NULL) values.
-			if !row[i].Valid {
-				continue
+			// create a table name consisting of trio database/schema/table
+			tablename = strings.Join([]string{s.database, s.schema, s.table}, "/")
+
+			for i, colname := range r.Colnames {
+				// skip columns if its value used as a label
+				if stringsContains(labelNames, string(colname.Name)) {
+					continue
+				}
+
+				// Skip empty (NULL) values.
+				if !row[i].Valid {
+					continue
+				}
+
+				// Get data value and convert it to float64 used by Prometheus.
+				v, err := strconv.ParseFloat(row[i].String, 64)
+				if err != nil {
+					log.Errorf("invalid input, parse '%s' failed: %s; skip", row[i].String, err)
+					continue
+				}
+
+				switch string(colname.Name) {
+				case "seq_scan":
+					s.seqscan = v
+				case "seq_tup_read":
+					s.seqtupread = v
+				case "idx_scan":
+					s.idxscan = v
+				case "idx_tup_fetch":
+					s.idxtupfetch = v
+				case "n_tup_ins":
+					s.inserted = v
+				case "n_tup_upd":
+					s.updated = v
+				case "n_tup_del":
+					s.deleted = v
+				case "n_tup_hot_upd":
+					s.hotUpdated = v
+				case "n_live_tup":
+					s.live = v
+				case "n_dead_tup":
+					s.dead = v
+				case "n_mod_since_analyze":
+					s.modified = v
+				case "last_vacuum_seconds":
+					s.lastvacuumAge = v
+				case "last_analyze_seconds":
+					s.lastanalyzeAge = v
+				case "last_vacuum_time":
+					s.lastvacuumTime = v
+				case "last_analyze_time":
+					s.lastanalyzeTime = v
+				case "vacuum_count":
+					s.vacuum = v
+				case "autovacuum_count":
+					s.autovacuum = v
+				case "analyze_count":
+					s.analyze = v
+				case "autoanalyze_count":
+					s.autoanalyze = v
+				case "heap_blks_read":
+					s.heapread = v
+				case "heap_blks_hit":
+					s.heaphit = v
+				case "idx_blks_read":
+					s.idxread = v
+				case "idx_blks_hit":
+					s.idxhit = v
+				case "toast_blks_read":
+					s.toastread = v
+				case "toast_blks_hit":
+					s.toasthit = v
+				case "tidx_blks_read":
+					s.tidxread = v
+				case "tidx_blks_hit":
+					s.tidxhit = v
+				case "size_bytes":
+					s.sizebytes = v
+				case "reltuples":
+					s.reltuples = v
+				default:
+					continue
+				}
 			}
-
-			// Get data value and convert it to float64 used by Prometheus.
-			v, err := strconv.ParseFloat(row[i].String, 64)
-			if err != nil {
-				log.Errorf("invalid input, parse '%s' failed: %s; skip", row[i].String, err)
-				continue
+			if !yield(tablename, s) {
+				return
 			}
-
-			s := stats[tablename]
-
-			switch string(colname.Name) {
-			case "seq_scan":
-				s.seqscan = v
-			case "seq_tup_read":
-				s.seqtupread = v
-			case "idx_scan":
-				s.idxscan = v
-			case "idx_tup_fetch":
-				s.idxtupfetch = v
-			case "n_tup_ins":
-				s.inserted = v
-			case "n_tup_upd":
-				s.updated = v
-			case "n_tup_del":
-				s.deleted = v
-			case "n_tup_hot_upd":
-				s.hotUpdated = v
-			case "n_live_tup":
-				s.live = v
-			case "n_dead_tup":
-				s.dead = v
-			case "n_mod_since_analyze":
-				s.modified = v
-			case "last_vacuum_seconds":
-				s.lastvacuumAge = v
-			case "last_analyze_seconds":
-				s.lastanalyzeAge = v
-			case "last_vacuum_time":
-				s.lastvacuumTime = v
-			case "last_analyze_time":
-				s.lastanalyzeTime = v
-			case "vacuum_count":
-				s.vacuum = v
-			case "autovacuum_count":
-				s.autovacuum = v
-			case "analyze_count":
-				s.analyze = v
-			case "autoanalyze_count":
-				s.autoanalyze = v
-			case "heap_blks_read":
-				s.heapread = v
-			case "heap_blks_hit":
-				s.heaphit = v
-			case "idx_blks_read":
-				s.idxread = v
-			case "idx_blks_hit":
-				s.idxhit = v
-			case "toast_blks_read":
-				s.toastread = v
-			case "toast_blks_hit":
-				s.toasthit = v
-			case "tidx_blks_read":
-				s.tidxread = v
-			case "tidx_blks_hit":
-				s.tidxhit = v
-			case "size_bytes":
-				s.sizebytes = v
-			case "reltuples":
-				s.reltuples = v
-			default:
-				continue
-			}
-
-			stats[tablename] = s
 		}
 	}
-
-	return stats
 }

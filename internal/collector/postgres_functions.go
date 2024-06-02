@@ -1,11 +1,12 @@
 package collector
 
 import (
-	"github.com/jackc/pgx/v4"
 	"github.com/cherts/pgscv/internal/log"
 	"github.com/cherts/pgscv/internal/model"
 	"github.com/cherts/pgscv/internal/store"
+	"github.com/jackc/pgx/v4"
 	"github.com/prometheus/client_golang/prometheus"
+	"iter"
 	"strconv"
 	"strings"
 )
@@ -85,9 +86,7 @@ func (c *postgresFunctionsCollector) Update(config Config, ch chan<- prometheus.
 			continue
 		}
 
-		stats := parsePostgresFunctionsStats(res, c.labelNames)
-
-		for _, stat := range stats {
+		for _, stat := range parsePostgresFunctionsStats(res, c.labelNames) {
 			ch <- c.calls.newConstMetric(stat.calls, stat.database, stat.schema, stat.function)
 			ch <- c.totaltime.newConstMetric(stat.totaltime, stat.database, stat.schema, stat.function)
 			ch <- c.selftime.newConstMetric(stat.selftime, stat.database, stat.schema, stat.function)
@@ -108,69 +107,63 @@ type postgresFunctionStat struct {
 }
 
 // parsePostgresFunctionsStats parses PGResult and return struct with stats values.
-func parsePostgresFunctionsStats(r *model.PGResult, labelNames []string) map[string]postgresFunctionStat {
-	log.Debug("parse postgres user functions stats")
+func parsePostgresFunctionsStats(r *model.PGResult, labelNames []string) iter.Seq2[string, postgresFunctionStat] {
+	return func(yield func(string, postgresFunctionStat) bool) {
+		log.Debug("parse postgres user functions stats")
 
-	var stats = make(map[string]postgresFunctionStat)
+		// process row by row
+		for _, row := range r.Rows {
+			stat := postgresFunctionStat{}
 
-	// process row by row
-	for _, row := range r.Rows {
-		stat := postgresFunctionStat{}
-
-		// collect label values
-		for i, colname := range r.Colnames {
-			switch string(colname.Name) {
-			case "database":
-				stat.database = row[i].String
-			case "schema":
-				stat.schema = row[i].String
-			case "function":
-				stat.function = row[i].String
-			}
-		}
-
-		// Create a function name consisting of trio database/schema/function
-		functionFQName := strings.Join([]string{stat.database, stat.schema, stat.function}, "/")
-
-		// Put stats with labels (but with no data values yet) into stats store.
-		stats[functionFQName] = stat
-
-		// fetch data values from columns
-		for i, colname := range r.Colnames {
-			// skip columns if its value used as a label
-			if stringsContains(labelNames, string(colname.Name)) {
-				continue
+			// collect label values
+			for i, colname := range r.Colnames {
+				switch string(colname.Name) {
+				case "database":
+					stat.database = row[i].String
+				case "schema":
+					stat.schema = row[i].String
+				case "function":
+					stat.function = row[i].String
+				}
 			}
 
-			// Skip empty (NULL) values.
-			if !row[i].Valid {
-				continue
+			// Create a function name consisting of trio database/schema/function
+			functionFQName := strings.Join([]string{stat.database, stat.schema, stat.function}, "/")
+
+			// fetch data values from columns
+			for i, colname := range r.Colnames {
+				// skip columns if its value used as a label
+				if stringsContains(labelNames, string(colname.Name)) {
+					continue
+				}
+
+				// Skip empty (NULL) values.
+				if !row[i].Valid {
+					continue
+				}
+
+				// Get data value and convert it to float64 used by Prometheus.
+				v, err := strconv.ParseFloat(row[i].String, 64)
+				if err != nil {
+					log.Errorf("invalid input, parse '%s' failed: %s; skip", row[i].String, err)
+					continue
+				}
+
+				// Run column-specific logic
+				switch string(colname.Name) {
+				case "calls":
+					stat.calls = v
+				case "total_time":
+					stat.totaltime = v
+				case "self_time":
+					stat.selftime = v
+				default:
+					continue
+				}
 			}
-
-			// Get data value and convert it to float64 used by Prometheus.
-			v, err := strconv.ParseFloat(row[i].String, 64)
-			if err != nil {
-				log.Errorf("invalid input, parse '%s' failed: %s; skip", row[i].String, err)
-				continue
+			if !yield(functionFQName, stat) {
+				return
 			}
-
-			s := stats[functionFQName]
-
-			// Run column-specific logic
-			switch string(colname.Name) {
-			case "calls":
-				s.calls = v
-			case "total_time":
-				s.totaltime = v
-			case "self_time":
-				s.selftime = v
-			default:
-				continue
-			}
-
-			stats[functionFQName] = s
 		}
 	}
-
-	return stats
 }

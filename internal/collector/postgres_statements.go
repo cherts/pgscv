@@ -2,37 +2,70 @@ package collector
 
 import (
 	"fmt"
-	"github.com/jackc/pgx/v4"
 	"github.com/cherts/pgscv/internal/log"
 	"github.com/cherts/pgscv/internal/model"
 	"github.com/cherts/pgscv/internal/store"
+	"github.com/jackc/pgx/v4"
 	"github.com/prometheus/client_golang/prometheus"
+	"iter"
 	"strconv"
 	"strings"
 )
 
 const (
 	// postgresStatementsQuery12 defines query for querying statements metrics for PG12 and older.
-	postgresStatementsQuery12 = "SELECT d.datname AS database, pg_get_userbyid(p.userid) AS user, p.queryid, " +
-		"p.query, p.calls, p.rows, p.total_time, p.blk_read_time, p.blk_write_time, " +
-		"nullif(p.shared_blks_hit, 0) AS shared_blks_hit, nullif(p.shared_blks_read, 0) AS shared_blks_read, " +
-		"nullif(p.shared_blks_dirtied, 0) AS shared_blks_dirtied, nullif(p.shared_blks_written, 0) AS shared_blks_written, " +
-		"nullif(p.local_blks_hit, 0) AS local_blks_hit, nullif(p.local_blks_read, 0) AS local_blks_read, " +
-		"nullif(p.local_blks_dirtied, 0) AS local_blks_dirtied, nullif(p.local_blks_written, 0) AS local_blks_written, " +
-		"nullif(p.temp_blks_read, 0) AS temp_blks_read, nullif(p.temp_blks_written, 0) AS temp_blks_written " +
-		"FROM %s.pg_stat_statements p JOIN pg_database d ON d.oid=p.dbid"
+	postgresStatementsQuery12 = `
+	SELECT d.datname AS database,
+		   pg_get_userbyid(p.userid) AS user,
+		p.queryid,
+		left(p.query, 64),
+		SUM(p.calls) AS calls,
+		SUM(p.rows) AS rows,
+		SUM(p.total_time) AS total_exec_time,
+		SUM(p.blk_read_time) AS blk_read_time,
+		SUM(p.blk_write_time) AS blk_write_time,
+		nullif(SUM(p.shared_blks_hit), 0) AS shared_blks_hit,
+		nullif(SUM(p.shared_blks_read), 0) AS shared_blks_read,
+		nullif(SUM(p.shared_blks_dirtied), 0) AS shared_blks_dirtied,
+		nullif(SUM(p.shared_blks_written), 0) AS shared_blks_written,
+		nullif(SUM(p.local_blks_hit), 0) AS local_blks_hit,
+		nullif(SUM(p.local_blks_read), 0) AS local_blks_read,
+		nullif(SUM(p.local_blks_dirtied), 0) AS local_blks_dirtied,
+		nullif(SUM(p.local_blks_written), 0) AS local_blks_written,
+		nullif(SUM(p.temp_blks_read), 0) AS temp_blks_read,
+		nullif(SUM(p.temp_blks_written), 0) AS temp_blks_written,
+	FROM %s.pg_stat_statements p JOIN pg_database d ON d.oid=p.dbid
+	GROUP BY 1, 2, 3, 4`
 
 	// postgresStatementsQueryLatest defines query for querying statements metrics.
 	// 1. use nullif(value, 0) to nullify zero values, NULL are skipped by stats method and metrics wil not be generated.
-	postgresStatementsQueryLatest = "SELECT d.datname AS database, pg_get_userbyid(p.userid) AS user, p.queryid, " +
-		"p.query, p.calls, p.rows, p.total_exec_time, p.total_plan_time, p.blk_read_time, p.blk_write_time, " +
-		"nullif(p.shared_blks_hit, 0) AS shared_blks_hit, nullif(p.shared_blks_read, 0) AS shared_blks_read, " +
-		"nullif(p.shared_blks_dirtied, 0) AS shared_blks_dirtied, nullif(p.shared_blks_written, 0) AS shared_blks_written, " +
-		"nullif(p.local_blks_hit, 0) AS local_blks_hit, nullif(p.local_blks_read, 0) AS local_blks_read, " +
-		"nullif(p.local_blks_dirtied, 0) AS local_blks_dirtied, nullif(p.local_blks_written, 0) AS local_blks_written, " +
-		"nullif(p.temp_blks_read, 0) AS temp_blks_read, nullif(p.temp_blks_written, 0) AS temp_blks_written, " +
-		"nullif(p.wal_records, 0) AS wal_records, nullif(p.wal_fpi, 0) AS wal_fpi, nullif(p.wal_bytes, 0) AS wal_bytes " +
-		"FROM %s.pg_stat_statements p JOIN pg_database d ON d.oid=p.dbid"
+	postgresStatementsQueryLatest = `
+	SELECT d.datname AS database,
+	       pg_get_userbyid(p.userid) AS user,
+	       p.queryid,
+	       left(p.query,64) as query,
+		SUM(p.calls) AS calls,
+		SUM(p.rows) AS rows,
+		SUM(p.total_exec_time) AS total_exec_time,
+		SUM(p.total_plan_time) AS total_plan_time,
+		SUM(p.blk_read_time) AS blk_read_time,
+		SUM(p.blk_write_time) AS blk_write_time,
+		nullif(SUM(p.shared_blks_hit), 0) AS shared_blks_hit,
+		nullif(SUM(p.shared_blks_read), 0) AS shared_blks_read,
+		nullif(SUM(p.shared_blks_dirtied), 0) AS shared_blks_dirtied,
+		nullif(SUM(p.shared_blks_written), 0) AS shared_blks_written,
+		nullif(SUM(p.local_blks_hit), 0) AS local_blks_hit,
+		nullif(SUM(p.local_blks_read), 0) AS local_blks_read,
+		nullif(SUM(p.local_blks_dirtied), 0) AS local_blks_dirtied,
+		nullif(SUM(p.local_blks_written), 0) AS local_blks_written,
+		nullif(SUM(p.temp_blks_read), 0) AS temp_blks_read,
+		nullif(SUM(p.temp_blks_written), 0) AS temp_blks_written,
+		nullif(SUM(p.wal_records), 0) AS wal_records,
+		nullif(SUM(p.wal_fpi), 0) AS wal_fpi,
+		nullif(SUM(p.wal_bytes), 0) AS wal_bytes
+	FROM %s.pg_stat_statements p
+	JOIN pg_database d ON d.oid=p.dbid
+	GROUP BY 1, 2, 3, 4`
 )
 
 // postgresStatementsCollector ...
@@ -204,12 +237,9 @@ func (c *postgresStatementsCollector) Update(config Config, ch chan<- prometheus
 		return err
 	}
 
-	// parse pg_stat_statements stats
-	stats := parsePostgresStatementsStats(res, []string{"user", "database", "queryid", "query"})
-
 	blockSize := float64(config.blockSize)
 
-	for _, stat := range stats {
+	for _, stat := range parsePostgresStatementsStats(res, []string{"user", "database", "queryid", "query"}) {
 		var query string
 		if config.NoTrackMode {
 			query = stat.queryid + " /* queryid only, no-track mode enabled */"
@@ -312,109 +342,93 @@ type postgresStatementStat struct {
 	walBytes          float64
 }
 
-// parsePostgresStatementsStats parses PGResult and return structs with stats values.
-func parsePostgresStatementsStats(r *model.PGResult, labelNames []string) map[string]postgresStatementStat {
-	log.Debug("parse postgres statements stats")
+func parsePostgresStatementsStats(r *model.PGResult, labelNames []string) iter.Seq2[string, postgresStatementStat] {
+	return func(yield func(string, postgresStatementStat) bool) {
+		log.Debug("parse postgres statements stats")
+		for _, row := range r.Rows {
+			var database, user, queryid, query string
 
-	var stats = make(map[string]postgresStatementStat)
-
-	// process row by row - on every row construct 'statement' using database/user/queryHash trio. Next process other row's
-	// fields and collect stats for constructed 'statement'.
-	for _, row := range r.Rows {
-		var database, user, queryid, query string
-
-		// collect label values
-		for i, colname := range r.Colnames {
-			switch string(colname.Name) {
-			case "database":
-				database = row[i].String
-			case "user":
-				user = row[i].String
-			case "queryid":
-				queryid = row[i].String
-			case "query":
-				query = row[i].String
+			// collect label values
+			for i, colname := range r.Colnames {
+				switch string(colname.Name) {
+				case "database":
+					database = row[i].String
+				case "user":
+					user = row[i].String
+				case "queryid":
+					queryid = row[i].String
+				case "query":
+					query = row[i].String
+				}
 			}
-		}
+			var s = postgresStatementStat{database: database, user: user, queryid: queryid, query: query}
+			statement := strings.Join([]string{database, user, queryid}, "/")
+			for i, colname := range r.Colnames {
+				// skip columns if its value used as a label
+				if stringsContains(labelNames, string(colname.Name)) {
+					continue
+				}
 
-		// Create a statement name consisting of trio database/user/queryHash
-		statement := strings.Join([]string{database, user, queryid}, "/")
+				// Skip empty (NULL) values.
+				if !row[i].Valid {
+					continue
+				}
 
-		// Put stats with labels (but with no data values yet) into stats store.
-		if _, ok := stats[statement]; !ok {
-			stats[statement] = postgresStatementStat{database: database, user: user, queryid: queryid, query: query}
-		}
+				// Get data value and convert it to float64 used by Prometheus.
+				v, err := strconv.ParseFloat(row[i].String, 64)
+				if err != nil {
+					log.Errorf("invalid input, parse '%s' failed: %s; skip", row[i].String, err)
+					continue
+				}
 
-		// fetch data values from columns
-		for i, colname := range r.Colnames {
-			// skip columns if its value used as a label
-			if stringsContains(labelNames, string(colname.Name)) {
-				continue
+				switch string(colname.Name) {
+				case "calls":
+					s.calls = v
+				case "rows":
+					s.rows = v
+				case "total_exec_time":
+					s.totalExecTime = v
+				case "total_plan_time":
+					s.totalPlanTime = v
+				case "blk_read_time":
+					s.blkReadTime = v
+				case "blk_write_time":
+					s.blkWriteTime = v
+				case "shared_blks_hit":
+					s.sharedBlksHit = v
+				case "shared_blks_read":
+					s.sharedBlksRead = v
+				case "shared_blks_dirtied":
+					s.sharedBlksDirtied = v
+				case "shared_blks_written":
+					s.sharedBlksWritten = v
+				case "local_blks_hit":
+					s.localBlksHit = v
+				case "local_blks_read":
+					s.localBlksRead = v
+				case "local_blks_dirtied":
+					s.localBlksDirtied = v
+				case "local_blks_written":
+					s.localBlksWritten = v
+				case "temp_blks_read":
+					s.tempBlksRead = v
+				case "temp_blks_written":
+					s.tempBlksWritten = v
+				case "wal_records":
+					s.walRecords = v
+				case "wal_fpi":
+					s.walFPI = v
+				case "wal_bytes":
+					s.walBytes = v
+				default:
+					continue
+				}
 			}
-
-			// Skip empty (NULL) values.
-			if !row[i].Valid {
-				continue
+			if !yield(statement, s) {
+				return
 			}
-
-			// Get data value and convert it to float64 used by Prometheus.
-			v, err := strconv.ParseFloat(row[i].String, 64)
-			if err != nil {
-				log.Errorf("invalid input, parse '%s' failed: %s; skip", row[i].String, err)
-				continue
-			}
-
-			s := stats[statement]
-
-			// Run column-specific logic
-			switch string(colname.Name) {
-			case "calls":
-				s.calls += v
-			case "rows":
-				s.rows += v
-			case "total_time", "total_exec_time":
-				s.totalExecTime += v
-			case "total_plan_time":
-				s.totalPlanTime += v
-			case "blk_read_time":
-				s.blkReadTime += v
-			case "blk_write_time":
-				s.blkWriteTime += v
-			case "shared_blks_hit":
-				s.sharedBlksHit += v
-			case "shared_blks_read":
-				s.sharedBlksRead += v
-			case "shared_blks_dirtied":
-				s.sharedBlksDirtied += v
-			case "shared_blks_written":
-				s.sharedBlksWritten += v
-			case "local_blks_hit":
-				s.localBlksHit += v
-			case "local_blks_read":
-				s.localBlksRead += v
-			case "local_blks_dirtied":
-				s.localBlksDirtied += v
-			case "local_blks_written":
-				s.localBlksWritten += v
-			case "temp_blks_read":
-				s.tempBlksRead += v
-			case "temp_blks_written":
-				s.tempBlksWritten += v
-			case "wal_records":
-				s.walRecords += v
-			case "wal_fpi":
-				s.walFPI += v
-			case "wal_bytes":
-				s.walBytes += v
-			default:
-				continue
-			}
-
-			stats[statement] = s
 		}
 	}
-
-	return stats
 }
 
 // selectStatementsQuery returns suitable statements query depending on passed version.

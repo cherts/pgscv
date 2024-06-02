@@ -65,7 +65,7 @@ race: dep ## Run data race detector
 
 build: dep ## Build
 	mkdir -p ./bin
-	CGO_ENABLED=0 GOOS=${APPOS} GOARCH=${GOARCH} go build ${LDFLAGS} -o bin/${APPNAME} ./cmd
+	GOEXPERIMENT=rangefunc CGO_ENABLED=0 GOOS=${APPOS} GOARCH=${GOARCH} go build ${LDFLAGS} -o bin/${APPNAME} ./cmd
 
 docker-build: ## Build docker image
 	docker build -t ${DOCKER_ACCOUNT}/${APPNAME}:${TAG} .

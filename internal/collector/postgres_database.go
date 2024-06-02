@@ -5,6 +5,7 @@ import (
 	"github.com/cherts/pgscv/internal/model"
 	"github.com/cherts/pgscv/internal/store"
 	"github.com/prometheus/client_golang/prometheus"
+	"iter"
 	"strconv"
 )
 
@@ -218,21 +219,19 @@ func (c *postgresDatabasesCollector) Update(config Config, ch chan<- prometheus.
 	}
 	defer conn.Close()
 
-	res, err := conn.Query(selectDatabasesQuery(config.serverVersionNum))
-	if err != nil {
-		return err
-	}
-
-	stats := parsePostgresDatabasesStats(res, c.labelNames)
-
-	res, err = conn.Query(xidLimitQuery)
+	res, err := conn.Query(xidLimitQuery)
 	if err != nil {
 		return err
 	}
 
 	xidStats := parsePostgresXidLimitStats(res)
 
-	for _, stat := range stats {
+	res, err = conn.Query(selectDatabasesQuery(config.serverVersionNum))
+	if err != nil {
+		return err
+	}
+
+	for _, stat := range parsePostgresDatabasesStats(res, c.labelNames) {
 		ch <- c.commits.newConstMetric(stat.xactcommit, stat.database)
 		ch <- c.rollbacks.newConstMetric(stat.xactrollback, stat.database)
 		ch <- c.blocks.newConstMetric(stat.blksread, stat.database, "read")
@@ -309,114 +308,102 @@ type postgresDatabaseStat struct {
 	statsage           float64
 }
 
-// parsePostgresDatabasesStats parses PGResult, extract data and return struct with stats values.
-func parsePostgresDatabasesStats(r *model.PGResult, labelNames []string) map[string]postgresDatabaseStat {
-	log.Debug("parse postgres database stats")
+func parsePostgresDatabasesStats(r *model.PGResult, labelNames []string) iter.Seq2[string, postgresDatabaseStat] {
+	return func(yield func(string, postgresDatabaseStat) bool) {
+		log.Debug("parse postgres database stats")
 
-	var stats = make(map[string]postgresDatabaseStat)
+		for _, row := range r.Rows {
+			stat := postgresDatabaseStat{}
 
-	// process row by row
-	for _, row := range r.Rows {
-		stat := postgresDatabaseStat{}
-
-		// collect label values
-		for i, colname := range r.Colnames {
-			switch string(colname.Name) {
-			case "database":
-				stat.database = row[i].String
-			}
-		}
-
-		// Define a map key as a database name.
-		databaseFQName := stat.database
-
-		// Put stats with labels (but with no data values yet) into stats store.
-		stats[databaseFQName] = stat
-
-		// fetch data values from columns
-		for i, colname := range r.Colnames {
-			// skip columns if its value used as a label
-			if stringsContains(labelNames, string(colname.Name)) {
-				continue
+			// collect label values
+			for i, colname := range r.Colnames {
+				switch string(colname.Name) {
+				case "database":
+					stat.database = row[i].String
+				}
 			}
 
-			// Skip empty (NULL) values.
-			if !row[i].Valid {
-				continue
-			}
+			databaseFQName := stat.database
 
-			// Get data value and convert it to float64 used by Prometheus.
-			v, err := strconv.ParseFloat(row[i].String, 64)
-			if err != nil {
-				log.Errorf("invalid input, parse '%s' failed: %s; skip", row[i].String, err)
-				continue
-			}
+			for i, colname := range r.Colnames {
+				if stringsContains(labelNames, string(colname.Name)) {
+					continue
+				}
 
-			s := stats[databaseFQName]
-			// Run column-specific logic
-			switch string(colname.Name) {
-			case "xact_commit":
-				s.xactcommit = v
-			case "xact_rollback":
-				s.xactrollback = v
-			case "blks_read":
-				s.blksread = v
-			case "blks_hit":
-				s.blkshit = v
-			case "tup_returned":
-				s.tupreturned = v
-			case "tup_fetched":
-				s.tupfetched = v
-			case "tup_inserted":
-				s.tupinserted = v
-			case "tup_updated":
-				s.tupupdated = v
-			case "tup_deleted":
-				s.tupdeleted = v
-			case "conflicts":
-				s.conflicts = v
-			case "temp_files":
-				s.tempfiles = v
-			case "temp_bytes":
-				s.tempbytes = v
-			case "deadlocks":
-				s.deadlocks = v
-			case "checksum_failures":
-				s.csumfails = v
-			case "last_checksum_failure_unixtime":
-				s.csumlastfailunixts = v
-			case "blk_read_time":
-				s.blkreadtime = v
-			case "blk_write_time":
-				s.blkwritetime = v
-			case "session_time":
-				s.sessiontime = v
-			case "active_time":
-				s.activetime = v
-			case "idle_in_transaction_time":
-				s.idletxtime = v
-			case "sessions":
-				s.sessions = v
-			case "sessions_abandoned":
-				s.sessabandoned = v
-			case "sessions_fatal":
-				s.sessfatal = v
-			case "sessions_killed":
-				s.sesskilled = v
-			case "size_bytes":
-				s.sizebytes = v
-			case "stats_age_seconds":
-				s.statsage = v
-			default:
-				continue
-			}
+				if !row[i].Valid {
+					continue
+				}
 
-			// Store updated stats into local store.
-			stats[databaseFQName] = s
+				// Get data value and convert it to float64 used by Prometheus.
+				v, err := strconv.ParseFloat(row[i].String, 64)
+				if err != nil {
+					log.Errorf("invalid input, parse '%s' failed: %s; skip", row[i].String, err)
+					continue
+				}
+
+				switch string(colname.Name) {
+				case "xact_commit":
+					stat.xactcommit = v
+				case "xact_rollback":
+					stat.xactrollback = v
+				case "blks_read":
+					stat.blksread = v
+				case "blks_hit":
+					stat.blkshit = v
+				case "tup_returned":
+					stat.tupreturned = v
+				case "tup_fetched":
+					stat.tupfetched = v
+				case "tup_inserted":
+					stat.tupinserted = v
+				case "tup_updated":
+					stat.tupupdated = v
+				case "tup_deleted":
+					stat.tupdeleted = v
+				case "conflicts":
+					stat.conflicts = v
+				case "temp_files":
+					stat.tempfiles = v
+				case "temp_bytes":
+					stat.tempbytes = v
+				case "deadlocks":
+					stat.deadlocks = v
+				case "checksum_failures":
+					stat.csumfails = v
+				case "last_checksum_failure_unixtime":
+					stat.csumlastfailunixts = v
+				case "blk_read_time":
+					stat.blkreadtime = v
+				case "blk_write_time":
+					stat.blkwritetime = v
+				case "session_time":
+					stat.sessiontime = v
+				case "active_time":
+					stat.activetime = v
+				case "idle_in_transaction_time":
+					stat.idletxtime = v
+				case "sessions":
+					stat.sessions = v
+				case "sessions_abandoned":
+					stat.sessabandoned = v
+				case "sessions_fatal":
+					stat.sessfatal = v
+				case "sessions_killed":
+					stat.sesskilled = v
+				case "size_bytes":
+					stat.sizebytes = v
+				case "stats_age_seconds":
+					stat.statsage = v
+				default:
+					continue
+				}
+			}
+			if !yield(databaseFQName, stat) {
+				return
+			}
 		}
 	}
 
-	return stats
 }
 
 // xidLimitStats describes how many XIDs left before force database shutdown due to XID wraparound.

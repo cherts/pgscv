@@ -1,11 +1,12 @@
 package collector
 
 import (
-	"github.com/jackc/pgx/v4"
 	"github.com/cherts/pgscv/internal/log"
 	"github.com/cherts/pgscv/internal/model"
 	"github.com/cherts/pgscv/internal/store"
+	"github.com/jackc/pgx/v4"
 	"github.com/prometheus/client_golang/prometheus"
+	"iter"
 	"strconv"
 	"strings"
 )
@@ -98,9 +99,7 @@ func (c *postgresIndexesCollector) Update(config Config, ch chan<- prometheus.Me
 			continue
 		}
 
-		stats := parsePostgresIndexStats(res, c.indexes.labelNames)
-
-		for _, stat := range stats {
+		for _, stat := range parsePostgresIndexStats(res, c.indexes.labelNames) {
 			// always send idx scan metrics and indexes size
 			ch <- c.indexes.newConstMetric(stat.idxscan, stat.database, stat.schema, stat.table, stat.index, stat.key)
 			ch <- c.sizes.newConstMetric(stat.sizebytes, stat.database, stat.schema, stat.table, stat.index)
@@ -139,76 +138,66 @@ type postgresIndexStat struct {
 	sizebytes   float64
 }
 
-// parsePostgresIndexStats parses PGResult and returns structs with stats values.
-func parsePostgresIndexStats(r *model.PGResult, labelNames []string) map[string]postgresIndexStat {
-	log.Debug("parse postgres indexes stats")
-
-	var stats = make(map[string]postgresIndexStat)
-
-	var indexname string
-
-	for _, row := range r.Rows {
-		index := postgresIndexStat{}
-		for i, colname := range r.Colnames {
-			switch string(colname.Name) {
-			case "database":
-				index.database = row[i].String
-			case "schema":
-				index.schema = row[i].String
-			case "table":
-				index.table = row[i].String
-			case "index":
-				index.index = row[i].String
-			case "key":
-				index.key = row[i].String
-			}
-		}
-
-		// create a index name consisting of quartet database/schema/table/index
-		indexname = strings.Join([]string{index.database, index.schema, index.table, index.index}, "/")
-
-		stats[indexname] = index
-
-		for i, colname := range r.Colnames {
-			// skip columns if its value used as a label
-			if stringsContains(labelNames, string(colname.Name)) {
-				continue
+func parsePostgresIndexStats(r *model.PGResult, labelNames []string) iter.Seq2[string, postgresIndexStat] {
+	return func(yield func(string, postgresIndexStat) bool) {
+		log.Debug("parse postgres indexes stats")
+		for _, row := range r.Rows {
+			index := postgresIndexStat{}
+			for i, colname := range r.Colnames {
+				switch string(colname.Name) {
+				case "database":
+					index.database = row[i].String
+				case "schema":
+					index.schema = row[i].String
+				case "table":
+					index.table = row[i].String
+				case "index":
+					index.index = row[i].String
+				case "key":
+					index.key = row[i].String
+				}
 			}
 
-			// Skip empty (NULL) values.
-			if !row[i].Valid {
-				continue
+			indexname := strings.Join([]string{index.database, index.schema, index.table, index.index}, "/")
+
+			for i, colname := range r.Colnames {
+				// skip columns if its value used as a label
+				if stringsContains(labelNames, string(colname.Name)) {
+					continue
+				}
+
+				// Skip empty (NULL) values.
+				if !row[i].Valid {
+					continue
+				}
+
+				// Get data value and convert it to float64 used by Prometheus.
+				v, err := strconv.ParseFloat(row[i].String, 64)
+				if err != nil {
+					log.Errorf("invalid input, parse '%s' failed: %s; skip", row[i].String, err)
+					continue
+				}
+
+				switch string(colname.Name) {
+				case "idx_scan":
+					index.idxscan = v
+				case "idx_tup_read":
+					index.idxtupread = v
+				case "idx_tup_fetch":
+					index.idxtupfetch = v
+				case "idx_blks_read":
+					index.idxread = v
+				case "idx_blks_hit":
+					index.idxhit = v
+				case "size_bytes":
+					index.sizebytes = v
+				default:
+					continue
+				}
 			}
-
-			// Get data value and convert it to float64 used by Prometheus.
-			v, err := strconv.ParseFloat(row[i].String, 64)
-			if err != nil {
-				log.Errorf("invalid input, parse '%s' failed: %s; skip", row[i].String, err)
-				continue
+			if !yield(indexname, index) {
+				return
 			}
-
-			s := stats[indexname]
-
-			switch string(colname.Name) {
-			case "idx_scan":
-				s.idxscan = v
-			case "idx_tup_read":
-				s.idxtupread = v
-			case "idx_tup_fetch":
-				s.idxtupfetch = v
-			case "idx_blks_read":
-				s.idxread = v
-			case "idx_blks_hit":
-				s.idxhit = v
-			case "size_bytes":
-				s.sizebytes = v
-			default:
-				continue
-			}
-
-			stats[indexname] = s
 		}
 	}
-
-	return stats
 }
