@@ -52,7 +52,7 @@ dep: ## Get the dependencies
 
 lint: ## Lint the source files
 	go env -w GOFLAGS="-buildvcs=false"
-	golangci-lint run --timeout 5m -E golint -e '(struct field|type|method|func) [a-zA-Z`]+ should be [a-zA-Z`]+'
+	REVIVE_FORCE_COLOR=1 revive -formatter friendly ./...
 	gosec -quiet ./...
 
 test: dep lint ## Run tests
