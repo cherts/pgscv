@@ -11,7 +11,7 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
-    container: cherts/pgscv-test-runner:1.0.0
+    container: cherts/pgscv-test-runner:1.0.1
     steps:
       - name: Checkout code
         uses: actions/checkout@v4

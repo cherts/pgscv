@@ -7,8 +7,8 @@ COPY . .
 RUN make build
 
 # stage 2: scratch
-# __release_tag__ alpine 3.19.1 was released 2024-01-26
-FROM alpine:3.19.1 as dist
+# __release_tag__ alpine 3.20.0 was released 2024-05-22
+FROM alpine:3.20.0 as dist
 COPY --from=build /app/bin/pgscv /bin/pgscv
 #COPY docker_entrypoint.sh /bin/
 EXPOSE 9890
