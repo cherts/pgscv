@@ -2,19 +2,20 @@ package collector
 
 import (
 	"fmt"
-	"github.com/jackc/pgx/v4"
+	"strconv"
+	"strings"
+
 	"github.com/cherts/pgscv/internal/log"
 	"github.com/cherts/pgscv/internal/model"
 	"github.com/cherts/pgscv/internal/store"
+	"github.com/jackc/pgx/v4"
 	"github.com/prometheus/client_golang/prometheus"
-	"strconv"
-	"strings"
 )
 
 const (
 	// postgresStatementsQuery12 defines query for querying statements metrics for PG12 and older.
 	postgresStatementsQuery12 = "SELECT d.datname AS database, pg_get_userbyid(p.userid) AS user, p.queryid, " +
-		"p.query, p.calls, p.rows, p.total_time, p.blk_read_time, p.blk_write_time, " +
+		"coalesce(%s, '') AS query, p.calls, p.rows, p.total_time, p.blk_read_time, p.blk_write_time, " +
 		"nullif(p.shared_blks_hit, 0) AS shared_blks_hit, nullif(p.shared_blks_read, 0) AS shared_blks_read, " +
 		"nullif(p.shared_blks_dirtied, 0) AS shared_blks_dirtied, nullif(p.shared_blks_written, 0) AS shared_blks_written, " +
 		"nullif(p.local_blks_hit, 0) AS local_blks_hit, nullif(p.local_blks_read, 0) AS local_blks_read, " +
@@ -25,7 +26,7 @@ const (
 	// postgresStatementsQueryLatest defines query for querying statements metrics.
 	// 1. use nullif(value, 0) to nullify zero values, NULL are skipped by stats method and metrics wil not be generated.
 	postgresStatementsQueryLatest = "SELECT d.datname AS database, pg_get_userbyid(p.userid) AS user, p.queryid, " +
-		"p.query, p.calls, p.rows, p.total_exec_time, p.total_plan_time, p.blk_read_time, p.blk_write_time, " +
+		"coalesce(%s, '') AS query, p.calls, p.rows, p.total_exec_time, p.total_plan_time, p.blk_read_time, p.blk_write_time, " +
 		"nullif(p.shared_blks_hit, 0) AS shared_blks_hit, nullif(p.shared_blks_read, 0) AS shared_blks_read, " +
 		"nullif(p.shared_blks_dirtied, 0) AS shared_blks_dirtied, nullif(p.shared_blks_written, 0) AS shared_blks_written, " +
 		"nullif(p.local_blks_hit, 0) AS local_blks_hit, nullif(p.local_blks_read, 0) AS local_blks_read, " +
@@ -199,7 +200,7 @@ func (c *postgresStatementsCollector) Update(config Config, ch chan<- prometheus
 	defer conn.Close()
 
 	// get pg_stat_statements stats
-	res, err := conn.Query(selectStatementsQuery(config.serverVersionNum, config.pgStatStatementsSchema))
+	res, err := conn.Query(selectStatementsQuery(config.serverVersionNum, config.pgStatStatementsSchema, config.NoTrackMode))
 	if err != nil {
 		return err
 	}
@@ -212,7 +213,7 @@ func (c *postgresStatementsCollector) Update(config Config, ch chan<- prometheus
 	for _, stat := range stats {
 		var query string
 		if config.NoTrackMode {
-			query = stat.queryid + " /* queryid only, no-track mode enabled */"
+			query = "/* query text hidden, no-track mode enabled */"
 		} else {
 			query = stat.query
 		}
@@ -418,11 +419,17 @@ func parsePostgresStatementsStats(r *model.PGResult, labelNames []string) map[st
 }
 
 // selectStatementsQuery returns suitable statements query depending on passed version.
-func selectStatementsQuery(version int, schema string) string {
+func selectStatementsQuery(version int, schema string, notrackmode bool) string {
+	var query_columm string
+	if notrackmode {
+		query_columm = "null"
+	} else {
+		query_columm = "p.query"
+	}
 	switch {
 	case version < PostgresV13:
-		return fmt.Sprintf(postgresStatementsQuery12, schema)
+		return fmt.Sprintf(postgresStatementsQuery12, query_columm, schema)
 	default:
-		return fmt.Sprintf(postgresStatementsQueryLatest, schema)
+		return fmt.Sprintf(postgresStatementsQueryLatest, query_columm, schema)
 	}
 }
