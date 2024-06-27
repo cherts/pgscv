@@ -3,10 +3,11 @@ package collector
 import (
 	"database/sql"
 	"fmt"
-	"github.com/jackc/pgproto3/v2"
-	"github.com/cherts/pgscv/internal/model"
-	"github.com/stretchr/testify/assert"
 	"testing"
+
+	"github.com/cherts/pgscv/internal/model"
+	"github.com/jackc/pgproto3/v2"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestPostgresStatementsCollector_Update(t *testing.T) {
@@ -166,11 +167,11 @@ func Test_selectStatementsQuery(t *testing.T) {
 		version int
 		want    string
 	}{
-		{version: PostgresV12, want: fmt.Sprintf(postgresStatementsQuery12, "example")},
-		{version: PostgresV13, want: fmt.Sprintf(postgresStatementsQueryLatest, "example")},
+		{version: PostgresV12, want: fmt.Sprintf(postgresStatementsQuery12, "p.query", "example")},
+		{version: PostgresV13, want: fmt.Sprintf(postgresStatementsQueryLatest, "p.query", "example")},
 	}
 
 	for _, tc := range testcases {
-		assert.Equal(t, tc.want, selectStatementsQuery(tc.version, "example"))
+		assert.Equal(t, tc.want, selectStatementsQuery(tc.version, "example", false))
 	}
 }
