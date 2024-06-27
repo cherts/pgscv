@@ -167,8 +167,8 @@ func Test_selectStatementsQuery(t *testing.T) {
 		version int
 		want    string
 	}{
-		{version: PostgresV12, want: fmt.Sprintf(postgresStatementsQuery12, "null", "example")},
-		{version: PostgresV13, want: fmt.Sprintf(postgresStatementsQueryLatest, "null", "example")},
+		{version: PostgresV12, want: fmt.Sprintf(postgresStatementsQuery12, "p.query", "example")},
+		{version: PostgresV13, want: fmt.Sprintf(postgresStatementsQueryLatest, "p.query", "example")},
 	}
 
 	for _, tc := range testcases {
