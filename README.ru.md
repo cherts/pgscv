@@ -90,6 +90,13 @@ helm install -n pgscv-ns pgscv deploy/helm-chart/
 ### Документация
 Дополнительную документацию смотрите в [wiki](https://github.com/cherts/pgscv/wiki).
 
+### Дашборды для Grafana
+
+Дашборды можно взять из директории [deploy/grafana](deploy/grafana) или воспользоваться репозиторием Grafana Lab:
+- [pgSCV: System dashboard (ID: 21409)](https://grafana.com/grafana/dashboards/21409-pgscv-system-new/)
+- [pgSCV: PostgreSQL dashboard (ID: 21430)](https://grafana.com/grafana/dashboards/21430-pgscv-postgresql-new/)
+- [pgSCV: Pgbouncer dashboard (ID: 21429)](https://grafana.com/grafana/dashboards/21429-pgscv-pgbouncer-new/)
+
 ### Поддержка и обратная связь
 Если вам нужна помощь в использовании pgSCV Вы можете написать мне на [email](sleuthhound@gmail.com) или в Telegram [@cherts](https://t.me/cherts) или открыть [issues](https://github.com/cherts/pgscv/issues).
 

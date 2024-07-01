@@ -97,6 +97,13 @@ Checkout complete setup [guide](https://github.com/cherts/pgscv/wiki/Setup-for-r
 ### Documentation
 For further documentation see [wiki](https://github.com/cherts/pgscv/wiki).
 
+### Grafana dashboards
+
+See directory [deploy/grafana](deploy/grafana) or use Grafana Lab repo:
+- [pgSCV: System dashboard (ID: 21409)](https://grafana.com/grafana/dashboards/21409-pgscv-system-new/)
+- [pgSCV: PostgreSQL dashboard (ID: 21430)](https://grafana.com/grafana/dashboards/21430-pgscv-postgresql-new/)
+- [pgSCV: Pgbouncer dashboard (ID: 21429)](https://grafana.com/grafana/dashboards/21429-pgscv-pgbouncer-new/)
+
 ### Support and feedback
 If you need help using pgSCV feel free to open discussion via [email](sleuthhound@gmail.com) or Telegram [@cherts](https://t.me/cherts) or create an [issue](https://github.com/cherts/pgscv/issues)
 
