@@ -833,7 +833,8 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green"
+                    "color": "green",
+                    "value": null
                   }
                 ]
               },
@@ -886,7 +887,7 @@
               },
               "editorMode": "code",
               "exemplar": true,
-              "expr": "sum(rate(postgres_statements_calls_total{instance=\"$instance\",service_id=\"$postgres\",user!~\"^$exclude$\"}[1m]))",
+              "expr": "sum(rate(postgres_statements_calls_total{instance=\"$instance\",service_id=\"$postgres\",database=~\"$database\",user!~\"^$exclude$\"}[1m]))",
               "interval": "",
               "legendFormat": "statements",
               "range": true,
@@ -899,7 +900,7 @@
               },
               "editorMode": "code",
               "exemplar": true,
-              "expr": "sum(rate(postgres_database_xact_commits_total{instance=\"$instance\",service_id=\"$postgres\",user!~\"^$exclude$\"}[1m]))",
+              "expr": "sum(rate(postgres_database_xact_commits_total{instance=\"$instance\",service_id=\"$postgres\",database=~\"$database\",user!~\"^$exclude$\"}[1m]))",
               "hide": false,
               "interval": "",
               "legendFormat": "commits",
@@ -913,7 +914,7 @@
               },
               "editorMode": "code",
               "exemplar": true,
-              "expr": "sum(rate(postgres_database_xact_rollbacks_total{instance=\"$instance\",service_id=\"$postgres\",user!~\"^$exclude$\"}[1m]))",
+              "expr": "sum(rate(postgres_database_xact_rollbacks_total{instance=\"$instance\",service_id=\"$postgres\",database=~\"$database\",user!~\"^$exclude$\"}[1m]))",
               "hide": false,
               "interval": "",
               "legendFormat": "rollbacks",
@@ -972,7 +973,8 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green"
+                    "color": "green",
+                    "value": null
                   }
                 ]
               },
@@ -1009,7 +1011,7 @@
               },
               "editorMode": "code",
               "exemplar": true,
-              "expr": "topk(5, max by (user) (postgres_activity_max_seconds{instance=\"$instance\",service_id=\"$postgres\",user!~\"^$exclude$\"}))",
+              "expr": "topk(5, max by (user) (postgres_activity_max_seconds{instance=\"$instance\",service_id=\"$postgres\",database=~\"$database\",user!~\"^$exclude$\"}))",
               "interval": "",
               "legendFormat": "{{user}}",
               "range": true,
@@ -1067,7 +1069,8 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green"
+                    "color": "green",
+                    "value": null
                   }
                 ]
               },
@@ -1195,7 +1198,7 @@
               },
               "editorMode": "code",
               "exemplar": true,
-              "expr": "sum by (state) (postgres_activity_connections_in_flight{instance=\"$instance\",service_id=\"$postgres\",user!~\"^$exclude$\"})",
+              "expr": "sum by (state) (postgres_activity_connections_in_flight{instance=\"$instance\",service_id=\"$postgres\",database=~\"$database\",user!~\"^$exclude$\"})",
               "interval": "",
               "legendFormat": "{{state}}",
               "range": true,
@@ -1253,7 +1256,8 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green"
+                    "color": "green",
+                    "value": null
                   }
                 ]
               },
@@ -1381,7 +1385,7 @@
               },
               "editorMode": "code",
               "exemplar": true,
-              "expr": "postgres_activity_connections_in_flight{instance=\"$instance\",service_id=\"$postgres\",state!~\"^(idle|idlexact)\",user!~\"^(autovacuum|worker).*\",user!~\"^$exclude$\"}",
+              "expr": "postgres_activity_connections_in_flight{instance=\"$instance\",service_id=\"$postgres\",state!~\"^(idle|idlexact)\",database=~\"$database\",user!~\"^(autovacuum|worker).*\",user!~\"^$exclude$\"}",
               "interval": "",
               "legendFormat": "{{database}}/{{user}}/{{state}}",
               "range": true,
@@ -1855,7 +1859,7 @@
             "h": 8,
             "w": 12,
             "x": 0,
-            "y": 14
+            "y": 30
           },
           "id": 19,
           "options": {
@@ -1878,10 +1882,12 @@
                 "type": "prometheus",
                 "uid": "${DS_VICTORIAMETRICS-PGSCV}"
               },
+              "editorMode": "code",
               "exemplar": true,
-              "expr": "topk(5, (rate(postgres_statements_calls_total{instance=\"$instance\",service_id=\"$postgres\"}[1m])) + on(database,user,queryid) group_left(query) (0 * postgres_statements_query_info{instance=\"$instance\",service_id=\"$postgres\"}))",
+              "expr": "topk(5, (rate(postgres_statements_calls_total{instance=\"$instance\",service_id=\"$postgres\",database=~\"$database\",user!~\"^$exclude$\"}[1m])) + on(database,user,queryid) group_left(query) (0 * postgres_statements_query_info{instance=\"$instance\",service_id=\"$postgres\",database=~\"$database\",user!~\"^$exclude$\"}))",
               "interval": "",
               "legendFormat": "{{database}}/{{user}}/{{query}}",
+              "range": true,
               "refId": "A"
             }
           ],
@@ -1949,7 +1955,7 @@
             "h": 8,
             "w": 12,
             "x": 12,
-            "y": 14
+            "y": 30
           },
           "id": 20,
           "options": {
@@ -1972,10 +1978,12 @@
                 "type": "prometheus",
                 "uid": "${DS_VICTORIAMETRICS-PGSCV}"
               },
+              "editorMode": "code",
               "exemplar": true,
-              "expr": "topk(5, (rate(postgres_statements_rows_total{instance=\"$instance\",service_id=\"$postgres\"}[1m])) + on(database,user,queryid) group_left(query) (0 * postgres_statements_query_info{instance=\"$instance\",service_id=\"$postgres\"}))",
+              "expr": "topk(5, (rate(postgres_statements_rows_total{instance=\"$instance\",service_id=\"$postgres\",database=~\"$database\",user!~\"^$exclude$\"}[1m])) + on(database,user,queryid) group_left(query) (0 * postgres_statements_query_info{instance=\"$instance\",service_id=\"$postgres\",database=~\"$database\",user!~\"^$exclude$\"}))",
               "interval": "",
               "legendFormat": "{{database}}/{{user}}/{{query}}",
+              "range": true,
               "refId": "A"
             }
           ],
@@ -2044,7 +2052,7 @@
             "h": 8,
             "w": 12,
             "x": 0,
-            "y": 22
+            "y": 38
           },
           "id": 21,
           "options": {
@@ -2067,10 +2075,12 @@
                 "type": "prometheus",
                 "uid": "${DS_VICTORIAMETRICS-PGSCV}"
               },
+              "editorMode": "code",
               "exemplar": true,
-              "expr": "topk(5, (rate(postgres_statements_time_seconds_all_total{instance=\"$instance\",service_id=\"$postgres\"}[1m])) + on(database,user,queryid) group_left(query) (0 * postgres_statements_query_info{instance=\"$instance\",service_id=\"$postgres\"}))",
+              "expr": "topk(5, (rate(postgres_statements_time_seconds_all_total{instance=\"$instance\",service_id=\"$postgres\",database=~\"$database\",user!~\"^$exclude$\"}[1m])) + on(database,user,queryid) group_left(query) (0 * postgres_statements_query_info{instance=\"$instance\",service_id=\"$postgres\",database=~\"$database\",user!~\"^$exclude$\"}))",
               "interval": "",
               "legendFormat": "{{database}}/{{user}}/{{query}}",
+              "range": true,
               "refId": "A"
             }
           ],
@@ -2139,7 +2149,7 @@
             "h": 8,
             "w": 12,
             "x": 12,
-            "y": 22
+            "y": 38
           },
           "id": 22,
           "options": {
@@ -2162,10 +2172,12 @@
                 "type": "prometheus",
                 "uid": "${DS_VICTORIAMETRICS-PGSCV}"
               },
+              "editorMode": "code",
               "exemplar": true,
-              "expr": "topk(5, sum without (mode) (rate(postgres_statements_time_seconds_total{mode=~\"ioread|iowrite\",instance=\"$instance\",service_id=\"$postgres\"}[1m])) + on(database,user,queryid) group_left(query) (0 * postgres_statements_query_info{instance=\"$instance\",service_id=\"$postgres\"}))",
+              "expr": "topk(5, sum without (mode) (rate(postgres_statements_time_seconds_total{mode=~\"ioread|iowrite\",instance=\"$instance\",service_id=\"$postgres\",database=~\"$database\",user!~\"^$exclude$\"}[1m])) + on(database,user,queryid) group_left(query) (0 * postgres_statements_query_info{instance=\"$instance\",service_id=\"$postgres\",database=~\"$database\",user!~\"^$exclude$\"}))",
               "interval": "",
               "legendFormat": "{{database}}/{{user}}/{{query}}",
+              "range": true,
               "refId": "A"
             }
           ],
@@ -2668,8 +2680,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   }
                 ]
               },
@@ -2763,8 +2774,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   }
                 ]
               },
@@ -2884,8 +2894,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   }
                 ]
               },
@@ -2995,8 +3004,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   }
                 ]
               },
@@ -3081,8 +3089,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   }
                 ]
               },
@@ -3229,8 +3236,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   }
                 ]
               },
@@ -3370,8 +3376,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   }
                 ]
               },
@@ -3440,8 +3445,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   }
                 ]
               },
@@ -3561,8 +3565,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   }
                 ]
               },
@@ -3704,8 +3707,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   }
                 ]
               },
@@ -3873,8 +3875,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   }
                 ]
               },
@@ -3998,8 +3999,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   }
                 ]
               },
@@ -4375,10 +4375,12 @@
                 "type": "prometheus",
                 "uid": "${DS_VICTORIAMETRICS-PGSCV}"
               },
+              "editorMode": "code",
               "exemplar": true,
-              "expr": "topk(5, postgres_database_size_bytes{instance=\"$instance\",service_id=\"$postgres\"})",
+              "expr": "topk(5, postgres_database_size_bytes{instance=\"$instance\",service_id=\"$postgres\",database=~\"$database\"})",
               "interval": "",
               "legendFormat": "{{ database }}",
+              "range": true,
               "refId": "A"
             }
           ],
@@ -4470,10 +4472,12 @@
                 "type": "prometheus",
                 "uid": "${DS_VICTORIAMETRICS-PGSCV}"
               },
+              "editorMode": "code",
               "exemplar": true,
-              "expr": "topk(5, postgres_table_size_bytes{instance=\"$instance\",service_id=\"$postgres\"})",
+              "expr": "topk(5, postgres_table_size_bytes{instance=\"$instance\",service_id=\"$postgres\",database=~\"$database\"})",
               "interval": "",
-              "legendFormat": "{{ database }}.{{ schema }}.{{ table }}",
+              "legendFormat": "{{ database }}/{{ schema }}.{{ table }}",
+              "range": true,
               "refId": "A"
             }
           ],
@@ -4565,10 +4569,12 @@
                 "type": "prometheus",
                 "uid": "${DS_VICTORIAMETRICS-PGSCV}"
               },
+              "editorMode": "code",
               "exemplar": true,
-              "expr": "topk(5, postgres_index_size_bytes{instance=\"$instance\",service_id=\"$postgres\"})",
+              "expr": "topk(5, postgres_index_size_bytes{instance=\"$instance\",service_id=\"$postgres\",database=~\"$database\"})",
               "interval": "",
-              "legendFormat": "{{ database }}.{{ schema }}.{{ table }}.{{ index }}",
+              "legendFormat": "{{ database }}/{{ schema }}.{{ table }}.{{ index }}",
+              "range": true,
               "refId": "A"
             }
           ],
@@ -4660,10 +4666,12 @@
                 "type": "prometheus",
                 "uid": "${DS_VICTORIAMETRICS-PGSCV}"
               },
+              "editorMode": "code",
               "exemplar": true,
-              "expr": "topk(5, increase(postgres_database_temp_bytes_total{instance=\"$instance\",service_id=\"$postgres\"}[1m]))",
+              "expr": "topk(5, increase(postgres_database_temp_bytes_total{instance=\"$instance\",service_id=\"$postgres\",database=~\"$database\"}[1m]))",
               "interval": "",
               "legendFormat": "{{ database }}",
+              "range": true,
               "refId": "A"
             }
           ],
@@ -4755,10 +4763,12 @@
                 "type": "prometheus",
                 "uid": "${DS_VICTORIAMETRICS-PGSCV}"
               },
+              "editorMode": "code",
               "exemplar": true,
               "expr": "postgres_temp_bytes_in_flight{instance=\"$instance\",service_id=\"$postgres\"}",
               "interval": "",
               "legendFormat": "{{ tablespace }}",
+              "range": true,
               "refId": "A"
             }
           ],
@@ -4841,7 +4851,8 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green"
+                    "color": "green",
+                    "value": null
                   }
                 ]
               },
@@ -4876,10 +4887,12 @@
                 "type": "prometheus",
                 "uid": "${DS_VICTORIAMETRICS-PGSCV}"
               },
+              "editorMode": "code",
               "exemplar": true,
-              "expr": "topk(5, rate(postgres_table_seq_tup_read_total{instance=\"$instance\",service_id=\"$postgres\"}[1m]))",
+              "expr": "topk(5, rate(postgres_table_seq_tup_read_total{instance=\"$instance\",service_id=\"$postgres\",database=~\"$database\"}[1m]))",
               "interval": "",
-              "legendFormat": "{{schema}}.{{table}}",
+              "legendFormat": "{{database}}/{{schema}}.{{table}}",
+              "range": true,
               "refId": "A"
             }
           ],
@@ -4935,7 +4948,8 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green"
+                    "color": "green",
+                    "value": null
                   }
                 ]
               },
@@ -4970,10 +4984,12 @@
                 "type": "prometheus",
                 "uid": "${DS_VICTORIAMETRICS-PGSCV}"
               },
+              "editorMode": "code",
               "exemplar": true,
-              "expr": "topk(5, rate(postgres_table_tuples_inserted_total{instance=\"$instance\",service_id=\"$postgres\"}[1m]))",
+              "expr": "topk(5, rate(postgres_table_tuples_inserted_total{instance=\"$instance\",service_id=\"$postgres\",database=~\"$database\"}[1m]))",
               "interval": "",
-              "legendFormat": "{{schema}}.{{table}}",
+              "legendFormat": "{{database}}/{{schema}}.{{table}}",
+              "range": true,
               "refId": "A"
             }
           ],
@@ -5029,7 +5045,8 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green"
+                    "color": "green",
+                    "value": null
                   }
                 ]
               },
@@ -5066,9 +5083,9 @@
               },
               "editorMode": "code",
               "exemplar": true,
-              "expr": "topk(5, rate(postgres_table_seq_scan_total{instance=\"$instance\",service_id=\"$postgres\"}[1m]))",
+              "expr": "topk(5, rate(postgres_table_seq_scan_total{instance=\"$instance\",service_id=\"$postgres\",database=~\"$database\"}[1m]))",
               "interval": "",
-              "legendFormat": "{{schema}}.{{table}}",
+              "legendFormat": "{{database}}/{{schema}}.{{table}}",
               "range": true,
               "refId": "A"
             }
@@ -5125,7 +5142,8 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green"
+                    "color": "green",
+                    "value": null
                   }
                 ]
               },
@@ -5160,10 +5178,12 @@
                 "type": "prometheus",
                 "uid": "${DS_VICTORIAMETRICS-PGSCV}"
               },
+              "editorMode": "code",
               "exemplar": true,
-              "expr": "topk(5, rate(postgres_table_tuples_updated_total{instance=\"$instance\",service_id=\"$postgres\"}[1m]))",
+              "expr": "topk(5, rate(postgres_table_tuples_updated_total{instance=\"$instance\",service_id=\"$postgres\",database=~\"$database\"}[1m]))",
               "interval": "",
-              "legendFormat": "{{schema}}.{{table}}",
+              "legendFormat": "{{database}}/{{schema}}.{{table}}",
+              "range": true,
               "refId": "A"
             }
           ],
@@ -5219,7 +5239,8 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green"
+                    "color": "green",
+                    "value": null
                   }
                 ]
               },
@@ -5254,10 +5275,12 @@
                 "type": "prometheus",
                 "uid": "${DS_VICTORIAMETRICS-PGSCV}"
               },
+              "editorMode": "code",
               "exemplar": true,
-              "expr": "topk(5, postgres_table_tuples_dead_total{instance=\"$instance\",service_id=\"$postgres\"})",
+              "expr": "topk(5, postgres_table_tuples_dead_total{instance=\"$instance\",service_id=\"$postgres\",database=~\"$database\"})",
               "interval": "",
-              "legendFormat": "{{schema}}.{{table}}",
+              "legendFormat": "{{database}}/{{schema}}.{{table}}",
+              "range": true,
               "refId": "A"
             }
           ],
@@ -5313,7 +5336,8 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green"
+                    "color": "green",
+                    "value": null
                   }
                 ]
               },
@@ -5348,14 +5372,113 @@
                 "type": "prometheus",
                 "uid": "${DS_VICTORIAMETRICS-PGSCV}"
               },
+              "editorMode": "code",
               "exemplar": true,
-              "expr": "topk(5, rate(postgres_table_tuples_deleted_total{instance=\"$instance\",service_id=\"$postgres\"}[1m]))",
+              "expr": "topk(5, rate(postgres_table_tuples_deleted_total{instance=\"$instance\",service_id=\"$postgres\",database=~\"$database\"}[1m]))",
               "interval": "",
-              "legendFormat": "{{schema}}.{{table}}",
+              "legendFormat": "{{database}}/{{schema}}.{{table}}",
+              "range": true,
               "refId": "A"
             }
           ],
           "title": "DELETEs",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${ds}"
+          },
+          "description": "The top-10 most-table in number of rows based on pg_class.reltuples value.",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisBorderShow": false,
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "drawStyle": "line",
+                "fillOpacity": 10,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "insertNulls": false,
+                "lineInterpolation": "linear",
+                "lineWidth": 1,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "never",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "mappings": [],
+              "min": 0,
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  }
+                ]
+              },
+              "unit": "short"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 0,
+            "y": 45
+          },
+          "id": 94,
+          "options": {
+            "legend": {
+              "calcs": [],
+              "displayMode": "list",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "tooltip": {
+              "maxHeight": 600,
+              "mode": "multi",
+              "sort": "desc"
+            }
+          },
+          "pluginVersion": "7.5.7",
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "${DS_VICTORIAMETRICS-PGSCV}"
+              },
+              "editorMode": "code",
+              "exemplar": true,
+              "expr": "topk(10, postgres_table_tuples_total{instance=\"$instance\",service_id=\"$postgres\",database=~\"$database\"})",
+              "interval": "",
+              "legendFormat": "{{database}}/{{schema}}.{{table}}",
+              "range": true,
+              "refId": "A"
+            }
+          ],
+          "title": "Rows",
           "type": "timeseries"
         },
         {
@@ -5382,7 +5505,8 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green"
+                    "color": "green",
+                    "value": null
                   },
                   {
                     "color": "red",
@@ -5410,7 +5534,7 @@
           "gridPos": {
             "h": 8,
             "w": 12,
-            "x": 0,
+            "x": 12,
             "y": 45
           },
           "id": 93,
@@ -5435,7 +5559,7 @@
               },
               "editorMode": "code",
               "exemplar": false,
-              "expr": "sum by (database, schema, table, index) (postgres_index_scans_total{instance=\"$instance\",service_id=\"$postgres\",isvalid=\"false\"})",
+              "expr": "sum by (database, schema, table, index) (postgres_index_scans_total{instance=\"$instance\",service_id=\"$postgres\",isvalid=\"false\",database=~\"$database\"})",
               "format": "table",
               "instant": true,
               "interval": "",
@@ -5562,8 +5686,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   }
                 ]
               },
@@ -5657,8 +5780,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   }
                 ]
               },
@@ -5739,8 +5861,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   }
                 ]
               },
@@ -5914,6 +6035,33 @@
         "useTags": false
       },
       {
+        "current": {},
+        "datasource": {
+          "type": "prometheus",
+          "uid": "${DS_VICTORIAMETRICS-PGSCV}"
+        },
+        "definition": "label_values(postgres_database_size_bytes,database)",
+        "hide": 0,
+        "includeAll": true,
+        "label": "Database",
+        "multi": true,
+        "name": "database",
+        "options": [],
+        "query": {
+          "qryType": 1,
+          "query": "label_values(postgres_database_size_bytes,database)",
+          "refId": "PrometheusVariableQueryEditor-VariableQuery"
+        },
+        "refresh": 1,
+        "regex": "/^(?!global).*$/",
+        "skipUrlSync": false,
+        "sort": 0,
+        "tagValuesQuery": "",
+        "tagsQuery": "",
+        "type": "query",
+        "useTags": false
+      },
+      {
         "current": {
           "selected": true,
           "text": [
@@ -5970,6 +6118,6 @@
   "timezone": "",
   "title": "pgSCV: PostgreSQL",
   "uid": "N6PwjKeGz",
-  "version": 23,
+  "version": 27,
   "weekStart": ""
 }
