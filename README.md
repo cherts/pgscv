@@ -1,5 +1,12 @@
 # pgSCV - PostgreSQL ecosystem metrics collector
 
+[![Go](https://github.com/CHERTS/pgscv/actions/workflows/release.yml/badge.svg)](https://github.com/CHERTS/pgscv/actions)
+![GitHub Release](https://img.shields.io/github/v/release/CHERTS/pgscv)
+![GitHub downloads total)](https://img.shields.io/github/downloads/cherts/pgscv/total)
+![GitHub Downloads (all assets, latest release)](https://img.shields.io/github/downloads/cherts/pgscv/latest/total)
+[![Docker pulls)](https://img.shields.io/docker/pulls/cherts/pgscv.svg)](https://hub.docker.com/r/cherts/pgscv)
+![LICENSE](https://img.shields.io/github/license/cherts/pgscv)
+
 [По-русски / In Russian](README.ru.md)
 
 ### pgSCV
@@ -29,7 +36,7 @@ This project is a continuation of the development of the original pgSCV by [Alex
 Download the archive from [releases](https://github.com/cherts/pgscv/releases). Unpack the archive. Create minimum config file. Start pgSCV systemd service under `postgres` user.
 
 ```bash
-curl -s -L https://github.com/cherts/pgscv/releases/download/v0.8.1/pgscv_0.8.1_linux_amd64.tar.gz -o - | tar xzf - -C /tmp && \
+curl -s -L https://github.com/cherts/pgscv/releases/download/v0.8.4/pgscv_0.8.4_linux_amd64.tar.gz -o - | tar xzf - -C /tmp && \
 mv /tmp/pgscv.yaml /etc && \
 mv /tmp/pgscv.service /etc/systemd/system &&  \
 mv /tmp/pgscv.default /etc/default/pgscv && \
@@ -89,6 +96,14 @@ Checkout complete setup [guide](https://github.com/cherts/pgscv/wiki/Setup-for-r
 
 ### Documentation
 For further documentation see [wiki](https://github.com/cherts/pgscv/wiki).
+
+### Grafana dashboards
+
+See directory [deploy/grafana](deploy/grafana) or use Grafana Lab repo:
+- [pgSCV: System dashboard (ID: 21409)](https://grafana.com/grafana/dashboards/21409-pgscv-system-new/)
+- [pgSCV: PostgreSQL dashboard (ID: 21430)](https://grafana.com/grafana/dashboards/21430-pgscv-postgresql-new/)
+- [pgSCV: Pgbouncer dashboard (ID: 21429)](https://grafana.com/grafana/dashboards/21429-pgscv-pgbouncer-new/)
+- [pgSCV: Patroni dashboard (ID: 21462)](https://grafana.com/grafana/dashboards/21462-pgscv-patroni-new/)
 
 ### Support and feedback
 If you need help using pgSCV feel free to open discussion via [email](sleuthhound@gmail.com) or Telegram [@cherts](https://t.me/cherts) or create an [issue](https://github.com/cherts/pgscv/issues)

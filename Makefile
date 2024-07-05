@@ -3,11 +3,28 @@ APPNAME = pgscv
 APPOS = linux
 #APPOS = ${GOOS}
 
-TAG=$(shell git tag -l --sort=-creatordate | head -n 1)
-COMMIT=$(shell git rev-parse --short HEAD)
+TAG_COMMIT := $(shell git rev-list --abbrev-commit --tags --max-count=1)
+TAG := $(shell git describe --abbrev=0 --tags ${TAG_COMMIT} 2>/dev/null || true)
+COMMIT := $(shell git rev-parse --short HEAD)
+DATE := $(shell git log -1 --format=%cd --date=format:"%Y%m%d")
+ifeq ($(TAG),)
+	VERSION := 0.8
+else
+	#VERSION := $(TAG:v%=%)
+	VERSION := $(TAG)
+endif
+ifneq ($(COMMIT), $(TAG_COMMIT))
+    VERSION := $(VERSION)-next-$(DATE)
+endif
+ifeq ($(VERSION),)
+    VERSION := $(COMMIT)-$(DATA)
+endif
+ifneq ($(shell git status --porcelain),)
+    VERSION := $(VERSION)-dirty
+endif
 BRANCH=$(shell git rev-parse --abbrev-ref HEAD)
 
-LDFLAGS = -a -installsuffix cgo -ldflags "-X main.appName=${APPNAME} -X main.gitTag=${TAG} -X main.gitCommit=${COMMIT} -X main.gitBranch=${BRANCH}"
+LDFLAGS = -a -installsuffix cgo -ldflags "-X main.appName=${APPNAME} -X main.gitTag=${VERSION} -X main.gitCommit=${COMMIT} -X main.gitBranch=${BRANCH}"
 
 .PHONY: help \
 		clean lint test race \
@@ -35,7 +52,7 @@ dep: ## Get the dependencies
 
 lint: ## Lint the source files
 	go env -w GOFLAGS="-buildvcs=false"
-	golangci-lint run --timeout 5m -E golint -e '(struct field|type|method|func) [a-zA-Z`]+ should be [a-zA-Z`]+'
+	REVIVE_FORCE_COLOR=1 revive -formatter friendly ./...
 	gosec -quiet ./...
 
 test: dep lint ## Run tests

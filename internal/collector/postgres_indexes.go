@@ -1,18 +1,19 @@
 package collector
 
 import (
-	"github.com/jackc/pgx/v4"
+	"strconv"
+	"strings"
+
 	"github.com/cherts/pgscv/internal/log"
 	"github.com/cherts/pgscv/internal/model"
 	"github.com/cherts/pgscv/internal/store"
+	"github.com/jackc/pgx/v4"
 	"github.com/prometheus/client_golang/prometheus"
-	"strconv"
-	"strings"
 )
 
 const (
 	userIndexesQuery = "SELECT current_database() AS database, schemaname AS schema, relname AS table, indexrelname AS index, (i.indisprimary OR i.indisunique) AS key," +
-		"idx_scan, idx_tup_read, idx_tup_fetch, idx_blks_read, idx_blks_hit,pg_relation_size(s1.indexrelid) AS size_bytes " +
+		"i.indisvalid AS isvalid, idx_scan, idx_tup_read, idx_tup_fetch, idx_blks_read, idx_blks_hit,pg_relation_size(s1.indexrelid) AS size_bytes " +
 		"FROM pg_stat_user_indexes s1 " +
 		"JOIN pg_statio_user_indexes s2 USING (schemaname, relname, indexrelname) " +
 		"JOIN pg_index i ON (s1.indexrelid = i.indexrelid) " +
@@ -36,7 +37,7 @@ func NewPostgresIndexesCollector(constLabels labels, settings model.CollectorSet
 		indexes: newBuiltinTypedDesc(
 			descOpts{"postgres", "index", "scans_total", "Total number of index scans initiated.", 0},
 			prometheus.CounterValue,
-			[]string{"database", "schema", "table", "index", "key"}, constLabels,
+			[]string{"database", "schema", "table", "index", "key", "isvalid"}, constLabels,
 			settings.Filters,
 		),
 		tuples: newBuiltinTypedDesc(
@@ -102,7 +103,7 @@ func (c *postgresIndexesCollector) Update(config Config, ch chan<- prometheus.Me
 
 		for _, stat := range stats {
 			// always send idx scan metrics and indexes size
-			ch <- c.indexes.newConstMetric(stat.idxscan, stat.database, stat.schema, stat.table, stat.index, stat.key)
+			ch <- c.indexes.newConstMetric(stat.idxscan, stat.database, stat.schema, stat.table, stat.index, stat.key, stat.isvalid)
 			ch <- c.sizes.newConstMetric(stat.sizebytes, stat.database, stat.schema, stat.table, stat.index)
 
 			// avoid metrics spamming and send metrics only if they greater than zero.
@@ -131,6 +132,7 @@ type postgresIndexStat struct {
 	table       string
 	index       string
 	key         string
+	isvalid     string
 	idxscan     float64
 	idxtupread  float64
 	idxtupfetch float64
@@ -161,6 +163,8 @@ func parsePostgresIndexStats(r *model.PGResult, labelNames []string) map[string]
 				index.index = row[i].String
 			case "key":
 				index.key = row[i].String
+			case "isvalid":
+				index.isvalid = row[i].String
 			}
 		}
 

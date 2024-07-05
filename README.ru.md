@@ -29,7 +29,7 @@
 Загрузите архив со страницы [releases](https://github.com/cherts/pgscv/releases). Распакуйте архив. Создайте минимальный файл конфигураации. Запустите pgSCV под пользователем postgres.
 
 ```bash
-curl -s -L https://github.com/cherts/pgscv/releases/download/v0.8.1/pgscv_0.8.1_linux_amd64.tar.gz -o - | tar xzf - -C /tmp && \
+curl -s -L https://github.com/cherts/pgscv/releases/download/v0.8.4/pgscv_0.8.4_linux_amd64.tar.gz -o - | tar xzf - -C /tmp && \
 mv /tmp/pgscv.yaml /etc && \
 mv /tmp/pgscv.service /etc/systemd/system &&  \
 mv /tmp/pgscv.default /etc/default/pgscv && \
@@ -89,6 +89,14 @@ helm install -n pgscv-ns pgscv deploy/helm-chart/
 
 ### Документация
 Дополнительную документацию смотрите в [wiki](https://github.com/cherts/pgscv/wiki).
+
+### Дашборды для Grafana
+
+Дашборды можно взять из директории [deploy/grafana](deploy/grafana) или воспользоваться репозиторием Grafana Lab:
+- [pgSCV: System dashboard (ID: 21409)](https://grafana.com/grafana/dashboards/21409-pgscv-system-new/)
+- [pgSCV: PostgreSQL dashboard (ID: 21430)](https://grafana.com/grafana/dashboards/21430-pgscv-postgresql-new/)
+- [pgSCV: Pgbouncer dashboard (ID: 21429)](https://grafana.com/grafana/dashboards/21429-pgscv-pgbouncer-new/)
+- [pgSCV: Patroni dashboard (ID: 21462)](https://grafana.com/grafana/dashboards/21462-pgscv-patroni-new/)
 
 ### Поддержка и обратная связь
 Если вам нужна помощь в использовании pgSCV Вы можете написать мне на [email](sleuthhound@gmail.com) или в Telegram [@cherts](https://t.me/cherts) или открыть [issues](https://github.com/cherts/pgscv/issues).
