@@ -463,9 +463,13 @@ func parsePatroniResponse(resp *apiPatroniResponse) (*patroniInfo, error) {
 		running = 1
 	}
 
-	t1, err := time.Parse("2006-01-02 15:04:05.999999Z07:00", resp.PmStartTime)
-	if err != nil {
-		return nil, fmt.Errorf("parse patroni postmaster_start_time string '%s' failed: %s", resp.PmStartTime, err)
+	var PmStartTimeSec float64
+	if resp.PmStartTime != "null" && resp.PmStartTime != "" {
+		t1, err := time.Parse("2006-01-02 15:04:05.999999Z07:00", resp.PmStartTime)
+		if err != nil {
+			return nil, fmt.Errorf("parse patroni postmaster_start_time string '%s' failed: %s", resp.PmStartTime, err)
+		}
+		PmStartTimeSec = float64(t1.UnixNano()) / 1000000000
 	}
 
 	var master, stdleader, replica float64
@@ -523,7 +527,7 @@ func parsePatroniResponse(resp *apiPatroniResponse) (*patroniInfo, error) {
 		version:           float64(version),
 		versionStr:        resp.Patroni.Version,
 		running:           running,
-		startTime:         float64(t1.UnixNano()) / 1000000000,
+		startTime:         PmStartTimeSec,
 		master:            master,
 		standbyLeader:     stdleader,
 		replica:           replica,

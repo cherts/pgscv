@@ -239,7 +239,7 @@ func attemptRequest(baseurl string) error {
 		return err
 	}
 
-	if resp.StatusCode != http.StatusOK {
+	if (resp.StatusCode != http.StatusOK) && (resp.StatusCode != 503) {
 		return fmt.Errorf("bad response: %s", resp.Status)
 	}
 
