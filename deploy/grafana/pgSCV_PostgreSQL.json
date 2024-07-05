@@ -833,8 +833,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   }
                 ]
               },
@@ -973,8 +972,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   }
                 ]
               },
@@ -1069,8 +1067,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   }
                 ]
               },
@@ -1256,8 +1253,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   }
                 ]
               },
@@ -1846,8 +1842,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   }
                 ]
               },
@@ -1942,8 +1937,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   }
                 ]
               },
@@ -2039,8 +2033,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   }
                 ]
               },
@@ -2136,8 +2129,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   }
                 ]
               },
@@ -2259,8 +2251,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   }
                 ]
               },
@@ -2353,8 +2344,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   }
                 ]
               },
@@ -2447,8 +2437,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   }
                 ]
               },
@@ -2542,8 +2531,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   }
                 ]
               },
@@ -4220,8 +4208,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   }
                 ]
               },
@@ -4339,8 +4326,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   }
                 ]
               },
@@ -4436,8 +4422,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   }
                 ]
               },
@@ -4533,8 +4518,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   }
                 ]
               },
@@ -4630,8 +4614,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   }
                 ]
               },
@@ -4727,8 +4710,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   }
                 ]
               },
@@ -4851,8 +4833,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   }
                 ]
               },
@@ -4948,8 +4929,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   }
                 ]
               },
@@ -5045,8 +5025,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   }
                 ]
               },
@@ -5142,8 +5121,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   }
                 ]
               },
@@ -5239,8 +5217,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   }
                 ]
               },
@@ -5336,8 +5313,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   }
                 ]
               },
@@ -5433,8 +5409,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   }
                 ]
               },
@@ -5505,8 +5480,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   },
                   {
                     "color": "red",
@@ -5988,7 +5962,7 @@
           "type": "prometheus",
           "uid": "${DS_VICTORIAMETRICS-PGSCV}"
         },
-        "definition": "label_values(node_boot_time_seconds, instance)",
+        "definition": "label_values(pgscv_services_registered_total{service=\"postgres\"},instance)",
         "hide": 0,
         "includeAll": false,
         "label": "Instance",
@@ -5996,8 +5970,9 @@
         "name": "instance",
         "options": [],
         "query": {
-          "query": "label_values(node_boot_time_seconds, instance)",
-          "refId": "StandardVariableQuery"
+          "qryType": 1,
+          "query": "label_values(pgscv_services_registered_total{service=\"postgres\"},instance)",
+          "refId": "PrometheusVariableQueryEditor-VariableQuery"
         },
         "refresh": 1,
         "regex": "",
@@ -6014,7 +5989,7 @@
           "type": "prometheus",
           "uid": "${DS_VICTORIAMETRICS-PGSCV}"
         },
-        "definition": "label_values(pgscv_services_registered_total, service_id)",
+        "definition": "label_values(pgscv_services_registered_total{instance=\"$instance\", service=\"postgres\"},service_id)",
         "hide": 0,
         "includeAll": false,
         "label": "PostgreSQL",
@@ -6022,11 +5997,12 @@
         "name": "postgres",
         "options": [],
         "query": {
-          "query": "label_values(pgscv_services_registered_total, service_id)",
-          "refId": "StandardVariableQuery"
+          "qryType": 1,
+          "query": "label_values(pgscv_services_registered_total{instance=\"$instance\", service=\"postgres\"},service_id)",
+          "refId": "PrometheusVariableQueryEditor-VariableQuery"
         },
         "refresh": 1,
-        "regex": "/^postgres.*/",
+        "regex": "",
         "skipUrlSync": false,
         "sort": 0,
         "tagValuesQuery": "",
@@ -6040,7 +6016,7 @@
           "type": "prometheus",
           "uid": "${DS_VICTORIAMETRICS-PGSCV}"
         },
-        "definition": "label_values(postgres_database_size_bytes,database)",
+        "definition": "label_values(postgres_database_size_bytes{instance=\"$instance\"},database)",
         "hide": 0,
         "includeAll": true,
         "label": "Database",
@@ -6049,7 +6025,7 @@
         "options": [],
         "query": {
           "qryType": 1,
-          "query": "label_values(postgres_database_size_bytes,database)",
+          "query": "label_values(postgres_database_size_bytes{instance=\"$instance\"},database)",
           "refId": "PrometheusVariableQueryEditor-VariableQuery"
         },
         "refresh": 1,
@@ -6118,6 +6094,6 @@
   "timezone": "",
   "title": "pgSCV: PostgreSQL",
   "uid": "N6PwjKeGz",
-  "version": 27,
+  "version": 29,
   "weekStart": ""
 }
