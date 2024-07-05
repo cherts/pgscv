@@ -1394,87 +1394,6 @@
           ],
           "title": "Max lag on failover",
           "type": "stat"
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${DS_VICTORIAMETRICS}"
-          },
-          "description": "Is 1 if synchronous mode is active, 0 if inactive.\n\nSee docs https://patroni.readthedocs.io/en/latest/replication_modes.html#synchronous-mode for more info.",
-          "fieldConfig": {
-            "defaults": {
-              "color": {
-                "mode": "thresholds"
-              },
-              "mappings": [
-                {
-                  "options": {
-                    "0": {
-                      "index": 0,
-                      "text": "INACTIVE"
-                    },
-                    "1": {
-                      "index": 1,
-                      "text": "ACTIVE"
-                    }
-                  },
-                  "type": "value"
-                }
-              ],
-              "thresholds": {
-                "mode": "absolute",
-                "steps": [
-                  {
-                    "color": "green",
-                    "value": null
-                  }
-                ]
-              }
-            },
-            "overrides": []
-          },
-          "gridPos": {
-            "h": 5,
-            "w": 4,
-            "x": 20,
-            "y": 12
-          },
-          "id": 69,
-          "options": {
-            "colorMode": "background",
-            "graphMode": "area",
-            "justifyMode": "auto",
-            "orientation": "auto",
-            "percentChangeColorMode": "standard",
-            "reduceOptions": {
-              "calcs": [
-                "lastNotNull"
-              ],
-              "fields": "",
-              "values": false
-            },
-            "showPercentChange": false,
-            "text": {},
-            "textMode": "auto",
-            "wideLayout": true
-          },
-          "pluginVersion": "10.4.2",
-          "targets": [
-            {
-              "datasource": {
-                "type": "prometheus",
-                "uid": "${DS_VICTORIAMETRICS}"
-              },
-              "editorMode": "code",
-              "expr": "patroni_sync_standby{instance=\"$instance\",service_id=\"$patroni\",scope=\"$scope\"}",
-              "instant": false,
-              "legendFormat": "__auto",
-              "range": true,
-              "refId": "A"
-            }
-          ],
-          "title": "Synchronous mode",
-          "type": "stat"
         }
       ],
       "title": "Patroni settings",
@@ -1533,7 +1452,7 @@
             "h": 5,
             "w": 4,
             "x": 0,
-            "y": 18
+            "y": 13
           },
           "id": 52,
           "options": {
@@ -1621,7 +1540,7 @@
             "h": 5,
             "w": 4,
             "x": 4,
-            "y": 18
+            "y": 13
           },
           "id": 56,
           "options": {
@@ -1703,7 +1622,7 @@
             "h": 5,
             "w": 4,
             "x": 8,
-            "y": 18
+            "y": 13
           },
           "id": 50,
           "options": {
@@ -1771,7 +1690,7 @@
             "h": 5,
             "w": 4,
             "x": 12,
-            "y": 18
+            "y": 13
           },
           "id": 55,
           "options": {
@@ -1838,7 +1757,7 @@
             "h": 5,
             "w": 4,
             "x": 16,
-            "y": 18
+            "y": 13
           },
           "id": 53,
           "options": {
@@ -1920,7 +1839,7 @@
             "h": 5,
             "w": 4,
             "x": 20,
-            "y": 18
+            "y": 13
           },
           "id": 54,
           "options": {
@@ -2002,7 +1921,7 @@
             "h": 5,
             "w": 4,
             "x": 0,
-            "y": 23
+            "y": 18
           },
           "id": 51,
           "options": {
@@ -2039,6 +1958,87 @@
             }
           ],
           "title": "PostgreSQL is archive recovery",
+          "type": "stat"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_VICTORIAMETRICS}"
+          },
+          "description": "Is 1 if synchronous mode is active, 0 if inactive.\n\nSee docs https://patroni.readthedocs.io/en/latest/replication_modes.html#synchronous-mode for more info.",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "thresholds"
+              },
+              "mappings": [
+                {
+                  "options": {
+                    "0": {
+                      "index": 0,
+                      "text": "NO"
+                    },
+                    "1": {
+                      "index": 1,
+                      "text": "YES"
+                    }
+                  },
+                  "type": "value"
+                }
+              ],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  }
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 5,
+            "w": 4,
+            "x": 4,
+            "y": 18
+          },
+          "id": 69,
+          "options": {
+            "colorMode": "background",
+            "graphMode": "area",
+            "justifyMode": "auto",
+            "orientation": "auto",
+            "percentChangeColorMode": "standard",
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "showPercentChange": false,
+            "text": {},
+            "textMode": "auto",
+            "wideLayout": true
+          },
+          "pluginVersion": "10.4.2",
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "${DS_VICTORIAMETRICS}"
+              },
+              "editorMode": "code",
+              "expr": "patroni_sync_standby{instance=\"$instance\",service_id=\"$patroni\",scope=\"$scope\"}",
+              "instant": false,
+              "legendFormat": "__auto",
+              "range": true,
+              "refId": "A"
+            }
+          ],
+          "title": "PostgreSQL synchronous standby",
           "type": "stat"
         }
       ],
@@ -2571,6 +2571,6 @@
   "timezone": "",
   "title": "pgSCV: Patroni",
   "uid": "aim7Ue3th",
-  "version": 20,
+  "version": 21,
   "weekStart": ""
 }
