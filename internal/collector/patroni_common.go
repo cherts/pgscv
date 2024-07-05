@@ -41,6 +41,7 @@ type patroniCommonCollector struct {
 	maximumLagOnFailover typedDesc
 	retryTimeout         typedDesc
 	ttl                  typedDesc
+	syncStandby          typedDesc
 }
 
 // NewPatroniCommonCollector returns a new Collector exposing Patroni common info.
@@ -212,6 +213,12 @@ func NewPatroniCommonCollector(constLabels labels, settings model.CollectorSetti
 			varLabels, constLabels,
 			settings.Filters,
 		),
+		syncStandby: newBuiltinTypedDesc(
+			descOpts{"patroni", "", "sync_standby", "Value is 1 if synchronous mode is active, 0 if inactive.", 0},
+			prometheus.GaugeValue,
+			varLabels, constLabels,
+			settings.Filters,
+		),
 	}, nil
 }
 
@@ -263,6 +270,7 @@ func (c *patroniCommonCollector) Update(config Config, ch chan<- prometheus.Metr
 	ch <- c.pendingRestart.newConstMetric(info.pendingRestart, info.scope)
 	ch <- c.pause.newConstMetric(info.pause, info.scope)
 	ch <- c.inArchiveRecovery.newConstMetric(info.inArchiveRecovery, info.scope)
+	ch <- c.syncStandby.newConstMetric(info.syncStandby, info.scope)
 
 	// Request and parse config.
 	respConfig, err := requestApiPatroniConfig(c.client, config.BaseURL)
@@ -333,6 +341,7 @@ type apiPatroniResponse struct {
 	ReplicationState string          `json:"replication_state"`
 	PendingRestart   bool            `json:"pending_restart"`
 	Pause            bool            `json:"pause"`
+	SyncStandby      bool            `json:"sync_standby"`
 }
 
 // patroniInfo implements metrics values extracted from the response of '/patroni' endpoint.
@@ -359,6 +368,7 @@ type patroniInfo struct {
 	pendingRestart    float64
 	pause             float64
 	inArchiveRecovery float64
+	syncStandby       float64
 }
 
 // apiPatroniResponse implements API response returned by '/config' endpoint.
@@ -521,6 +531,11 @@ func parsePatroniResponse(resp *apiPatroniResponse) (*patroniInfo, error) {
 		inArchiveRecovery = 1
 	}
 
+	var syncStandby float64
+	if resp.SyncStandby {
+		syncStandby = 1
+	}
+
 	return &patroniInfo{
 		name:              resp.Patroni.Name,
 		scope:             resp.Patroni.Scope,
@@ -544,6 +559,7 @@ func parsePatroniResponse(resp *apiPatroniResponse) (*patroniInfo, error) {
 		pendingRestart:    pendingRestart,
 		pause:             pause,
 		inArchiveRecovery: inArchiveRecovery,
+		syncStandby:       syncStandby,
 	}, nil
 }
 
