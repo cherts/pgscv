@@ -482,8 +482,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   }
                 ]
               },
@@ -602,8 +601,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   }
                 ]
               },
@@ -695,8 +693,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   }
                 ]
               },
@@ -893,8 +890,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   }
                 ]
               },
@@ -1020,8 +1016,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   }
                 ]
               },
@@ -1147,8 +1142,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   }
                 ]
               },
@@ -1241,8 +1235,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   }
                 ]
               },
@@ -1335,8 +1328,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   }
                 ]
               },
@@ -1445,8 +1437,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   }
                 ]
               },
@@ -1554,8 +1545,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   }
                 ]
               },
@@ -1798,7 +1788,7 @@
           "type": "prometheus",
           "uid": "${ds}"
         },
-        "definition": "label_values(node_boot_time_seconds, instance)",
+        "definition": "label_values(pgscv_services_registered_total{service=\"pgbouncer\"},instance)",
         "hide": 0,
         "includeAll": false,
         "label": "Instance",
@@ -1806,8 +1796,9 @@
         "name": "instance",
         "options": [],
         "query": {
-          "query": "label_values(node_boot_time_seconds, instance)",
-          "refId": "StandardVariableQuery"
+          "qryType": 1,
+          "query": "label_values(pgscv_services_registered_total{service=\"pgbouncer\"},instance)",
+          "refId": "PrometheusVariableQueryEditor-VariableQuery"
         },
         "refresh": 1,
         "regex": "",
@@ -1824,7 +1815,7 @@
           "type": "prometheus",
           "uid": "${DS_VICTORIAMETRICS-PGSCV}"
         },
-        "definition": "label_values(pgscv_services_registered_total, service_id)",
+        "definition": "label_values(pgscv_services_registered_total{instance=\"$instance\", service=\"pgbouncer\"},service_id)",
         "hide": 0,
         "includeAll": false,
         "label": "Pgbouncer",
@@ -1832,8 +1823,9 @@
         "name": "pgbouncer",
         "options": [],
         "query": {
-          "query": "label_values(pgscv_services_registered_total, service_id)",
-          "refId": "StandardVariableQuery"
+          "qryType": 1,
+          "query": "label_values(pgscv_services_registered_total{instance=\"$instance\", service=\"pgbouncer\"},service_id)",
+          "refId": "PrometheusVariableQueryEditor-VariableQuery"
         },
         "refresh": 1,
         "regex": "/^pgbouncer.*/",
@@ -1868,6 +1860,6 @@
   "timezone": "",
   "title": "pgSCV: Pgbouncer",
   "uid": "yA3wjF6Mk",
-  "version": 19,
+  "version": 20,
   "weekStart": ""
 }
