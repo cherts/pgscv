@@ -1828,7 +1828,7 @@
           "refId": "PrometheusVariableQueryEditor-VariableQuery"
         },
         "refresh": 1,
-        "regex": "/^pgbouncer.*/",
+        "regex": "",
         "skipUrlSync": false,
         "sort": 0,
         "tagValuesQuery": "",
@@ -1860,6 +1860,6 @@
   "timezone": "",
   "title": "pgSCV: Pgbouncer",
   "uid": "yA3wjF6Mk",
-  "version": 20,
+  "version": 21,
   "weekStart": ""
 }
