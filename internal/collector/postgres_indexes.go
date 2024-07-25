@@ -108,7 +108,7 @@ func (c *postgresIndexesCollector) Update(config Config, ch chan<- prometheus.Me
 
 			// avoid metrics spamming and send metrics only if they greater than zero.
 			if stat.idxtupread > 0 {
-				ch <- c.tuples.newConstMetric(stat.idxread, stat.database, stat.schema, stat.table, stat.index, "read")
+				ch <- c.tuples.newConstMetric(stat.idxtupread, stat.database, stat.schema, stat.table, stat.index, "read")
 			}
 			if stat.idxtupfetch > 0 {
 				ch <- c.tuples.newConstMetric(stat.idxtupfetch, stat.database, stat.schema, stat.table, stat.index, "fetched")
