@@ -47,7 +47,7 @@ func NewPostgresIndexesCollector(constLabels labels, settings model.CollectorSet
 			settings.Filters,
 		),
 		io: newBuiltinTypedDesc(
-			descOpts{"postgres", "index_io", "blocks_total", "Total number of indexes' blocks processed.", 0},
+			descOpts{"postgres", "index_io", "blocks_total", "Total number of indexes blocks processed.", 0},
 			prometheus.CounterValue,
 			[]string{"database", "schema", "table", "index", "access"}, constLabels,
 			settings.Filters,
