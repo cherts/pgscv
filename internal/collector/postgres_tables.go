@@ -1,28 +1,185 @@
 package collector
 
 import (
-	"github.com/jackc/pgx/v4"
 	"github.com/cherts/pgscv/internal/log"
 	"github.com/cherts/pgscv/internal/model"
 	"github.com/cherts/pgscv/internal/store"
+	"github.com/jackc/pgx/v4"
 	"github.com/prometheus/client_golang/prometheus"
 	"strconv"
 	"strings"
 )
 
 const (
-	userTablesQuery = "SELECT current_database() AS database, s1.schemaname AS schema, s1.relname AS table, " +
-		"seq_scan, seq_tup_read, idx_scan, idx_tup_fetch, n_tup_ins, n_tup_upd, n_tup_del, n_tup_hot_upd, " +
-		"n_live_tup, n_dead_tup, n_mod_since_analyze, " +
-		"extract('epoch' from age(now(), greatest(last_vacuum, last_autovacuum))) AS last_vacuum_seconds, " +
-		"extract('epoch' from age(now(), greatest(last_analyze, last_autoanalyze))) AS last_analyze_seconds, " +
-		"extract('epoch' from greatest(last_vacuum, last_autovacuum)) AS last_vacuum_time," +
-		"extract('epoch' from greatest(last_analyze, last_autoanalyze)) AS last_analyze_time," +
-		"vacuum_count, autovacuum_count, analyze_count, autoanalyze_count, heap_blks_read, heap_blks_hit, idx_blks_read, " +
-		"idx_blks_hit, toast_blks_read, toast_blks_hit, tidx_blks_read, tidx_blks_hit, " +
-		"pg_table_size(s1.relid) AS size_bytes, reltuples " +
-		"FROM pg_stat_user_tables s1 JOIN pg_statio_user_tables s2 USING (schemaname, relname) JOIN pg_class c ON s1.relid = c.oid " +
-		"WHERE NOT EXISTS (SELECT 1 FROM pg_locks WHERE relation = s1.relid AND mode = 'AccessExclusiveLock' AND granted)"
+	userTablesQuery = `
+	SELECT current_database() AS database,
+			s1.schemaname AS schema,
+			s1.relname AS table,
+			seq_scan,
+			seq_tup_read,
+			idx_scan,
+			idx_tup_fetch,
+			n_tup_ins,
+			n_tup_upd,
+			n_tup_del,
+			n_tup_hot_upd,
+			n_live_tup,
+			n_dead_tup,
+			n_mod_since_analyze,
+			extract('epoch' from age(now(), greatest(last_vacuum, last_autovacuum))) AS last_vacuum_seconds,
+			extract('epoch' from age(now(), greatest(last_analyze, last_autoanalyze))) AS last_analyze_seconds,
+			extract('epoch' from greatest(last_vacuum, last_autovacuum)) AS last_vacuum_time,
+			extract('epoch' from greatest(last_analyze, last_autoanalyze)) AS last_analyze_time,
+			vacuum_count,
+			autovacuum_count,
+			analyze_count,
+			autoanalyze_count,
+			heap_blks_read,
+			heap_blks_hit,
+			idx_blks_read,
+			idx_blks_hit,
+			toast_blks_read,
+			toast_blks_hit,
+			tidx_blks_read,
+			tidx_blks_hit,
+			pg_table_size(s1.relid) AS size_bytes,
+			reltuples
+	FROM pg_stat_user_tables s1 JOIN pg_statio_user_tables s2 USING (schemaname, relname) JOIN pg_class c ON s1.relid = c.oid
+	where
+	NOT EXISTS (SELECT 1 FROM pg_locks WHERE relation = s1.relid AND mode = 'AccessExclusiveLock' AND granted)
+`
+	userTablesQueryTopK = `
+	with stat as (
+		SELECT
+				s1.schemaname AS schema,
+				s1.relname AS table,
+				seq_scan,
+				seq_tup_read,
+				idx_scan,
+				idx_tup_fetch,
+				n_tup_ins,
+				n_tup_upd,
+				n_tup_del,
+				n_tup_hot_upd,
+				n_live_tup,
+				n_dead_tup,
+				n_mod_since_analyze,
+				extract('epoch' from age(now(), greatest(last_vacuum, last_autovacuum))) AS last_vacuum_seconds,
+				extract('epoch' from age(now(), greatest(last_analyze, last_autoanalyze))) AS last_analyze_seconds,
+				extract('epoch' from greatest(last_vacuum, last_autovacuum)) AS last_vacuum_time,
+				extract('epoch' from greatest(last_analyze, last_autoanalyze)) AS last_analyze_time,
+				vacuum_count,
+				autovacuum_count,
+				analyze_count,
+				autoanalyze_count,
+				heap_blks_read,
+				heap_blks_hit,
+				idx_blks_read,
+				idx_blks_hit,
+				toast_blks_read,
+				toast_blks_hit,
+				tidx_blks_read,
+				tidx_blks_hit,
+				pg_table_size(s1.relid) AS size_bytes,
+				reltuples,
+				(row_number() over (order by seq_scan desc nulls last) < $1) or
+				(row_number() over (order by seq_tup_read desc nulls last) < $1) or
+				(row_number() over (order by idx_scan desc nulls last) < $1) or
+				(row_number() over (order by idx_tup_fetch desc nulls last) < $1) or
+				(row_number() over (order by n_tup_ins desc nulls last) < $1) or
+				(row_number() over (order by n_tup_upd desc nulls last) < $1) or
+				(row_number() over (order by n_tup_del desc nulls last) < $1) or
+				(row_number() over (order by n_tup_hot_upd desc nulls last) < $1) or
+				(row_number() over (order by n_live_tup desc nulls last) < $1) or
+				(row_number() over (order by n_dead_tup desc nulls last) < $1) or
+				(row_number() over (order by n_mod_since_analyze desc nulls last) < $1) or
+				(row_number() over (order by vacuum_count desc nulls last) < $1) or
+				(row_number() over (order by autovacuum_count desc nulls last) < $1) or
+				(row_number() over (order by analyze_count desc nulls last) < $1) or
+				(row_number() over (order by heap_blks_read desc nulls last) < $1) or
+				(row_number() over (order by idx_blks_hit desc nulls last) < $1) or
+				(row_number() over (order by toast_blks_read desc nulls last) < $1) or
+				(row_number() over (order by toast_blks_hit desc nulls last) < $1) or
+				(row_number() over (order by pg_table_size(s1.relid) desc nulls last) < $1) or
+				(row_number() over (order by reltuples desc nulls last) < $1)
+				  as visible
+		FROM pg_stat_user_tables s1 JOIN pg_statio_user_tables s2 USING (schemaname, relname) JOIN pg_class c ON s1.relid = c.oid
+		where
+		NOT EXISTS (SELECT 1 FROM pg_locks WHERE relation = s1.relid AND mode = 'AccessExclusiveLock' AND granted)
+	)
+	select
+		current_database() AS database,
+		schema,
+		"table",
+		seq_scan,
+		seq_tup_read,
+		idx_scan,
+		idx_tup_fetch,
+		n_tup_ins,
+		n_tup_upd,
+		n_tup_del,
+		n_tup_hot_upd,
+		n_live_tup,
+		n_dead_tup,
+		n_mod_since_analyze,
+		last_vacuum_seconds,
+		last_analyze_seconds,
+		last_vacuum_time,
+		last_analyze_time,
+		vacuum_count,
+		autovacuum_count,
+		analyze_count,
+		autoanalyze_count,
+		heap_blks_read,
+		heap_blks_hit,
+		idx_blks_read,
+		idx_blks_hit,
+		toast_blks_read,
+		toast_blks_hit,
+		tidx_blks_read,
+		tidx_blks_hit,
+		size_bytes,
+		reltuples
+	from stat
+	where visible
+	union all
+	(select
+		current_database() AS database,
+		'all_shemas',
+		'all_other_tables',
+		nullif(sum(coalesce(seq_scan,0)),0),
+		nullif(sum(coalesce(seq_tup_read,0)),0),
+		nullif(sum(coalesce(idx_scan,0)),0),
+		nullif(sum(coalesce(idx_tup_fetch,0)),0),
+		nullif(sum(coalesce(n_tup_ins,0)),0),
+		nullif(sum(coalesce(n_tup_upd,0)),0),
+		nullif(sum(coalesce(n_tup_del,0)),0),
+		nullif(sum(coalesce(n_tup_hot_upd,0)),0),
+		nullif(sum(coalesce(n_live_tup,0)),0),
+		nullif(sum(coalesce(n_dead_tup,0)),0),
+		nullif(sum(coalesce(n_mod_since_analyze,0)),0),
+		null,
+		null,
+		null,
+		null,
+		nullif(sum(coalesce(vacuum_count,0)),0),
+		nullif(sum(coalesce(autovacuum_count,0)),0),
+		nullif(sum(coalesce(analyze_count,0)),0),
+		nullif(sum(coalesce(autoanalyze_count,0)),0),
+		nullif(sum(coalesce(heap_blks_read,0)),0),
+		nullif(sum(coalesce(heap_blks_hit,0)),0),
+		nullif(sum(coalesce(idx_blks_read,0)),0),
+		nullif(sum(coalesce(idx_blks_hit,0)),0),
+		nullif(sum(coalesce(toast_blks_read,0)),0),
+		nullif(sum(coalesce(toast_blks_hit,0)),0),
+		nullif(sum(coalesce(tidx_blks_read,0)),0),
+		nullif(sum(coalesce(tidx_blks_hit, 0)),0),
+		nullif(sum(coalesce(size_bytes,0)),0),
+		nullif(sum(coalesce(reltuples,0)),0)
+	from stat
+	where not visible and false
+	having exists (select 1 from stat where not visible))
+`
 )
 
 // postgresTablesCollector defines metric descriptors and stats store.
@@ -177,6 +334,8 @@ func NewPostgresTablesCollector(constLabels labels, settings model.CollectorSett
 
 // Update method collects statistics, parse it and produces metrics that are sent to Prometheus.
 func (c *postgresTablesCollector) Update(config Config, ch chan<- prometheus.Metric) error {
+	var err error
+
 	conn, err := store.New(config.ConnString)
 	if err != nil {
 		return err
@@ -205,8 +364,12 @@ func (c *postgresTablesCollector) Update(config Config, ch chan<- prometheus.Met
 		if err != nil {
 			return err
 		}
-
-		res, err := conn.Query(userTablesQuery)
+		var res *model.PGResult
+		if config.CollectTopTable > 0 {
+			res, err = conn.Query(userTablesQueryTopK, config.CollectTopTable)
+		} else {
+			res, err = conn.Query(userTablesQuery)
+		}
 		conn.Close()
 		if err != nil {
 			log.Warnf("get tables stat of database '%s' failed: %s; skip", d, err)

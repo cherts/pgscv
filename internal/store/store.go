@@ -4,9 +4,9 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"github.com/jackc/pgx/v4"
 	"github.com/cherts/pgscv/internal/log"
 	"github.com/cherts/pgscv/internal/model"
+	"github.com/jackc/pgx/v4"
 )
 
 const (
@@ -64,7 +64,9 @@ func NewWithConfig(config *pgx.ConnConfig) (*DB, error) {
 /* public db methods */
 
 // Query is a wrapper on private query() method.
-func (db *DB) Query(query string) (*model.PGResult, error) { return db.query(query) }
+func (db *DB) Query(query string, args ...interface{}) (*model.PGResult, error) {
+	return db.query(query, args...)
+}
 
 // Close is wrapper on private close() method.
 func (db *DB) Close() { db.close() }
@@ -75,8 +77,8 @@ func (db *DB) Conn() *pgx.Conn { return db.conn }
 /* private db methods */
 
 // Query method executes passed query and wraps result into model.PGResult struct.
-func (db *DB) query(query string) (*model.PGResult, error) {
-	rows, err := db.Conn().Query(context.Background(), query)
+func (db *DB) query(query string, args ...interface{}) (*model.PGResult, error) {
+	rows, err := db.Conn().Query(context.Background(), query, args...)
 	if err != nil {
 		return nil, err
 	}

@@ -42,6 +42,9 @@ type Config struct {
 	DisabledCollectors []string
 	// CollectorsSettings defines all collector settings propagated from main YAML configuration.
 	CollectorsSettings model.CollectorsSettings
+	CollectTopTable    int
+	CollectTopIndex    int
+	CollectTopQuery    int
 }
 
 // Collector is an interface for prometheus.Collector.
@@ -184,11 +187,14 @@ func (repo *Repository) setupServices(config Config) error {
 		if service.Collector == nil {
 			factories := collector.Factories{}
 			collectorConfig := collector.Config{
-				NoTrackMode: config.NoTrackMode,
-				ServiceType: service.ConnSettings.ServiceType,
-				ConnString:  service.ConnSettings.Conninfo,
-				Settings:    config.CollectorsSettings,
-				DatabasesRE: config.DatabasesRE,
+				NoTrackMode:     config.NoTrackMode,
+				ServiceType:     service.ConnSettings.ServiceType,
+				ConnString:      service.ConnSettings.Conninfo,
+				Settings:        config.CollectorsSettings,
+				DatabasesRE:     config.DatabasesRE,
+				CollectTopTable: config.CollectTopTable,
+				CollectTopIndex: config.CollectTopIndex,
+				CollectTopQuery: config.CollectTopQuery,
 			}
 
 			switch service.ConnSettings.ServiceType {

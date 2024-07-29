@@ -2,18 +2,18 @@ package pgscv
 
 import (
 	"fmt"
-	"io/fs"
-	"os"
-	"path/filepath"
-	"regexp"
-	"strings"
-
 	"github.com/cherts/pgscv/internal/http"
 	"github.com/cherts/pgscv/internal/log"
 	"github.com/cherts/pgscv/internal/model"
 	"github.com/cherts/pgscv/internal/service"
 	"github.com/jackc/pgx/v4"
 	"gopkg.in/yaml.v2"
+	"io/fs"
+	"os"
+	"path/filepath"
+	"regexp"
+	"strconv"
+	"strings"
 )
 
 const (
@@ -34,7 +34,11 @@ type Config struct {
 	CollectorsSettings    model.CollectorsSettings `yaml:"collectors"`         // Collectors settings propagated from main YAML configuration
 	Databases             string                   `yaml:"databases"`          // Regular expression string specifies databases from which metrics should be collected
 	DatabasesRE           *regexp.Regexp           // Regular expression object compiled from Databases
-	AuthConfig            http.AuthConfig          `yaml:"authentication"` // TLS and Basic auth configuration
+	AuthConfig            http.AuthConfig          `yaml:"authentication"`    // TLS and Basic auth configuration
+	CollectTopTable       int                      `yaml:"collect_top_table"` // Limit elements on Table collector
+	CollectTopIndex       int                      `yaml:"collect_top_index"` // Limit elements on Indexes collector
+	CollectTopQuery       int                      `yaml:"collect_top_query"` // Limit elements on Statements collector
+
 }
 
 // NewConfig creates new config based on config file or return default config if config file is not specified.
@@ -93,6 +97,16 @@ func NewConfig(configFilePath string) (*Config, error) {
 		// Set AuthConfig settings
 		if configFromEnv.AuthConfig != (http.AuthConfig{}) {
 			configFromFile.AuthConfig = configFromEnv.AuthConfig
+		}
+
+		if configFromFile.CollectTopTable > 0 {
+			configFromFile.CollectTopTable = configFromEnv.CollectTopTable
+		}
+		if configFromFile.CollectTopIndex > 0 {
+			configFromFile.CollectTopIndex = configFromEnv.CollectTopIndex
+		}
+		if configFromFile.CollectTopQuery > 0 {
+			configFromFile.CollectTopQuery = configFromEnv.CollectTopQuery
 		}
 		return configFromFile, nil
 	}
@@ -225,7 +239,15 @@ func (c *Config) Validate() error {
 	}
 	c.AuthConfig.EnableAuth = enableAuth
 	c.AuthConfig.EnableTLS = enableTLS
-
+	if c.CollectTopTable > 0 {
+		log.Infoln("TopTable: limit enabled")
+	}
+	if c.CollectTopIndex > 0 {
+		log.Infoln("TopIndex: limit enabled")
+	}
+	if c.CollectTopQuery > 0 {
+		log.Infoln("TopQuery: limit enabled")
+	}
 	return nil
 }
 
@@ -370,6 +392,24 @@ func newConfigFromEnv() (*Config, error) {
 			config.AuthConfig.Keyfile = value
 		case "PGSCV_AUTH_CERTFILE":
 			config.AuthConfig.Certfile = value
+		case "PGSCV_COLLECT_TOP_TABLE":
+			collectTopTable, err := strconv.Atoi(value)
+			if (err != nil) || (collectTopTable < 0 || collectTopTable > 1000) {
+				return nil, fmt.Errorf("invalid PGSCV_COLLECT_TOP_TABLE value '%s'", value)
+			}
+			config.CollectTopTable = collectTopTable
+		case "PGSCV_COLLECT_TOP_INDEX":
+			collectTopIndex, err := strconv.Atoi(value)
+			if (err != nil) || (collectTopIndex < 0 || collectTopIndex > 1000) {
+				return nil, fmt.Errorf("invalid PGSCV_COLLECT_TOP_INDEX value '%s'", value)
+			}
+			config.CollectTopIndex = collectTopIndex
+		case "PGSCV_COLLECT_TOP_QUERY":
+			collectTopQuery, err := strconv.Atoi(value)
+			if (err != nil) || (collectTopQuery < 0 || collectTopQuery > 1000) {
+				return nil, fmt.Errorf("invalid PGSCV_COLLECT_TOP_QUERY value '%s'", value)
+			}
+			config.CollectTopQuery = collectTopQuery
 		}
 	}
 

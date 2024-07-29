@@ -13,6 +13,7 @@ import (
 )
 
 const (
+	// $1=$1 - stub, todo refactoring
 	// postgresStatementsQuery12 defines query for querying statements metrics for PG12 and older.
 	postgresStatementsQuery12 = "SELECT d.datname AS database, pg_get_userbyid(p.userid) AS user, p.queryid, " +
 		"coalesce(%s, '') AS query, p.calls, p.rows, p.total_time, p.blk_read_time, p.blk_write_time, " +
@@ -21,19 +22,146 @@ const (
 		"nullif(p.local_blks_hit, 0) AS local_blks_hit, nullif(p.local_blks_read, 0) AS local_blks_read, " +
 		"nullif(p.local_blks_dirtied, 0) AS local_blks_dirtied, nullif(p.local_blks_written, 0) AS local_blks_written, " +
 		"nullif(p.temp_blks_read, 0) AS temp_blks_read, nullif(p.temp_blks_written, 0) AS temp_blks_written " +
-		"FROM %s.pg_stat_statements p JOIN pg_database d ON d.oid=p.dbid"
+		"FROM %s.pg_stat_statements p JOIN pg_database d ON d.oid=p.dbid and $1=$1"
 
 	// postgresStatementsQueryLatest defines query for querying statements metrics.
 	// 1. use nullif(value, 0) to nullify zero values, NULL are skipped by stats method and metrics wil not be generated.
-	postgresStatementsQueryLatest = "SELECT d.datname AS database, pg_get_userbyid(p.userid) AS user, p.queryid, " +
-		"coalesce(%s, '') AS query, p.calls, p.rows, p.total_exec_time, p.total_plan_time, p.blk_read_time, p.blk_write_time, " +
-		"nullif(p.shared_blks_hit, 0) AS shared_blks_hit, nullif(p.shared_blks_read, 0) AS shared_blks_read, " +
-		"nullif(p.shared_blks_dirtied, 0) AS shared_blks_dirtied, nullif(p.shared_blks_written, 0) AS shared_blks_written, " +
-		"nullif(p.local_blks_hit, 0) AS local_blks_hit, nullif(p.local_blks_read, 0) AS local_blks_read, " +
-		"nullif(p.local_blks_dirtied, 0) AS local_blks_dirtied, nullif(p.local_blks_written, 0) AS local_blks_written, " +
-		"nullif(p.temp_blks_read, 0) AS temp_blks_read, nullif(p.temp_blks_written, 0) AS temp_blks_written, " +
-		"nullif(p.wal_records, 0) AS wal_records, nullif(p.wal_fpi, 0) AS wal_fpi, nullif(p.wal_bytes, 0) AS wal_bytes " +
-		"FROM %s.pg_stat_statements p JOIN pg_database d ON d.oid=p.dbid"
+	postgresStatementsQueryLatest = `
+	select
+		d.datname as database,
+		pg_get_userbyid(p.userid) as user,
+		p.queryid,
+		coalesce(%s, '') as query,
+		p.calls,
+		p.rows,
+		p.total_exec_time,
+		p.total_plan_time,
+		p.blk_read_time,
+		p.blk_write_time,
+		nullif(p.shared_blks_hit, 0) as shared_blks_hit,
+		nullif(p.shared_blks_read, 0) as shared_blks_read,
+		nullif(p.shared_blks_dirtied, 0) as shared_blks_dirtied,
+		nullif(p.shared_blks_written, 0) as shared_blks_written,
+		nullif(p.local_blks_hit, 0) as local_blks_hit,
+		nullif(p.local_blks_read, 0) as local_blks_read,
+		nullif(p.local_blks_dirtied, 0) as local_blks_dirtied,
+		nullif(p.local_blks_written, 0) as local_blks_written,
+		nullif(p.temp_blks_read, 0) as temp_blks_read,
+		nullif(p.temp_blks_written, 0) as temp_blks_written,
+		nullif(p.wal_records, 0) as wal_records,
+		nullif(p.wal_fpi, 0) as wal_fpi,
+		nullif(p.wal_bytes, 0) as wal_bytes
+	from
+		%s.pg_stat_statements p
+	join pg_database d on
+		d.oid = p.dbid
+`
+
+	postgresStatementsQueryLatestTopK = `
+	with stat as (
+		select
+			d.datname as database,
+			pg_get_userbyid(p.userid) as user,
+			p.queryid,
+			coalesce(%s, '') as query,
+			p.calls,
+			p.rows,
+			p.total_exec_time,
+			p.total_plan_time,
+			p.blk_read_time,
+			p.blk_write_time,
+			nullif(p.shared_blks_hit, 0) as shared_blks_hit,
+			nullif(p.shared_blks_read, 0) as shared_blks_read,
+			nullif(p.shared_blks_dirtied, 0) as shared_blks_dirtied,
+			nullif(p.shared_blks_written, 0) as shared_blks_written,
+			nullif(p.local_blks_hit, 0) as local_blks_hit,
+			nullif(p.local_blks_read, 0) as local_blks_read,
+			nullif(p.local_blks_dirtied, 0) as local_blks_dirtied,
+			nullif(p.local_blks_written, 0) as local_blks_written,
+			nullif(p.temp_blks_read, 0) as temp_blks_read,
+			nullif(p.temp_blks_written, 0) as temp_blks_written,
+			nullif(p.wal_records, 0) as wal_records,
+			nullif(p.wal_fpi, 0) as wal_fpi,
+			nullif(p.wal_bytes, 0) as wal_bytes,
+			(row_number() over (order by p.calls desc nulls last) < $1) or
+			(row_number() over (order by p.rows desc nulls last) < $1) or
+			(row_number() over (order by p.total_exec_time desc nulls last) < $1) or
+			(row_number() over (order by p.total_plan_time desc nulls last) < $1) or
+			(row_number() over (order by p.blk_read_time desc nulls last) < $1) or
+			(row_number() over (order by p.blk_write_time desc nulls last) < $1) or
+			(row_number() over (order by p.shared_blks_hit desc nulls last) < $1) or
+			(row_number() over (order by p.shared_blks_read desc nulls last) < $1) or
+			(row_number() over (order by p.shared_blks_dirtied desc nulls last) < $1) or
+			(row_number() over (order by p.shared_blks_written desc nulls last) < $1) or
+			(row_number() over (order by p.local_blks_hit desc nulls last) < $1) or
+			(row_number() over (order by p.local_blks_read desc nulls last) < $1) or
+			(row_number() over (order by p.local_blks_dirtied desc nulls last) < $1) or
+			(row_number() over (order by p.local_blks_written desc nulls last) < $1) or
+			(row_number() over (order by p.temp_blks_read desc nulls last) < $1) or
+			(row_number() over (order by p.temp_blks_written desc nulls last) < $1) or
+			(row_number() over (order by p.wal_records desc nulls last) < $1) or
+			(row_number() over (order by p.wal_fpi desc nulls last) < $1) or
+			(row_number() over (order by p.wal_bytes desc nulls last) < $1) 
+				as visible
+		from
+			%s.pg_stat_statements p
+		join pg_database d on
+			d.oid = p.dbid
+	)
+	select
+		database,
+		user,
+		queryid,
+		query,
+		calls,
+		rows,
+		total_exec_time,
+		total_plan_time,
+		blk_read_time,
+		blk_write_time,
+		shared_blks_hit,
+		shared_blks_read,
+		shared_blks_dirtied,
+		shared_blks_written,
+		local_blks_hit,
+		local_blks_read,
+		local_blks_dirtied,
+		local_blks_written,
+		temp_blks_read,
+		temp_blks_written,
+		wal_records,
+		wal_fpi,
+		wal_bytes
+	from stat where visible
+	union all
+	select
+		database,
+		'all_users',
+		null,
+		'all_queries',
+		nullif(sum(coalesce(calls,0)),0),
+		nullif(sum(coalesce(rows,0)),0),
+		nullif(sum(coalesce(total_exec_time,0)),0),
+		nullif(sum(coalesce(total_plan_time,0)),0),
+		nullif(sum(coalesce(blk_read_time,0)),0),
+		nullif(sum(coalesce(blk_write_time,0)),0),
+		nullif(sum(coalesce(shared_blks_hit,0)),0),
+		nullif(sum(coalesce(shared_blks_read,0)),0),
+		nullif(sum(coalesce(shared_blks_dirtied,0)),0),
+		nullif(sum(coalesce(shared_blks_written,0)),0),
+		nullif(sum(coalesce(local_blks_hit,0)),0),
+		nullif(sum(coalesce(local_blks_read,0)),0),
+		nullif(sum(coalesce(local_blks_dirtied,0)),0),
+		nullif(sum(coalesce(local_blks_written,0)),0),
+		nullif(sum(coalesce(temp_blks_read,0)),0),
+		nullif(sum(coalesce(temp_blks_written,0)),0),
+		nullif(sum(coalesce(wal_records,0)),0),
+		nullif(sum(coalesce(wal_fpi,0)),0),
+		nullif(sum(coalesce(wal_bytes,0)),0)
+	from stat where not visible
+    group by database
+	having exists (select 1 from stat where not visible)
+`
 )
 
 // postgresStatementsCollector ...
@@ -175,6 +303,7 @@ func NewPostgresStatementsCollector(constLabels labels, settings model.Collector
 
 // Update method collects statistics, parse it and produces metrics that are sent to Prometheus.
 func (c *postgresStatementsCollector) Update(config Config, ch chan<- prometheus.Metric) error {
+	var err error
 	// nothing to do, pg_stat_statements not found in shared_preload_libraries
 	if !config.pgStatStatements {
 		return nil
@@ -198,9 +327,13 @@ func (c *postgresStatementsCollector) Update(config Config, ch chan<- prometheus
 	}
 
 	defer conn.Close()
-
+	var res *model.PGResult
 	// get pg_stat_statements stats
-	res, err := conn.Query(selectStatementsQuery(config.serverVersionNum, config.pgStatStatementsSchema, config.NoTrackMode))
+	if config.CollectTopQuery > 0 {
+		res, err = conn.Query(selectStatementsQuery(config.serverVersionNum, config.pgStatStatementsSchema, config.NoTrackMode, config.CollectTopQuery), config.CollectTopQuery)
+	} else {
+		res, err = conn.Query(selectStatementsQuery(config.serverVersionNum, config.pgStatStatementsSchema, config.NoTrackMode, config.CollectTopQuery))
+	}
 	if err != nil {
 		return err
 	}
@@ -419,7 +552,7 @@ func parsePostgresStatementsStats(r *model.PGResult, labelNames []string) map[st
 }
 
 // selectStatementsQuery returns suitable statements query depending on passed version.
-func selectStatementsQuery(version int, schema string, notrackmode bool) string {
+func selectStatementsQuery(version int, schema string, notrackmode bool, topK int) string {
 	var query_columm string
 	if notrackmode {
 		query_columm = "null"
@@ -430,6 +563,9 @@ func selectStatementsQuery(version int, schema string, notrackmode bool) string 
 	case version < PostgresV13:
 		return fmt.Sprintf(postgresStatementsQuery12, query_columm, schema)
 	default:
+		if topK > 0 {
+			return fmt.Sprintf(postgresStatementsQueryLatestTopK, query_columm, schema)
+		}
 		return fmt.Sprintf(postgresStatementsQueryLatest, query_columm, schema)
 	}
 }
