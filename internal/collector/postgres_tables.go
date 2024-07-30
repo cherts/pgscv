@@ -45,15 +45,15 @@ const (
 		"n_tup_hot_upd, n_live_tup, n_dead_tup, n_mod_since_analyze, last_vacuum_seconds, last_analyze_seconds, last_vacuum_time, last_analyze_time, " +
 		"vacuum_count, autovacuum_count, analyze_count, autoanalyze_count, heap_blks_read, heap_blks_hit, idx_blks_read, idx_blks_hit, toast_blks_read, " +
 		"toast_blks_hit, tidx_blks_read, tidx_blks_hit, size_bytes, reltuples FROM stat WHERE visible UNION ALL (SELECT current_database() AS database, " +
-		"'all_shemas', 'all_other_tables', NULLIF(SUM(COALEASCE(seq_scan,0)),0), NULLIF(SUM(COALEASCE(seq_tup_read,0)),0), NULLIF(SUM(COALEASCE(idx_scan,0)),0), " +
-		"NULLIF(SUM(COALEASCE(idx_tup_fetch,0)),0), NULLIF(SUM(COALEASCE(n_tup_ins,0)),0), NULLIF(SUM(COALEASCE(n_tup_upd,0)),0), " +
-		"NULLIF(SUM(COALEASCE(n_tup_del,0)),0), NULLIF(SUM(COALEASCE(n_tup_hot_upd,0)),0), NULLIF(SUM(COALEASCE(n_live_tup,0)),0), " +
-		"NULLIF(SUM(COALEASCE(n_dead_tup,0)),0), NULLIF(SUM(COALEASCE(n_mod_since_analyze,0)),0), NULL, NULL, NULL, NULL, " +
-		"NULLIF(SUM(COALEASCE(vacuum_count,0)),0), NULLIF(SUM(COALEASCE(autovacuum_count,0)),0), NULLIF(SUM(COALEASCE(analyze_count,0)),0), " +
-		"NULLIF(SUM(COALEASCE(autoanalyze_count,0)),0), NULLIF(SUM(COALEASCE(heap_blks_read,0)),0), NULLIF(SUM(COALEASCE(heap_blks_hit,0)),0), " +
-		"NULLIF(SUM(COALEASCE(idx_blks_read,0)),0), NULLIF(SUM(COALEASCE(idx_blks_hit,0)),0), NULLIF(SUM(COALEASCE(toast_blks_read,0)),0), " +
-		"NULLIF(SUM(COALEASCE(toast_blks_hit,0)),0), NULLIF(SUM(COALEASCE(tidx_blks_read,0)),0), NULLIF(SUM(COALEASCE(tidx_blks_hit, 0)),0), " +
-		"NULLIF(SUM(COALEASCE(size_bytes,0)),0), NULLIF(SUM(COALEASCE(reltuples,0)),0) FROM stat " +
+		"'all_shemas', 'all_other_tables', NULLIF(SUM(COALESCE(seq_scan,0)),0), NULLIF(SUM(COALESCE(seq_tup_read,0)),0), NULLIF(SUM(COALESCE(idx_scan,0)),0), " +
+		"NULLIF(SUM(COALESCE(idx_tup_fetch,0)),0), NULLIF(SUM(COALESCE(n_tup_ins,0)),0), NULLIF(SUM(COALESCE(n_tup_upd,0)),0), " +
+		"NULLIF(SUM(COALESCE(n_tup_del,0)),0), NULLIF(SUM(COALESCE(n_tup_hot_upd,0)),0), NULLIF(SUM(COALESCE(n_live_tup,0)),0), " +
+		"NULLIF(SUM(COALESCE(n_dead_tup,0)),0), NULLIF(SUM(COALESCE(n_mod_since_analyze,0)),0), NULL, NULL, NULL, NULL, " +
+		"NULLIF(SUM(COALESCE(vacuum_count,0)),0), NULLIF(SUM(COALESCE(autovacuum_count,0)),0), NULLIF(SUM(COALESCE(analyze_count,0)),0), " +
+		"NULLIF(SUM(COALESCE(autoanalyze_count,0)),0), NULLIF(SUM(COALESCE(heap_blks_read,0)),0), NULLIF(SUM(COALESCE(heap_blks_hit,0)),0), " +
+		"NULLIF(SUM(COALESCE(idx_blks_read,0)),0), NULLIF(SUM(COALESCE(idx_blks_hit,0)),0), NULLIF(SUM(COALESCE(toast_blks_read,0)),0), " +
+		"NULLIF(SUM(COALESCE(toast_blks_hit,0)),0), NULLIF(SUM(COALESCE(tidx_blks_read,0)),0), NULLIF(SUM(COALESCE(tidx_blks_hit, 0)),0), " +
+		"NULLIF(SUM(COALESCE(size_bytes,0)),0), NULLIF(SUM(COALESCE(reltuples,0)),0) FROM stat " +
 		"WHERE NOT visible HAVING EXISTS (SELECT 1 FROM stat WHERE NOT visible))"
 )
 
