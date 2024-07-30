@@ -26,142 +26,44 @@ const (
 
 	// postgresStatementsQueryLatest defines query for querying statements metrics.
 	// 1. use nullif(value, 0) to nullify zero values, NULL are skipped by stats method and metrics wil not be generated.
-	postgresStatementsQueryLatest = `
-	select
-		d.datname as database,
-		pg_get_userbyid(p.userid) as user,
-		p.queryid,
-		coalesce(%s, '') as query,
-		p.calls,
-		p.rows,
-		p.total_exec_time,
-		p.total_plan_time,
-		p.blk_read_time,
-		p.blk_write_time,
-		nullif(p.shared_blks_hit, 0) as shared_blks_hit,
-		nullif(p.shared_blks_read, 0) as shared_blks_read,
-		nullif(p.shared_blks_dirtied, 0) as shared_blks_dirtied,
-		nullif(p.shared_blks_written, 0) as shared_blks_written,
-		nullif(p.local_blks_hit, 0) as local_blks_hit,
-		nullif(p.local_blks_read, 0) as local_blks_read,
-		nullif(p.local_blks_dirtied, 0) as local_blks_dirtied,
-		nullif(p.local_blks_written, 0) as local_blks_written,
-		nullif(p.temp_blks_read, 0) as temp_blks_read,
-		nullif(p.temp_blks_written, 0) as temp_blks_written,
-		nullif(p.wal_records, 0) as wal_records,
-		nullif(p.wal_fpi, 0) as wal_fpi,
-		nullif(p.wal_bytes, 0) as wal_bytes
-	from
-		%s.pg_stat_statements p
-	join pg_database d on
-		d.oid = p.dbid
-`
+	postgresStatementsQueryLatest = "SELECT d.datname AS database, pg_get_userbyid(p.userid) AS user, p.queryid, " +
+		"coalesce(%s, '') AS query, p.calls, p.rows, p.total_exec_time, p.total_plan_time, p.blk_read_time, p.blk_write_time, " +
+		"nullif(p.shared_blks_hit, 0) AS shared_blks_hit, nullif(p.shared_blks_read, 0) AS shared_blks_read, " +
+		"nullif(p.shared_blks_dirtied, 0) AS shared_blks_dirtied, nullif(p.shared_blks_written, 0) AS shared_blks_written, " +
+		"nullif(p.local_blks_hit, 0) AS local_blks_hit, nullif(p.local_blks_read, 0) AS local_blks_read, " +
+		"nullif(p.local_blks_dirtied, 0) AS local_blks_dirtied, nullif(p.local_blks_written, 0) AS local_blks_written, " +
+		"nullif(p.temp_blks_read, 0) AS temp_blks_read, nullif(p.temp_blks_written, 0) AS temp_blks_written, " +
+		"nullif(p.wal_records, 0) AS wal_records, nullif(p.wal_fpi, 0) AS wal_fpi, nullif(p.wal_bytes, 0) AS wal_bytes " +
+		"FROM %s.pg_stat_statements p JOIN pg_database d ON d.oid=p.dbid"
 
-	postgresStatementsQueryLatestTopK = `
-	with stat as (
-		select
-			d.datname as database,
-			pg_get_userbyid(p.userid) as user,
-			p.queryid,
-			coalesce(%s, '') as query,
-			p.calls,
-			p.rows,
-			p.total_exec_time,
-			p.total_plan_time,
-			p.blk_read_time,
-			p.blk_write_time,
-			nullif(p.shared_blks_hit, 0) as shared_blks_hit,
-			nullif(p.shared_blks_read, 0) as shared_blks_read,
-			nullif(p.shared_blks_dirtied, 0) as shared_blks_dirtied,
-			nullif(p.shared_blks_written, 0) as shared_blks_written,
-			nullif(p.local_blks_hit, 0) as local_blks_hit,
-			nullif(p.local_blks_read, 0) as local_blks_read,
-			nullif(p.local_blks_dirtied, 0) as local_blks_dirtied,
-			nullif(p.local_blks_written, 0) as local_blks_written,
-			nullif(p.temp_blks_read, 0) as temp_blks_read,
-			nullif(p.temp_blks_written, 0) as temp_blks_written,
-			nullif(p.wal_records, 0) as wal_records,
-			nullif(p.wal_fpi, 0) as wal_fpi,
-			nullif(p.wal_bytes, 0) as wal_bytes,
-			(row_number() over (order by p.calls desc nulls last) < $1) or
-			(row_number() over (order by p.rows desc nulls last) < $1) or
-			(row_number() over (order by p.total_exec_time desc nulls last) < $1) or
-			(row_number() over (order by p.total_plan_time desc nulls last) < $1) or
-			(row_number() over (order by p.blk_read_time desc nulls last) < $1) or
-			(row_number() over (order by p.blk_write_time desc nulls last) < $1) or
-			(row_number() over (order by p.shared_blks_hit desc nulls last) < $1) or
-			(row_number() over (order by p.shared_blks_read desc nulls last) < $1) or
-			(row_number() over (order by p.shared_blks_dirtied desc nulls last) < $1) or
-			(row_number() over (order by p.shared_blks_written desc nulls last) < $1) or
-			(row_number() over (order by p.local_blks_hit desc nulls last) < $1) or
-			(row_number() over (order by p.local_blks_read desc nulls last) < $1) or
-			(row_number() over (order by p.local_blks_dirtied desc nulls last) < $1) or
-			(row_number() over (order by p.local_blks_written desc nulls last) < $1) or
-			(row_number() over (order by p.temp_blks_read desc nulls last) < $1) or
-			(row_number() over (order by p.temp_blks_written desc nulls last) < $1) or
-			(row_number() over (order by p.wal_records desc nulls last) < $1) or
-			(row_number() over (order by p.wal_fpi desc nulls last) < $1) or
-			(row_number() over (order by p.wal_bytes desc nulls last) < $1) 
-				as visible
-		from
-			%s.pg_stat_statements p
-		join pg_database d on
-			d.oid = p.dbid
-	)
-	select
-		database,
-		user,
-		queryid,
-		query,
-		calls,
-		rows,
-		total_exec_time,
-		total_plan_time,
-		blk_read_time,
-		blk_write_time,
-		shared_blks_hit,
-		shared_blks_read,
-		shared_blks_dirtied,
-		shared_blks_written,
-		local_blks_hit,
-		local_blks_read,
-		local_blks_dirtied,
-		local_blks_written,
-		temp_blks_read,
-		temp_blks_written,
-		wal_records,
-		wal_fpi,
-		wal_bytes
-	from stat where visible
-	union all
-	select
-		database,
-		'all_users',
-		null,
-		'all_queries',
-		nullif(sum(coalesce(calls,0)),0),
-		nullif(sum(coalesce(rows,0)),0),
-		nullif(sum(coalesce(total_exec_time,0)),0),
-		nullif(sum(coalesce(total_plan_time,0)),0),
-		nullif(sum(coalesce(blk_read_time,0)),0),
-		nullif(sum(coalesce(blk_write_time,0)),0),
-		nullif(sum(coalesce(shared_blks_hit,0)),0),
-		nullif(sum(coalesce(shared_blks_read,0)),0),
-		nullif(sum(coalesce(shared_blks_dirtied,0)),0),
-		nullif(sum(coalesce(shared_blks_written,0)),0),
-		nullif(sum(coalesce(local_blks_hit,0)),0),
-		nullif(sum(coalesce(local_blks_read,0)),0),
-		nullif(sum(coalesce(local_blks_dirtied,0)),0),
-		nullif(sum(coalesce(local_blks_written,0)),0),
-		nullif(sum(coalesce(temp_blks_read,0)),0),
-		nullif(sum(coalesce(temp_blks_written,0)),0),
-		nullif(sum(coalesce(wal_records,0)),0),
-		nullif(sum(coalesce(wal_fpi,0)),0),
-		nullif(sum(coalesce(wal_bytes,0)),0)
-	from stat where not visible
-    group by database
-	having exists (select 1 from stat where not visible)
-`
+	postgresStatementsQueryLatestTopK = "WITH stat AS (SELECT d.datname AS DATABASE, pg_get_userbyid(p.userid) AS USER, p.queryid, " +
+		"COALESCE(%s, '') AS query, p.calls, p.rows, p.total_exec_time, p.total_plan_time, p.blk_read_time, p.blk_write_time, " +
+		"NULLIF(p.shared_blks_hit, 0) AS shared_blks_hit, NULLIF(p.shared_blks_read, 0) AS shared_blks_read, " +
+		"NULLIF(p.shared_blks_dirtied, 0) AS shared_blks_dirtied, NULLIF(p.shared_blks_written, 0) AS shared_blks_written, " +
+		"NULLIF(p.local_blks_hit, 0) AS local_blks_hit, NULLIF(p.local_blks_read, 0) AS local_blks_read, " +
+		"NULLIF(p.local_blks_dirtied, 0) AS local_blks_dirtied, NULLIF(p.local_blks_written, 0) AS local_blks_written, " +
+		"NULLIF(p.temp_blks_read, 0) AS temp_blks_read, NULLIF(p.temp_blks_written, 0) AS temp_blks_written, " +
+		"NULLIF(p.wal_records, 0) AS wal_records, NULLIF(p.wal_fpi, 0) AS wal_fpi, NULLIF(p.wal_bytes, 0) AS wal_bytes, " +
+		"(ROW_NUMBER() OVER ( ORDER BY p.calls DESC NULLS LAST) < $1) OR (ROW_NUMBER() OVER ( ORDER BY p.rows DESC NULLS LAST) < $1) OR " +
+		"(ROW_NUMBER() OVER ( ORDER BY p.total_exec_time DESC NULLS LAST) < $1) OR (ROW_NUMBER() OVER ( ORDER BY p.total_plan_time DESC NULLS LAST) < $1) OR " +
+		"(ROW_NUMBER() OVER ( ORDER BY p.blk_read_time DESC NULLS LAST) < $1) OR (ROW_NUMBER() OVER ( ORDER BY p.blk_write_time DESC NULLS LAST) < $1) OR " +
+		"(ROW_NUMBER() OVER ( ORDER BY p.shared_blks_hit DESC NULLS LAST) < $1) OR (ROW_NUMBER() OVER ( ORDER BY p.shared_blks_read DESC NULLS LAST) < $1) OR " +
+		"(ROW_NUMBER() OVER ( ORDER BY p.shared_blks_dirtied DESC NULLS LAST) < $1) OR (ROW_NUMBER() OVER ( ORDER BY p.shared_blks_written DESC NULLS LAST) < $1) OR " +
+		"(ROW_NUMBER() OVER ( ORDER BY p.local_blks_hit DESC NULLS LAST) < $1) OR (ROW_NUMBER() OVER ( ORDER BY p.local_blks_read DESC NULLS LAST) < $1) OR " +
+		"(ROW_NUMBER() OVER ( ORDER BY p.local_blks_dirtied DESC NULLS LAST) < $1) OR (ROW_NUMBER() OVER ( ORDER BY p.local_blks_written DESC NULLS LAST) < $1) OR " +
+		"(ROW_NUMBER() OVER ( ORDER BY p.temp_blks_read DESC NULLS LAST) < $1) OR (ROW_NUMBER() OVER ( ORDER BY p.temp_blks_written DESC NULLS LAST) < $1) OR " +
+		"(ROW_NUMBER() OVER ( ORDER BY p.wal_records DESC NULLS LAST) < $1) OR (ROW_NUMBER() OVER ( ORDER BY p.wal_fpi DESC NULLS LAST) < $1) OR " +
+		"(ROW_NUMBER() OVER ( ORDER BY p.wal_bytes DESC NULLS LAST) < $1) AS visible FROM %s.pg_stat_statements p JOIN pg_database d ON d.oid = p.dbid) " +
+		"SELECT DATABASE, USER, queryid, query, calls, rows, total_exec_time, total_plan_time, blk_read_time, blk_write_time, shared_blks_hit, " +
+		"shared_blks_read, shared_blks_dirtied, shared_blks_written, local_blks_hit, local_blks_read, local_blks_dirtied, local_blks_written, " +
+		"temp_blks_read, temp_blks_written, wal_records, wal_fpi, wal_bytes FROM stat WHERE visible UNION ALL SELECT DATABASE, 'all_users', NULL, " +
+		"'all_queries', NULLIF(sum(COALESCE(calls, 0)), 0), NULLIF(sum(COALESCE(ROWS, 0)), 0), NULLIF(sum(COALESCE(total_exec_time, 0)), 0), " +
+		"NULLIF(sum(COALESCE(total_plan_time, 0)), 0), NULLIF(sum(COALESCE(blk_read_time, 0)), 0), NULLIF(sum(COALESCE(blk_write_time, 0)), 0), " +
+		"NULLIF(sum(COALESCE(shared_blks_hit, 0)), 0), NULLIF(sum(COALESCE(shared_blks_read, 0)), 0), NULLIF(sum(COALESCE(shared_blks_dirtied, 0)), 0), " +
+		"NULLIF(sum(COALESCE(shared_blks_written, 0)), 0), NULLIF(sum(COALESCE(local_blks_hit, 0)), 0), NULLIF(sum(COALESCE(local_blks_read, 0)), 0), " +
+		"NULLIF(sum(COALESCE(local_blks_dirtied, 0)), 0), NULLIF(sum(COALESCE(local_blks_written, 0)), 0), NULLIF(sum(COALESCE(temp_blks_read, 0)), 0), " +
+		"NULLIF(sum(COALESCE(temp_blks_written, 0)), 0), NULLIF(sum(COALESCE(wal_records, 0)), 0), NULLIF(sum(COALESCE(wal_fpi, 0)), 0), " +
+		"NULLIF(sum(COALESCE(wal_bytes, 0)), 0) FROM stat WHERE NOT visible GROUP BY DATABASE HAVING EXISTS (SELECT 1 FROM stat WHERE NOT visible)"
 )
 
 // postgresStatementsCollector ...

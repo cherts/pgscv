@@ -12,105 +12,30 @@ import (
 )
 
 const (
-	userIndexesQuery = `
-	select
-	    current_database() AS database,
-		schemaname as schema,
-		relname as table,
-		indexrelname as index,
-		(i.indisprimary or i.indisunique) as key,
-		i.indisvalid as isvalid,
-		idx_scan,
-		idx_tup_read,
-		idx_tup_fetch,
-		idx_blks_read,
-		idx_blks_hit,
-		pg_relation_size(s1.indexrelid) as size_bytes
-	from
-		pg_stat_user_indexes s1
-	join pg_statio_user_indexes s2
-			using (schemaname, relname, indexrelname)
-	join pg_index i on (s1.indexrelid = i.indexrelid)
-	where
-		not exists (
-		select
-			1
-		from
-			pg_locks
-		where
-			relation = s1.indexrelid
-			and mode = 'AccessExclusiveLock'
-			and granted)
-`
+	userIndexesQuery = "SELECT current_database() AS database, schemaname as schema, relname as table, indexrelname as index, " +
+		"(i.indisprimary OR i.indisunique) AS key, i.indisvalid AS isvalid, idx_scan, idx_tup_read, idx_tup_fetch, " +
+		"idx_blks_read,  idx_blks_hit, pg_relation_size(s1.indexrelid) as size_bytes " +
+		"FROM pg_stat_user_indexes s1 " +
+		"JOIN pg_statio_user_indexes s2 USING (schemaname, relname, indexrelname) " +
+		"JOIN pg_index i ON (s1.indexrelid = i.indexrelid) " +
+		"WHERE NOT EXISTS (SELECT 1 FROM pg_locks WHERE relation = s1.indexrelid AND mode = 'AccessExclusiveLock' AND granted)"
 
-	userIndexesQueryTopK = `
-	with stat as (
-		select
-			schemaname as schema,
-			relname as table,
-			indexrelname as index,
-			(i.indisprimary or i.indisunique) as key,
-			i.indisvalid as isvalid,
-			idx_scan,
-			idx_tup_read,
-			idx_tup_fetch,
-			idx_blks_read,
-			idx_blks_hit,
-			pg_relation_size(s1.indexrelid) as size_bytes,
-			not i.indisvalid or
-			(idx_scan = 0 and pg_relation_size(s1.indexrelid) > 50*1024*1024) or /* unused and size > 50mb */
-			(row_number() over (order by idx_scan desc nulls last) < $1) or
-			(row_number() over (order by idx_tup_read desc nulls last) < $1) or
-			(row_number() over (order by idx_tup_fetch desc nulls last) < $1) or
-			(row_number() over (order by idx_blks_read desc nulls last) < $1) or
-			(row_number() over (order by idx_blks_hit desc nulls last) < $1) or
-			(row_number() over (order by pg_relation_size(s1.indexrelid) desc nulls last) < $1) 
-			  as visible
-		from
-			pg_stat_user_indexes s1
-		join pg_statio_user_indexes s2 using (schemaname, relname, indexrelname)
-		join pg_index i on (s1.indexrelid = i.indexrelid)
-		where
-			not exists (
-			select
-				1
-			from
-				pg_locks
-			where
-				relation = s1.indexrelid
-				and mode = 'AccessExclusiveLock'
-				and granted)
-	)
-	select current_database() as database,
-		"schema",
-		"table",
-		"index",
-		"key",
-		isvalid,
-		idx_scan,
-		idx_tup_read,
-		idx_tup_fetch,
-		idx_blks_read,
-		idx_blks_hit,
-		size_bytes
-	from stat where visible
-	union all
-	select current_database() as database,
-		'all_shemas',
-		'all_other_tables',
-		'all_other_indexes',
-		true,
-		null,
-		nullif(sum(coalesce(idx_scan,0)),0),
-		nullif(sum(coalesce(idx_tup_fetch,0)),0),
-		nullif(sum(coalesce(idx_tup_read,0)),0),
-		nullif(sum(coalesce(idx_blks_read,0)),0),
-		nullif(sum(coalesce(idx_blks_hit,0)),0),
-		nullif(sum(coalesce(size_bytes,0)),0)
-	from stat
-	where not visible and false
-	having exists (select 1 from stat where not visible)
-`
+	userIndexesQueryTopK = "WITH stat AS (SELECT schemaname AS schema, relname AS table, indexrelname AS index, (i.indisprimary OR i.indisunique) AS key, " +
+		"i.indisvalid AS isvalid, idx_scan, idx_tup_read, idx_tup_fetch, idx_blks_read, idx_blks_hit, pg_relation_size(s1.indexrelid) AS size_bytes, " +
+		"NOT i.indisvalid OR /* unused and size > 50mb */ (idx_scan = 0 AND pg_relation_size(s1.indexrelid) > 50*1024*1024) OR " +
+		"(row_number() OVER (ORDER BY idx_scan DESC NULLS LAST) < $1) OR (row_number() OVER (ORDER BY idx_tup_read DESC NULLS LAST) < $1) OR " +
+		"(row_number() OVER (ORDER BY idx_tup_fetch DESC NULLS LAST) < $1) OR (row_number() OVER (ORDER BY idx_blks_read DESC NULLS LAST) < $1) OR " +
+		"(row_number() OVER (ORDER BY idx_blks_hit DESC NULLS LAST) < $1) OR (row_number() OVER (ORDER BY pg_relation_size(s1.indexrelid) DESC NULLS LAST) < $1) AS visible " +
+		"FROM pg_stat_user_indexes s1 " +
+		"JOIN pg_statio_user_indexes s2 USING (schemaname, relname, indexrelname) " +
+		"JOIN pg_index i ON (s1.indexrelid = i.indexrelid) " +
+		"WHERE NOT EXISTS ( SELECT 1 FROM pg_locks WHERE relation = s1.indexrelid AND mode = 'AccessExclusiveLock' AND granted)) " +
+		"SELECT current_database() AS database, \"schema\", \"table\", \"index\", \"key\", isvalid, idx_scan, idx_tup_read, idx_tup_fetch, " +
+		"idx_blks_read, idx_blks_hit, size_bytes FROM stat WHERE visible " +
+		"UNION ALL SELECT current_database() AS database, 'all_shemas', 'all_other_tables', 'all_other_indexes', true, null, " +
+		"NULLIF(SUM(coalesce(idx_scan,0)),0), NULLIF(SUM(coalesce(idx_tup_fetch,0)),0), NULLIF(SUM(coalesce(idx_tup_read,0)),0), " +
+		"NULLIF(SUM(coalesce(idx_blks_read,0)),0), NULLIF(SUM(coalesce(idx_blks_hit,0)),0), " +
+		"NULLIF(SUM(coalesce(size_bytes,0)),0) FROM stat WHERE NOT visible HAVING EXISTS (SELECT 1 FROM stat WHERE NOT visible)"
 )
 
 // postgresIndexesCollector defines metric descriptors and stats store.
