@@ -3,14 +3,15 @@ package collector
 import (
 	"context"
 	"fmt"
-	"github.com/cherts/pgscv/internal/log"
-	"github.com/cherts/pgscv/internal/model"
-	"github.com/cherts/pgscv/internal/store"
-	"github.com/prometheus/client_golang/prometheus"
 	"os"
 	"path/filepath"
 	"strconv"
 	"strings"
+
+	"github.com/cherts/pgscv/internal/log"
+	"github.com/cherts/pgscv/internal/model"
+	"github.com/cherts/pgscv/internal/store"
+	"github.com/prometheus/client_golang/prometheus"
 )
 
 const (
@@ -121,14 +122,14 @@ func (c *postgresStorageCollector) Update(config Config, ch chan<- prometheus.Me
 		res, err := conn.Query(postgresTempFilesInflightQuery)
 		if err != nil {
 			log.Warnf("get in-flight temp files failed: %s; skip", err)
-		}
+		} else {
+			stats := parsePostgresTempFileInflght(res)
 
-		stats := parsePostgresTempFileInflght(res)
-
-		for _, stat := range stats {
-			ch <- c.tempFiles.newConstMetric(stat.tempfiles, stat.tablespace)
-			ch <- c.tempBytes.newConstMetric(stat.tempbytes, stat.tablespace)
-			ch <- c.tempFilesMaxAge.newConstMetric(stat.tempmaxage, stat.tablespace)
+			for _, stat := range stats {
+				ch <- c.tempFiles.newConstMetric(stat.tempfiles, stat.tablespace)
+				ch <- c.tempBytes.newConstMetric(stat.tempbytes, stat.tablespace)
+				ch <- c.tempFilesMaxAge.newConstMetric(stat.tempmaxage, stat.tablespace)
+			}
 		}
 	}
 
