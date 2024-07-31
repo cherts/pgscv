@@ -99,13 +99,13 @@ func NewConfig(configFilePath string) (*Config, error) {
 			configFromFile.AuthConfig = configFromEnv.AuthConfig
 		}
 
-		if configFromFile.CollectTopTable > 0 {
+		if configFromEnv.CollectTopTable > 0 {
 			configFromFile.CollectTopTable = configFromEnv.CollectTopTable
 		}
-		if configFromFile.CollectTopIndex > 0 {
+		if configFromEnv.CollectTopIndex > 0 {
 			configFromFile.CollectTopIndex = configFromEnv.CollectTopIndex
 		}
-		if configFromFile.CollectTopQuery > 0 {
+		if configFromEnv.CollectTopQuery > 0 {
 			configFromFile.CollectTopQuery = configFromEnv.CollectTopQuery
 		}
 		return configFromFile, nil
