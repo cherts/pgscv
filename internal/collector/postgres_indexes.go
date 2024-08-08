@@ -12,9 +12,8 @@ import (
 )
 
 const (
-	userIndexesQuery = "SELECT current_database() AS database, schemaname as schema, relname as table, indexrelname as index, " +
-		"(i.indisprimary OR i.indisunique) AS key, i.indisvalid AS isvalid, idx_scan, idx_tup_read, idx_tup_fetch, " +
-		"idx_blks_read,  idx_blks_hit, pg_relation_size(s1.indexrelid) as size_bytes " +
+	userIndexesQuery = "SELECT current_database() AS database, schemaname AS schema, relname AS table, indexrelname AS index, (i.indisprimary OR i.indisunique) AS key," +
+		"i.indisvalid AS isvalid, idx_scan, idx_tup_read, idx_tup_fetch, idx_blks_read, idx_blks_hit, pg_relation_size(s1.indexrelid) AS size_bytes " +
 		"FROM pg_stat_user_indexes s1 " +
 		"JOIN pg_statio_user_indexes s2 USING (schemaname, relname, indexrelname) " +
 		"JOIN pg_index i ON (s1.indexrelid = i.indexrelid) " +

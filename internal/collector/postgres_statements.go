@@ -13,7 +13,6 @@ import (
 )
 
 const (
-	// $1=$1 - stub, todo refactoring
 	// postgresStatementsQuery12 defines query for querying statements metrics for PG12 and older.
 	postgresStatementsQuery12 = "SELECT d.datname AS database, pg_get_userbyid(p.userid) AS user, p.queryid, " +
 		"coalesce(%s, '') AS query, p.calls, p.rows, p.total_time, p.blk_read_time, p.blk_write_time, " +
@@ -22,7 +21,33 @@ const (
 		"nullif(p.local_blks_hit, 0) AS local_blks_hit, nullif(p.local_blks_read, 0) AS local_blks_read, " +
 		"nullif(p.local_blks_dirtied, 0) AS local_blks_dirtied, nullif(p.local_blks_written, 0) AS local_blks_written, " +
 		"nullif(p.temp_blks_read, 0) AS temp_blks_read, nullif(p.temp_blks_written, 0) AS temp_blks_written " +
-		"FROM %s.pg_stat_statements p JOIN pg_database d ON d.oid=p.dbid and $1=$1"
+		"FROM %s.pg_stat_statements p JOIN pg_database d ON d.oid=p.dbid;"
+
+	postgresStatementsQuery12TopK = "WITH stat AS (SELECT d.datname AS DATABASE, pg_get_userbyid(p.userid) AS USER, p.queryid, " +
+		"COALESCE(%s, '') AS query, p.calls, p.rows, p.total_time, p.blk_read_time, p.blk_write_time, " +
+		"NULLIF(p.shared_blks_hit, 0) AS shared_blks_hit, NULLIF(p.shared_blks_read, 0) AS shared_blks_read, " +
+		"NULLIF(p.shared_blks_dirtied, 0) AS shared_blks_dirtied, NULLIF(p.shared_blks_written, 0) AS shared_blks_written, " +
+		"NULLIF(p.local_blks_hit, 0) AS local_blks_hit, NULLIF(p.local_blks_read, 0) AS local_blks_read, " +
+		"NULLIF(p.local_blks_dirtied, 0) AS local_blks_dirtied, NULLIF(p.local_blks_written, 0) AS local_blks_written, " +
+		"NULLIF(p.temp_blks_read, 0) AS temp_blks_read, NULLIF(p.temp_blks_written, 0) AS temp_blks_written, " +
+		"(ROW_NUMBER() OVER ( ORDER BY p.calls DESC NULLS LAST) < $1) OR (ROW_NUMBER() OVER ( ORDER BY p.rows DESC NULLS LAST) < $1) OR " +
+		"(ROW_NUMBER() OVER ( ORDER BY p.total_time DESC NULLS LAST) < $1) OR (ROW_NUMBER() OVER ( ORDER BY p.blk_read_time DESC NULLS LAST) < $1) OR " +
+		"(ROW_NUMBER() OVER ( ORDER BY p.blk_read_time DESC NULLS LAST) < $1) OR (ROW_NUMBER() OVER ( ORDER BY p.blk_write_time DESC NULLS LAST) < $1) OR " +
+		"(ROW_NUMBER() OVER ( ORDER BY p.shared_blks_hit DESC NULLS LAST) < $1) OR (ROW_NUMBER() OVER ( ORDER BY p.shared_blks_read DESC NULLS LAST) < $1) OR " +
+		"(ROW_NUMBER() OVER ( ORDER BY p.shared_blks_dirtied DESC NULLS LAST) < $1) OR (ROW_NUMBER() OVER ( ORDER BY p.shared_blks_written DESC NULLS LAST) < $1) OR " +
+		"(ROW_NUMBER() OVER ( ORDER BY p.local_blks_hit DESC NULLS LAST) < $1) OR (ROW_NUMBER() OVER ( ORDER BY p.local_blks_read DESC NULLS LAST) < $1) OR " +
+		"(ROW_NUMBER() OVER ( ORDER BY p.local_blks_dirtied DESC NULLS LAST) < $1) OR (ROW_NUMBER() OVER ( ORDER BY p.local_blks_written DESC NULLS LAST) < $1) OR " +
+		"(ROW_NUMBER() OVER ( ORDER BY p.temp_blks_read DESC NULLS LAST) < $1) OR (ROW_NUMBER() OVER ( ORDER BY p.temp_blks_written DESC NULLS LAST) < $1) AS visible " +
+		"FROM %s.pg_stat_statements p JOIN pg_database d ON d.oid = p.dbid) " +
+		"SELECT DATABASE, USER, queryid, query, calls, rows, total_time, blk_read_time, blk_write_time, shared_blks_hit, " +
+		"shared_blks_read, shared_blks_dirtied, shared_blks_written, local_blks_hit, local_blks_read, local_blks_dirtied, local_blks_written, " +
+		"temp_blks_read, temp_blks_written FROM stat WHERE visible UNION ALL SELECT DATABASE, 'all_users', NULL, " +
+		"'all_queries', NULLIF(sum(COALESCE(calls, 0)), 0), NULLIF(sum(COALESCE(ROWS, 0)), 0), NULLIF(sum(COALESCE(total_time, 0)), 0), " +
+		"NULLIF(sum(COALESCE(blk_read_time, 0)), 0), NULLIF(sum(COALESCE(blk_write_time, 0)), 0), " +
+		"NULLIF(sum(COALESCE(shared_blks_hit, 0)), 0), NULLIF(sum(COALESCE(shared_blks_read, 0)), 0), NULLIF(sum(COALESCE(shared_blks_dirtied, 0)), 0), " +
+		"NULLIF(sum(COALESCE(shared_blks_written, 0)), 0), NULLIF(sum(COALESCE(local_blks_hit, 0)), 0), NULLIF(sum(COALESCE(local_blks_read, 0)), 0), " +
+		"NULLIF(sum(COALESCE(local_blks_dirtied, 0)), 0), NULLIF(sum(COALESCE(local_blks_written, 0)), 0), NULLIF(sum(COALESCE(temp_blks_read, 0)), 0), " +
+		"NULLIF(sum(COALESCE(temp_blks_written, 0)), 0) FROM stat WHERE NOT visible GROUP BY DATABASE HAVING EXISTS (SELECT 1 FROM stat WHERE NOT visible)"
 
 	// postgresStatementsQueryLatest defines query for querying statements metrics.
 	// 1. use nullif(value, 0) to nullify zero values, NULL are skipped by stats method and metrics wil not be generated.
@@ -463,6 +488,9 @@ func selectStatementsQuery(version int, schema string, notrackmode bool, topK in
 	}
 	switch {
 	case version < PostgresV13:
+		if topK > 0 {
+			return fmt.Sprintf(postgresStatementsQuery12TopK, query_columm, schema)
+		}
 		return fmt.Sprintf(postgresStatementsQuery12, query_columm, schema)
 	default:
 		if topK > 0 {
