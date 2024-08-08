@@ -2,18 +2,19 @@ package pgscv
 
 import (
 	"fmt"
-	"github.com/cherts/pgscv/internal/http"
-	"github.com/cherts/pgscv/internal/log"
-	"github.com/cherts/pgscv/internal/model"
-	"github.com/cherts/pgscv/internal/service"
-	"github.com/jackc/pgx/v4"
-	"gopkg.in/yaml.v2"
 	"io/fs"
 	"os"
 	"path/filepath"
 	"regexp"
 	"strconv"
 	"strings"
+
+	"github.com/cherts/pgscv/internal/http"
+	"github.com/cherts/pgscv/internal/log"
+	"github.com/cherts/pgscv/internal/model"
+	"github.com/cherts/pgscv/internal/service"
+	"github.com/jackc/pgx/v4"
+	"gopkg.in/yaml.v2"
 )
 
 const (
@@ -239,24 +240,25 @@ func (c *Config) Validate() error {
 	}
 	c.AuthConfig.EnableAuth = enableAuth
 	c.AuthConfig.EnableTLS = enableTLS
-	if c.CollectTopTable > 0 {
-		log.Infoln("TopTable: limit enabled")
-	}
-	if c.CollectTopIndex > 0 {
-		log.Infoln("TopIndex: limit enabled")
-	}
-	if c.CollectTopQuery > 0 {
-		log.Infoln("TopQuery: limit enabled")
-	}
 
 	if c.CollectTopQuery < 0 || c.CollectTopQuery > 1000 {
-		return fmt.Errorf("invalid CollectTopQuery %d", c.CollectTopQuery)
+		return fmt.Errorf("invalid setting 'collect_top_query' or env PGSCV_COLLECT_TOP_QUERY (value '%d'), allowed 0 to 1000", c.CollectTopQuery)
 	}
 	if c.CollectTopTable < 0 || c.CollectTopTable > 1000 {
-		return fmt.Errorf("invalid CollectTopTable %d", c.CollectTopTable)
+		return fmt.Errorf("invalid setting 'collect_top_table' or env PGSCV_COLLECT_TOP_TABLE (value '%d'), allowed 0 to 1000", c.CollectTopTable)
 	}
 	if c.CollectTopIndex < 0 || c.CollectTopIndex > 1000 {
-		return fmt.Errorf("invalid CollectTopIndex %d", c.CollectTopIndex)
+		return fmt.Errorf("invalid setting 'collect_top_index' or env PGSCV_COLLECT_TOP_INDEX (value '%d'), allowed 0 to 1000", c.CollectTopIndex)
+	}
+
+	if c.CollectTopQuery > 0 {
+		log.Infof("TopQuery: limit (%d queries) enabled", c.CollectTopQuery)
+	}
+	if c.CollectTopTable > 0 {
+		log.Infof("TopTable: limit (%d tables) enabled", c.CollectTopTable)
+	}
+	if c.CollectTopIndex > 0 {
+		log.Infof("TopIndex: limit (%d indexes) enabled", c.CollectTopIndex)
 	}
 
 	return nil
@@ -403,24 +405,24 @@ func newConfigFromEnv() (*Config, error) {
 			config.AuthConfig.Keyfile = value
 		case "PGSCV_AUTH_CERTFILE":
 			config.AuthConfig.Certfile = value
+		case "PGSCV_COLLECT_TOP_QUERY":
+			collectTopQuery, err := strconv.Atoi(value)
+			if err != nil {
+				return nil, fmt.Errorf("invalid setting PGSCV_COLLECT_TOP_QUERY, value '%s', allowed only digits", value)
+			}
+			config.CollectTopQuery = collectTopQuery
 		case "PGSCV_COLLECT_TOP_TABLE":
 			collectTopTable, err := strconv.Atoi(value)
 			if err != nil {
-				return nil, fmt.Errorf("invalid PGSCV_COLLECT_TOP_TABLE value '%s'", value)
+				return nil, fmt.Errorf("invalid setting PGSCV_COLLECT_TOP_TABLE, value '%s', allowed only digits", value)
 			}
 			config.CollectTopTable = collectTopTable
 		case "PGSCV_COLLECT_TOP_INDEX":
 			collectTopIndex, err := strconv.Atoi(value)
 			if err != nil {
-				return nil, fmt.Errorf("invalid PGSCV_COLLECT_TOP_INDEX value '%s'", value)
+				return nil, fmt.Errorf("invalid setting PGSCV_COLLECT_TOP_INDEX, value '%s', allowed only digits", value)
 			}
 			config.CollectTopIndex = collectTopIndex
-		case "PGSCV_COLLECT_TOP_QUERY":
-			collectTopQuery, err := strconv.Atoi(value)
-			if err != nil {
-				return nil, fmt.Errorf("invalid PGSCV_COLLECT_TOP_QUERY value '%s'", value)
-			}
-			config.CollectTopQuery = collectTopQuery
 		}
 	}
 
