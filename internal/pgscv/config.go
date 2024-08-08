@@ -248,6 +248,17 @@ func (c *Config) Validate() error {
 	if c.CollectTopQuery > 0 {
 		log.Infoln("TopQuery: limit enabled")
 	}
+
+	if c.CollectTopQuery < 0 || c.CollectTopQuery > 1000 {
+		return fmt.Errorf("invalid CollectTopQuery %d", c.CollectTopQuery)
+	}
+	if c.CollectTopTable < 0 || c.CollectTopTable > 1000 {
+		return fmt.Errorf("invalid CollectTopQuery %d", c.CollectTopTable)
+	}
+	if c.CollectTopIndex < 0 || c.CollectTopIndex > 1000 {
+		return fmt.Errorf("invalid CollectTopQuery %d", c.CollectTopIndex)
+	}
+
 	return nil
 }
 
@@ -394,19 +405,19 @@ func newConfigFromEnv() (*Config, error) {
 			config.AuthConfig.Certfile = value
 		case "PGSCV_COLLECT_TOP_TABLE":
 			collectTopTable, err := strconv.Atoi(value)
-			if (err != nil) || (collectTopTable < 0 || collectTopTable > 1000) {
+			if err != nil {
 				return nil, fmt.Errorf("invalid PGSCV_COLLECT_TOP_TABLE value '%s'", value)
 			}
 			config.CollectTopTable = collectTopTable
 		case "PGSCV_COLLECT_TOP_INDEX":
 			collectTopIndex, err := strconv.Atoi(value)
-			if (err != nil) || (collectTopIndex < 0 || collectTopIndex > 1000) {
+			if err != nil {
 				return nil, fmt.Errorf("invalid PGSCV_COLLECT_TOP_INDEX value '%s'", value)
 			}
 			config.CollectTopIndex = collectTopIndex
 		case "PGSCV_COLLECT_TOP_QUERY":
 			collectTopQuery, err := strconv.Atoi(value)
-			if (err != nil) || (collectTopQuery < 0 || collectTopQuery > 1000) {
+			if err != nil {
 				return nil, fmt.Errorf("invalid PGSCV_COLLECT_TOP_QUERY value '%s'", value)
 			}
 			config.CollectTopQuery = collectTopQuery
