@@ -166,12 +166,14 @@ func Test_selectStatementsQuery(t *testing.T) {
 	testcases := []struct {
 		version int
 		want    string
+		topK    int
 	}{
-		{version: PostgresV12, want: fmt.Sprintf(postgresStatementsQuery12, "p.query", "example")},
-		{version: PostgresV13, want: fmt.Sprintf(postgresStatementsQueryLatest, "p.query", "example")},
+		{version: PostgresV12, want: fmt.Sprintf(postgresStatementsQuery12, "p.query", "example"), topK: 0},
+		{version: PostgresV13, want: fmt.Sprintf(postgresStatementsQueryLatest, "p.query", "example"), topK: 0},
+		{version: PostgresV13, want: fmt.Sprintf(postgresStatementsQueryLatestTopK, "p.query", "example"), topK: 100},
 	}
 
 	for _, tc := range testcases {
-		assert.Equal(t, tc.want, selectStatementsQuery(tc.version, "example", false))
+		assert.Equal(t, tc.want, selectStatementsQuery(tc.version, "example", false, tc.topK))
 	}
 }

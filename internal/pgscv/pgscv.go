@@ -22,6 +22,9 @@ func Start(ctx context.Context, config *Config) error {
 		DatabasesRE:        config.DatabasesRE,
 		DisabledCollectors: config.DisableCollectors,
 		CollectorsSettings: config.CollectorsSettings,
+		CollectTopTable:    config.CollectTopTable,
+		CollectTopIndex:    config.CollectTopIndex,
+		CollectTopQuery:    config.CollectTopQuery,
 	}
 
 	if len(config.ServicesConnsSettings) == 0 {

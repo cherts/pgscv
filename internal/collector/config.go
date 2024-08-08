@@ -30,7 +30,10 @@ type Config struct {
 	// DatabasesRE defines regexp with databases from which builtin metrics should be collected.
 	DatabasesRE *regexp.Regexp
 	// Settings defines collectors settings propagated from main YAML configuration.
-	Settings model.CollectorsSettings
+	Settings        model.CollectorsSettings
+	CollectTopTable int
+	CollectTopIndex int
+	CollectTopQuery int
 }
 
 // postgresServiceConfig defines Postgres-specific stuff required during collecting Postgres metrics.
