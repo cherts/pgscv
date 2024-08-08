@@ -253,10 +253,10 @@ func (c *Config) Validate() error {
 		return fmt.Errorf("invalid CollectTopQuery %d", c.CollectTopQuery)
 	}
 	if c.CollectTopTable < 0 || c.CollectTopTable > 1000 {
-		return fmt.Errorf("invalid CollectTopQuery %d", c.CollectTopTable)
+		return fmt.Errorf("invalid CollectTopTable %d", c.CollectTopTable)
 	}
 	if c.CollectTopIndex < 0 || c.CollectTopIndex > 1000 {
-		return fmt.Errorf("invalid CollectTopQuery %d", c.CollectTopIndex)
+		return fmt.Errorf("invalid CollectTopIndex %d", c.CollectTopIndex)
 	}
 
 	return nil
