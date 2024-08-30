@@ -1,6 +1,6 @@
 ﻿# stage 1
-# __release_tag__ golang 1.22 was released 2024-02-06
-FROM golang:1.22 as build
+# __release_tag__ golang 1.23 was released 2024-08-13
+FROM golang:1.23 as build
 LABEL stage=intermediate
 WORKDIR /app
 COPY . .
