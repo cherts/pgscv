@@ -8,7 +8,7 @@ TAG := $(shell git describe --abbrev=0 --tags ${TAG_COMMIT} 2>/dev/null || true)
 COMMIT := $(shell git rev-parse --short HEAD)
 DATE := $(shell git log -1 --format=%cd --date=format:"%Y%m%d")
 ifeq ($(TAG),)
-	VERSION := 0.8
+	VERSION := 0.9
 else
 	#VERSION := $(TAG:v%=%)
 	VERSION := $(TAG)
