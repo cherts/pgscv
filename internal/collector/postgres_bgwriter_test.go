@@ -45,7 +45,7 @@ func Test_parsePostgresBgwriterStats(t *testing.T) {
 					{Name: []byte("checkpoint_write_time")}, {Name: []byte("checkpoint_sync_time")},
 					{Name: []byte("buffers_checkpoint")}, {Name: []byte("buffers_clean")}, {Name: []byte("maxwritten_clean")},
 					{Name: []byte("buffers_backend")}, {Name: []byte("buffers_backend_fsync")}, {Name: []byte("buffers_alloc")},
-					{Name: []byte("stats_age_seconds")},
+					{Name: []byte("bgwr_stats_age_seconds")},
 				},
 				Rows: [][]sql.NullString{
 					{
