@@ -2,10 +2,11 @@ package collector
 
 import (
 	"database/sql"
-	"github.com/jackc/pgproto3/v2"
-	"github.com/cherts/pgscv/internal/model"
-	"github.com/stretchr/testify/assert"
 	"testing"
+
+	"github.com/cherts/pgscv/internal/model"
+	"github.com/jackc/pgproto3/v2"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestPostgresBgwriterCollector_Update(t *testing.T) {
@@ -58,7 +59,7 @@ func Test_parsePostgresBgwriterStats(t *testing.T) {
 			},
 			want: postgresBgwriterStat{
 				ckptTimed: 55, ckptReq: 17, ckptWriteTime: 548425, ckptSyncTime: 5425, ckptBuffers: 5482, bgwrBuffers: 7584, bgwrMaxWritten: 452,
-				backendBuffers: 6895, backendFsync: 2, backendAllocated: 48752, statsAgeSeconds: 5488,
+				backendBuffers: 6895, backendFsync: 2, backendAllocated: 48752, bgwrStatsAgeSeconds: 5488,
 			},
 		},
 	}
