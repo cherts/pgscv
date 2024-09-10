@@ -44,7 +44,7 @@ deploy/demo-lab/patroni/etc_data3/*
 deploy/demo-lab/patroni/pg_data1/*
 deploy/demo-lab/patroni/pg_data2/*
 deploy/demo-lab/patroni/pg_data3/*
-deploy/demo-stack/postgres/pg12data/*
+deploy/demo-lab/postgres/pg12data/*
 deploy/demo-lab/postgres/pg13data/*
 deploy/demo-lab/postgres/pg14data/*
 deploy/demo-lab/postgres/pg15data/*
