@@ -1,0 +1,342 @@
+services:
+  grafana:
+    container_name: grafana
+    image: grafana/grafana:main
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ${PWD}/grafana/provisioning:/etc/grafana/provisioning
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: "admin"
+    ports:
+      - 3000:3000
+    depends_on:
+      - victoriametrics
+    networks: [ monitoring ]
+  victoriametrics:
+    container_name: victoriametrics
+    image: victoriametrics/victoria-metrics:stable
+    volumes:
+      - vmetrics_data:/data
+    command:
+      - "-storageDataPath=/data"
+      - "-retentionPeriod=7d"
+    ports:
+      - 8428:8428
+    networks: [ monitoring ]  
+  vmagent:
+    container_name: vmagent
+    image: victoriametrics/vmagent:stable
+    volumes:
+      - ${PWD}/vmagent/vmagent.yaml:/etc/vmagent.yaml
+    command: [ "-promscrape.config=/etc/vmagent.yaml", "-remoteWrite.url=http://victoriametrics:8428/api/v1/write" ]
+    depends_on: [ victoriametrics ]
+    ports:
+      - 8429:8429
+    networks: [ monitoring ]  
+  postgres12: &postgres_base
+    container_name: postgres12
+    image: postgres:12-alpine
+    hostname: postgres12
+    command:
+      - "postgres"
+      - "-c"
+      - "listen_addresses=*"
+      - "-c"
+      - "shared_buffers=128MB"
+      - "-c"
+      - "shared_preload_libraries=pg_stat_statements"
+      - "-c"
+      - "pg_stat_statements.max=10000"
+      - "-c"
+      - "pg_stat_statements.track=all"
+      - "-c"
+      - "jit=off"
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-postgres}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      PGDATA: /data/postgres
+    ports:
+      - 5432:5432
+    volumes:
+       - pg12_data:/data/postgres
+       - ${PWD}/postgres/init.sql:/docker-entrypoint-initdb.d/01-init.sql
+    networks: [ monitoring ]  
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 400M
+  postgres13:
+    <<: *postgres_base
+    container_name: postgres13
+    image: postgres:13-alpine
+    hostname: postgres13
+    volumes:
+       - pg13_data:/data/postgres
+       - ${PWD}/postgres/init.sql:/docker-entrypoint-initdb.d/01-init.sql
+    ports:
+      - 5433:5432
+  postgres14:
+    <<: *postgres_base
+    container_name: postgres14
+    image: postgres:14-alpine
+    hostname: postgres14
+    volumes:
+       - pg14_data:/data/postgres
+       - ${PWD}/postgres/init.sql:/docker-entrypoint-initdb.d/01-init.sql
+    ports:
+      - 5434:5432
+  postgres15:
+    <<: *postgres_base
+    container_name: postgres15
+    image: postgres:15-alpine
+    hostname: postgres15
+    volumes:
+       - pg15_data:/data/postgres
+       - ${PWD}/postgres/init.sql:/docker-entrypoint-initdb.d/01-init.sql
+    ports:
+      - 5435:5432
+  postgres16:
+    <<: *postgres_base
+    container_name: postgres16
+    image: postgres:16-alpine
+    hostname: postgres16
+    volumes:
+       - pg16_data:/data/postgres
+       - ${PWD}/postgres/init.sql:/docker-entrypoint-initdb.d/01-init.sql
+    ports:
+      - 5436:5432
+  etcd1: &etcd
+    image: cherts/patroni:latest
+    networks: [ monitoring ]
+    environment:
+      ETCD_LISTEN_PEER_URLS: http://0.0.0.0:2380
+      ETCD_LISTEN_CLIENT_URLS: http://0.0.0.0:2379
+      ETCD_INITIAL_CLUSTER: etcd1=http://etcd1:2380,etcd2=http://etcd2:2380,etcd3=http://etcd3:2380
+      ETCD_INITIAL_CLUSTER_STATE: new
+      ETCD_INITIAL_CLUSTER_TOKEN: tutorial
+      ETCD_UNSUPPORTED_ARCH: arm64
+      ETCD_DATA_DIR: "/var/lib/etcd"
+    container_name: etcd1
+    volumes:
+      - etc_data1:/var/lib/etcd
+    hostname: etcd1
+    command: etcd --name etcd1 --initial-advertise-peer-urls http://etcd1:2380
+  etcd2:
+    <<: *etcd
+    container_name: etcd2
+    volumes:
+      - etc_data2:/var/lib/etcd
+    hostname: etcd2
+    command: etcd --name etcd2 --initial-advertise-peer-urls http://etcd2:2380
+  etcd3:
+    <<: *etcd
+    container_name: etcd3
+    volumes:
+      - etc_data3:/var/lib/etcd
+    hostname: etcd3
+    command: etcd --name etcd3 --initial-advertise-peer-urls http://etcd3:2380
+  haproxy:
+    image: cherts/patroni:latest
+    networks: [ monitoring ]
+    env_file: ${PWD}/.env
+    hostname: haproxy
+    container_name: haproxy
+    ports:
+      - "5000:5000"
+      - "5001:5001"
+    command: haproxy
+    environment: &haproxy_env
+      ETCDCTL_ENDPOINTS: http://etcd1:2379,http://etcd2:2379,http://etcd3:2379
+      PATRONI_ETCD3_HOSTS: "'etcd1:2379','etcd2:2379','etcd3:2379'"
+      PATRONI_SCOPE: cluster01
+  patroni1:
+    image: cherts/patroni:latest
+    networks: [ monitoring ]
+    env_file: ${PWD}/.env
+    hostname: patroni1
+    container_name: patroni1
+    ports:
+      - "8008:8008"
+      - "5437:5432"
+    volumes:
+      - patroni_data1:/home/postgres
+    environment:
+      <<: *haproxy_env
+      PATRONI_NAME: patroni1
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+  patroni2:
+    image: cherts/patroni:latest
+    networks: [ monitoring ]
+    env_file: ${PWD}/.env
+    hostname: patroni2
+    container_name: patroni2
+    ports:
+      - "8009:8008"
+      - "5438:5432"
+    volumes:
+      - patroni_data2:/home/postgres
+    environment:
+      <<: *haproxy_env
+      PATRONI_NAME: patroni2
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+  patroni3:
+    image: cherts/patroni:latest
+    networks: [ monitoring ]
+    env_file: ${PWD}/.env
+    hostname: patroni3
+    container_name: patroni3
+    ports:
+      - "8010:8008"
+      - "5439:5432"
+    volumes:
+      - patroni_data3:/home/postgres
+    environment:
+      <<: *haproxy_env
+      PATRONI_NAME: patroni3
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+  pgscv:
+    container_name: pgscv
+    image: cherts/pgscv:latest
+    ports:
+      - 9890:9890
+    env_file:
+      - path: ${PWD}/.env
+        required: true
+    command:
+      - --config-file=/app/conf/pgscv.yaml
+    volumes:
+      - ${PWD}/pgscv:/app/conf
+    networks:
+      - monitoring
+    depends_on:
+      patroni1:
+        condition: service_healthy
+        restart: true
+      patroni2:
+        condition: service_healthy
+        restart: true
+      patroni3:
+        condition: service_healthy
+        restart: true
+      postgres12:
+        condition: service_healthy
+        restart: true
+      postgres13:
+        condition: service_healthy
+        restart: true
+      postgres14:
+        condition: service_healthy
+        restart: true
+      postgres15:
+        condition: service_healthy
+        restart: true
+      postgres16:
+        condition: service_healthy
+        restart: true
+
+volumes:
+  vmetrics_data:
+    driver: local
+    driver_opts:
+      o: bind
+      type: rw
+      device: ${PWD}/victoriametrics/data
+  grafana_data:
+    driver: local
+    driver_opts:
+      o: bind
+      type: rw
+      device: ${PWD}/grafana/data
+  pg12_data:
+    driver: local
+    driver_opts:
+      o: bind
+      type: rw
+      device: ${PWD}/postgres/pg12data
+  pg13_data:
+    driver: local
+    driver_opts:
+      o: bind
+      type: rw
+      device: ${PWD}/postgres/pg13data
+  pg14_data:
+    driver: local
+    driver_opts:
+      o: bind
+      type: rw
+      device: ${PWD}/postgres/pg14data
+  pg15_data:
+    driver: local
+    driver_opts:
+      o: bind
+      type: rw
+      device: ${PWD}/postgres/pg15data
+  pg16_data:
+    driver: local
+    driver_opts:
+      o: bind
+      type: rw
+      device: ${PWD}/postgres/pg16data
+  patroni_data1:
+    driver: local
+    driver_opts:
+      o: bind
+      type: rw
+      device: ${PWD}/patroni/pg_data1
+  patroni_data2:
+    driver: local
+    driver_opts:
+      o: bind
+      type: rw
+      device: ${PWD}/patroni/pg_data2
+  patroni_data3:
+    driver: local
+    driver_opts:
+      o: bind
+      type: rw
+      device: ${PWD}/patroni/pg_data3
+  etc_data1:
+    driver: local
+    driver_opts:
+      o: bind
+      type: rw
+      device: ${PWD}/patroni/etc_data1
+  etc_data2:
+    driver: local
+    driver_opts:
+      o: bind
+      type: rw
+      device: ${PWD}/patroni/etc_data2
+  etc_data3:
+    driver: local
+    driver_opts:
+      o: bind
+      type: rw
+      device: ${PWD}/patroni/etc_data3
+
+networks:
+  monitoring:
