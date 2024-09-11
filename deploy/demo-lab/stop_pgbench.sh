@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# postgres OR pgbouncer
+PG_HOST="pgbouncer"
+
 # Don't edit this config
 SOURCE="${BASH_SOURCE[0]}"
 while [ -h "$SOURCE" ]; do
@@ -49,7 +52,7 @@ _logging "Starting script."
 for DATA in ${PG_VERSIONS[@]}; do
     PG_VER=$(echo "${DATA}" | awk -F',' '{print $1}')
     PGREPACK_VER=$(echo "${DATA}" | awk -F',' '{print $2}')
-    STOP_FILE="${SCRIPT_DIR}/pgbench/stop_pgbench_postgres${PG_VER}"
+    STOP_FILE="${SCRIPT_DIR}/pgbench/stop_pgbench_${PG_HOST}${PG_VER}"
     _logging "Creating stop-file '${STOP_FILE}'"
     touch "${STOP_FILE}" >/dev/null 2>&1
 done

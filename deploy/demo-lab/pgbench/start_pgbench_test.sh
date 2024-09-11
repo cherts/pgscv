@@ -52,12 +52,19 @@ _logging "STOP_FLAG: ${STOP_FLAG}"
 rm -f "${STOP_FLAG}" >/dev/null 2>&1
 
 _logging "Prepare pgbench database..."
-pgbench -h ${PG_HOST} -p ${PG_PORT} -U pgbench pgbench -i -s 10
+pgbench -h ${PG_HOST} -p ${PG_PORT} -U pgbench pgbench -i -s 100
 
 ITERATION=1
 while true; do
     _logging "Run pgbench tests, iteration '${ITERATION}'..."
-    pgbench -h ${PG_HOST} -p ${PG_PORT} -U pgbench pgbench -T 10 -j 4 -P 2
+    pgbench -h ${PG_HOST} -p ${PG_PORT} -U pgbench pgbench -T 10 -j 4 -P 10 -c 5
+    if [ -f "${STOP_FLAG}" ]; then
+        _logging "Found stop-file '${STOP_FLAG}', end pgbench process."
+        rm -f "${STOP_FLAG}" >/dev/null 2>&1
+        break
+    fi
+    _logging "Run pgbench tests (select only), iteration '${ITERATION}'..."
+    pgbench -h ${PG_HOST} -p ${PG_PORT} -U pgbench pgbench -T 10 -j 4 -P 10 -c 5 -S
     if [ -f "${STOP_FLAG}" ]; then
         _logging "Found stop-file '${STOP_FLAG}', end pgbench process."
         rm -f "${STOP_FLAG}" >/dev/null 2>&1

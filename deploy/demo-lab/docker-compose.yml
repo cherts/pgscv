@@ -218,6 +218,71 @@ services:
       timeout: 5s
       retries: 5
       start_period: 10s
+  pgbouncer12:
+    container_name: pgbouncer12
+    image: edoburu/pgbouncer:latest
+    hostname: pgbouncer12
+    volumes:
+      - ${PWD}/pgbouncer/conf12:/etc/pgbouncer
+    networks: [ monitoring ]
+    ports:
+      - "6432:5432"
+    depends_on:
+      - postgres12
+    healthcheck:
+      test: ['CMD', 'pg_isready', '-h', 'localhost']
+  pgbouncer13:
+    container_name: pgbouncer13
+    image: edoburu/pgbouncer:latest
+    hostname: pgbouncer13
+    volumes:
+      - ${PWD}/pgbouncer/conf13:/etc/pgbouncer
+    networks: [ monitoring ]
+    ports:
+      - "6433:5432"
+    depends_on:
+      - postgres13
+    healthcheck:
+      test: ['CMD', 'pg_isready', '-h', 'localhost']
+  pgbouncer14:
+    container_name: pgbouncer14
+    image: edoburu/pgbouncer:latest
+    hostname: pgbouncer14
+    volumes:
+      - ${PWD}/pgbouncer/conf14:/etc/pgbouncer
+    networks: [ monitoring ]
+    ports:
+      - "6434:5432"
+    depends_on:
+      - postgres14
+    healthcheck:
+      test: ['CMD', 'pg_isready', '-h', 'localhost']
+  pgbouncer15:
+    container_name: pgbouncer15
+    image: edoburu/pgbouncer:latest
+    hostname: pgbouncer15
+    volumes:
+      - ${PWD}/pgbouncer/conf15:/etc/pgbouncer
+    networks: [ monitoring ]
+    ports:
+      - "6435:5432"
+    depends_on:
+      - postgres15
+    healthcheck:
+      test: ['CMD', 'pg_isready', '-h', 'localhost']
+  pgbouncer16:
+    container_name: pgbouncer16
+    image: edoburu/pgbouncer:latest
+    hostname: pgbouncer16
+    volumes:
+      - ${PWD}/pgbouncer/conf16:/etc/pgbouncer
+    networks: [ monitoring ]
+    ports:
+      - "6436:5432"
+    depends_on:
+      - postgres16
+    healthcheck:
+      test: ['CMD', 'pg_isready', '-h', 'localhost']
   pgscv:
     container_name: pgscv
     image: cherts/pgscv:latest
@@ -230,8 +295,7 @@ services:
       - --config-file=/app/conf/pgscv.yaml
     volumes:
       - ${PWD}/pgscv:/app/conf
-    networks:
-      - monitoring
+    networks: [ monitoring ]
     depends_on:
       patroni1:
         condition: service_healthy

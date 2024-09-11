@@ -42,6 +42,21 @@ services:
   "patroni_3":
     service_type: "patroni"
     baseurl: "http://patroni3:8008"
+  "pgbouncer12": 
+    service_type: "pgbouncer"
+    conninfo: "postgres://pgscv:pgscv@pgbouncer12:5432/pgbouncer"
+  "pgbouncer13": 
+    service_type: "pgbouncer"
+    conninfo: "postgres://pgscv:pgscv@pgbouncer13:5432/pgbouncer"
+  "pgbouncer14": 
+    service_type: "pgbouncer"
+    conninfo: "postgres://pgscv:pgscv@pgbouncer14:5432/pgbouncer"
+  "pgbouncer15": 
+    service_type: "pgbouncer"
+    conninfo: "postgres://pgscv:pgscv@pgbouncer15:5432/pgbouncer"
+  "pgbouncer16": 
+    service_type: "pgbouncer"
+    conninfo: "postgres://pgscv:pgscv@pgbouncer16:5432/pgbouncer"
 databases: "pgbench"
 disable_collectors:
   - system

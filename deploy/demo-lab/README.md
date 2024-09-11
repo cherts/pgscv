@@ -15,6 +15,11 @@
 - postgres14 (listen port: 5434)
 - postgres15 (listen port: 5435)
 - postgres16 (listen port: 5436)
+- pgbouncer12 (listen port: 6432)
+- pgbouncer13 (listen port: 6433)
+- pgbouncer14 (listen port: 6434)
+- pgbouncer15 (listen port: 6435)
+- pgbouncer16 (listen port: 6436)
 - etcd1
 - etcd2
 - etcd3
