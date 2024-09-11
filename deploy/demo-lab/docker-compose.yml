@@ -22,7 +22,7 @@ services:
       - "-retentionPeriod=7d"
     ports:
       - 8428:8428
-    networks: [ monitoring ]  
+    networks: [ monitoring ]
   vmagent:
     container_name: vmagent
     image: victoriametrics/vmagent:stable
@@ -32,7 +32,7 @@ services:
     depends_on: [ victoriametrics ]
     ports:
       - 8429:8429
-    networks: [ monitoring ]  
+    networks: [ monitoring ]
   postgres12: &postgres_base
     container_name: postgres12
     image: postgres:12-alpine
@@ -61,7 +61,7 @@ services:
     volumes:
        - pg12_data:/data/postgres
        - ${PWD}/postgres/init.sql:/docker-entrypoint-initdb.d/01-init.sql
-    networks: [ monitoring ]  
+    networks: [ monitoring ]
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres -d postgres"]
       interval: 10s
@@ -145,11 +145,11 @@ services:
     hostname: etcd3
     command: etcd --name etcd3 --initial-advertise-peer-urls http://etcd3:2380
   haproxy:
+    container_name: haproxy
     image: cherts/patroni:latest
     networks: [ monitoring ]
     env_file: ${PWD}/.env
     hostname: haproxy
-    container_name: haproxy
     ports:
       - "5000:5000"
       - "5001:5001"
@@ -159,11 +159,11 @@ services:
       PATRONI_ETCD3_HOSTS: "'etcd1:2379','etcd2:2379','etcd3:2379'"
       PATRONI_SCOPE: cluster01
   patroni1:
+    container_name: patroni1
     image: cherts/patroni:latest
     networks: [ monitoring ]
     env_file: ${PWD}/.env
     hostname: patroni1
-    container_name: patroni1
     ports:
       - "8008:8008"
       - "5437:5432"
@@ -179,11 +179,11 @@ services:
       retries: 5
       start_period: 10s
   patroni2:
+    container_name: patroni2
     image: cherts/patroni:latest
     networks: [ monitoring ]
     env_file: ${PWD}/.env
     hostname: patroni2
-    container_name: patroni2
     ports:
       - "8009:8008"
       - "5438:5432"
@@ -199,11 +199,11 @@ services:
       retries: 5
       start_period: 10s
   patroni3:
+    container_name: patroni3
     image: cherts/patroni:latest
     networks: [ monitoring ]
     env_file: ${PWD}/.env
     hostname: patroni3
-    container_name: patroni3
     ports:
       - "8010:8008"
       - "5439:5432"

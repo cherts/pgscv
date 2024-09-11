@@ -1,0 +1,85 @@
+#!/bin/bash
+
+DOCKER_NETWORK="monitoring"
+
+# Don't edit this config
+SOURCE="${BASH_SOURCE[0]}"
+while [ -h "$SOURCE" ]; do
+    DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
+    SOURCE="$(readlink "$SOURCE")"
+    [[ $SOURCE != /* ]] && SOURCE="$DIR/$SOURCE"
+done
+SCRIPT_DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
+SCRIPT_NAME=$(basename "$0")
+
+# Check command exist function
+_command_exists() {
+	type "$1" &> /dev/null
+}
+
+# Logging function
+_logging() {
+    local MSG=${1}
+    local ENDLINE=${2:-"1"}
+    if [[ "${ENDLINE}" -eq 0 ]]; then
+        printf "%s: %s" "$(date "+%d.%m.%Y %H:%M:%S")" "${MSG}" 2>/dev/null
+    else
+        printf "%s: %s\n" "$(date "+%d.%m.%Y %H:%M:%S")" "${MSG}" 2>/dev/null
+    fi
+}
+
+# Detect Docker
+if _command_exists docker; then
+    DOCKER_BIN=$(which docker)
+else
+    echo "ERROR: Command 'docker' not found."
+    exit 1
+fi
+
+DATE_START=$(date +"%s")
+
+PG_VERSIONS=(
+    "12,1.4.5"
+    "13,1.4.6"
+    "14,1.4.7"
+    "15,1.4.8"
+    "16,1.5.0"
+)
+
+# Calculate duration function
+_duration() {
+    local DATE_START=${1:-"$(date +'%s')"}
+    local FUNC_NAME=${2:-""}
+    local DATE_END=$(date +"%s")
+    local D_MSG=""
+    local DATE_DIFF=$((${DATE_END}-${DATE_START}))
+    if [ -n "${FUNC_NAME}" ]; then
+        local D_MSG=" of execute function '${FUNC_NAME}'"
+    fi
+    _logging "Duration${D_MSG}: $((${DATE_DIFF} / 3600 )) hours $(((${DATE_DIFF} % 3600) / 60)) minutes $((${DATE_DIFF} % 60)) seconds"
+}
+
+_logging "Starting script."
+
+for DATA in ${PG_VERSIONS[@]}; do
+    PG_VER=$(echo "${DATA}" | awk -F',' '{print $1}')
+    PGREPACK_VER=$(echo "${DATA}" | awk -F',' '{print $2}')
+    _logging "Running pgbench for PostgreSQL v${PG_VER} in an infinite loop..."
+    _logging "If you want to stop the test to create step-file '${SCRIPT_DIR}/pgbench/stop_pgbench_${PG_VER}'"
+    ${DOCKER_BIN} run -it -d --rm --network "$(basename ${SCRIPT_DIR})_${DOCKER_NETWORK}" \
+        --name pgbench_${PG_VER} \
+        -e ${PWD}/pgbench/.env \
+        -v ${PWD}/pgbench:/pg_repack \
+        cherts/pg-repack:${PGREPACK_VER} bash -c "/pg_repack/start_pgbench_test.sh ${PG_VER}" >/dev/null 2>&1
+    if [ $? -eq 0 ]; then
+        _logging "Done, container 'pgbench_${PG_VER}' is runned."
+        _logging "View process: docker logs pgbench_${PG_VER} -f"
+    else
+        _logging "ERROR: Container 'pgbench_${PG_VER}' not runned."
+    fi
+done
+
+_logging "All done."
+_duration "${DATE_START}"
+
+_logging "End script. Goodbye ;)"

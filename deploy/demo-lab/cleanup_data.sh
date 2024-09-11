@@ -15,7 +15,7 @@ _command_exists() {
 	type "$1" &> /dev/null
 }
 
-# Detect YandexCloud CLI
+# Detect Docker Compose
 if _command_exists docker-compose; then
     DC_BIN=$(which docker-compose)
 else
