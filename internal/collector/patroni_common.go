@@ -486,10 +486,14 @@ func parsePatroniResponse(resp *apiPatroniResponse) (*patroniInfo, error) {
 	switch resp.Role {
 	case "master":
 		master, stdleader, replica = 1, 0, 0
+	case "primary":
+		master, stdleader, replica = 1, 0, 0
 	case "standby_leader":
 		master, stdleader, replica = 0, 1, 0
 	case "replica":
 		master, stdleader, replica = 0, 0, 1
+	default:
+		master, stdleader, replica = 1, 0, 0
 	}
 
 	var xlogReplTimeSecs float64
