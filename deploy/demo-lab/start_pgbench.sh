@@ -95,6 +95,7 @@ if [ $? -eq 0 ]; then
 else
     _logging "ERROR: Database 'pgbench' not created."
 fi
+
 _logging "Running pgbench for Patroni in an infinite loop..."
 _logging "If you want to stop the test to create step-file '${SCRIPT_DIR}/pgbench/stop_pgbench_haproxy_5000'"
 ${DOCKER_BIN} run -it -d --rm --network "$(basename ${SCRIPT_DIR})_${DOCKER_NETWORK}" \
@@ -107,6 +108,7 @@ if [ $? -eq 0 ]; then
 else
     _logging "ERROR: Container 'pgbench_patroni' not runned."
 fi
+
 _logging "Running pgbench (only select) for Patroni in an infinite loop..."
 _logging "If you want to stop the test to create step-file '${SCRIPT_DIR}/pgbench/stop_pgbench_haproxy_5001'"
 ${DOCKER_BIN} run -it -d --rm --network "$(basename ${SCRIPT_DIR})_${DOCKER_NETWORK}" \

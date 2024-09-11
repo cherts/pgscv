@@ -27,6 +27,13 @@
 - patroni2 (listen port: 5438, 8009)
 - patroni3 (listen port: 5439, 8010)
 - haproxy (listen port: 5000, 5001)
+- pgbench_12
+- pgbench_13
+- pgbench_14
+- pgbench_15
+- pgbench_16
+- pgbench_patroni
+- pgbench_patroni_s
 
 ### Quick start
 
