@@ -23,7 +23,7 @@ else
 	exit 1
 fi
 
-echo "Stopping all container via docker-compose..."
+echo "Stopping all container via docker-compose, please waiting..."
 ${DC_BIN} down >/dev/null 2>&1
 if [ $? -eq 0 ]; then
     echo "Remove grafana data..."
