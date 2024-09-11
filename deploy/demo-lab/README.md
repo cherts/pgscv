@@ -40,6 +40,10 @@
 Run pgSCV demo laboratory:
 ```bash
 docker-compose up -d
+```
+
+Start pgbench tests:
+```bash
 ./start_pgbench.sh
 ```
 
@@ -53,16 +57,17 @@ Open pgSCV dashboards, enjoy and drink coffee ;)
 
 View pgSCV logs:
 ```bash
-docker logs pgscv
+docker logs pgscv -f
 ```
 
-Stop pgSCV demo laboratory:
+### Stop demo laboratory and cleanup data
+
+Stop pgbench tests:
 ```bash
 ./stop_pgbench.sh
-docker-compose down
 ```
 
-Cleanup demo data:
+Stop pgSCV demo laboratory and cleanup demo data:
 ```bash
-./cleanup_data.sh
+./stop_and_cleanup_data.sh
 ```
