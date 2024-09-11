@@ -114,6 +114,16 @@ services:
        - ${PWD}/postgres/init.sql:/docker-entrypoint-initdb.d/01-init.sql
     ports:
       - 5436:5432
+  postgres17:
+    <<: *postgres_base
+    container_name: postgres17
+    image: postgres:17rc1-alpine
+    hostname: postgres17
+    volumes:
+       - pg17_data:/data/postgres
+       - ${PWD}/postgres/init.sql:/docker-entrypoint-initdb.d/01-init.sql
+    ports:
+      - 5437:5432
   etcd1: &etcd
     image: cherts/patroni:latest
     networks: [ monitoring ]
@@ -166,7 +176,7 @@ services:
     hostname: patroni1
     ports:
       - "8008:8008"
-      - "5437:5432"
+      - "7432:5432"
     volumes:
       - patroni_data1:/home/postgres
     environment:
@@ -186,7 +196,7 @@ services:
     hostname: patroni2
     ports:
       - "8009:8008"
-      - "5438:5432"
+      - "7433:5432"
     volumes:
       - patroni_data2:/home/postgres
     environment:
@@ -206,7 +216,7 @@ services:
     hostname: patroni3
     ports:
       - "8010:8008"
-      - "5439:5432"
+      - "7434:5432"
     volumes:
       - patroni_data3:/home/postgres
     environment:
@@ -281,6 +291,19 @@ services:
       - "6436:5432"
     depends_on:
       - postgres16
+    healthcheck:
+      test: ['CMD', 'pg_isready', '-h', 'localhost']
+  pgbouncer17:
+    container_name: pgbouncer17
+    image: edoburu/pgbouncer:latest
+    hostname: pgbouncer17
+    volumes:
+      - ${PWD}/pgbouncer/conf17:/etc/pgbouncer
+    networks: [ monitoring ]
+    ports:
+      - "6437:5432"
+    depends_on:
+      - postgres17
     healthcheck:
       test: ['CMD', 'pg_isready', '-h', 'localhost']
   pgscv:
@@ -365,6 +388,12 @@ volumes:
       o: bind
       type: rw
       device: ${PWD}/postgres/pg16data
+  pg17_data:
+    driver: local
+    driver_opts:
+      o: bind
+      type: rw
+      device: ${PWD}/postgres/pg17data
   patroni_data1:
     driver: local
     driver_opts:

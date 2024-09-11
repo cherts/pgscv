@@ -24,6 +24,9 @@ services:
   "postgres16":
     service_type: "postgres"
     conninfo: "postgres://pgscv:pgscv@postgres16:5432/postgres"
+  "postgres17":
+    service_type: "postgres"
+    conninfo: "postgres://pgscv:pgscv@postgres17:5432/postgres"
   "patroni_pg_1":
     service_type: "postgres"
     conninfo: "postgres://postgres:postgres@patroni1:5432/postgres"
@@ -57,6 +60,9 @@ services:
   "pgbouncer16": 
     service_type: "pgbouncer"
     conninfo: "postgres://pgscv:pgscv@pgbouncer16:5432/pgbouncer"
+  "pgbouncer17": 
+    service_type: "pgbouncer"
+    conninfo: "postgres://pgscv:pgscv@pgbouncer17:5432/pgbouncer"
 databases: "pgbench"
 disable_collectors:
   - system

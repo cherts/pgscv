@@ -49,6 +49,7 @@ PG_VERSIONS=(
     "14,1.4.7"
     "15,1.4.8"
     "16,1.5.0"
+    "17,1.5.0"
 )
 
 # Calculate duration function
