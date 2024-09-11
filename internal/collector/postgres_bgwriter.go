@@ -1,20 +1,32 @@
 package collector
 
 import (
+	"strconv"
+
 	"github.com/cherts/pgscv/internal/log"
 	"github.com/cherts/pgscv/internal/model"
 	"github.com/cherts/pgscv/internal/store"
 	"github.com/prometheus/client_golang/prometheus"
-	"strconv"
 )
 
 const (
-	postgresBgwriterQuery = "SELECT " +
+	postgresBgwriterQuery16 = "SELECT " +
 		"checkpoints_timed, checkpoints_req, checkpoint_write_time, checkpoint_sync_time, " +
 		"buffers_checkpoint, buffers_clean, maxwritten_clean, " +
 		"buffers_backend, buffers_backend_fsync, buffers_alloc, " +
-		"coalesce(extract('epoch' from age(now(), stats_reset)), 0) as stats_age_seconds " +
+		"coalesce(extract('epoch' from age(now(), stats_reset)), 0) as bgwr_stats_age_seconds " +
 		"FROM pg_stat_bgwriter"
+
+	postgresBgwriterQueryLatest = "WITH ckpt AS (" +
+		"SELECT num_timed AS checkpoints_timed, num_requested AS checkpoints_req, restartpoints_timed, restartpoints_req, " +
+		"restartpoints_done, write_time AS checkpoint_write_time, sync_time AS checkpoint_sync_time, buffers_written AS buffers_checkpoint, " +
+		"coalesce(extract('epoch' from age(now(), stats_reset)), 0) as ckpt_stats_age_seconds FROM pg_stat_checkpointer), " +
+		"bgwr AS (" +
+		"SELECT buffers_clean, maxwritten_clean, buffers_alloc, " +
+		"coalesce(extract('epoch' from age(now(), stats_reset)), 0) as bgwr_stats_age_seconds FROM pg_stat_bgwriter), " +
+		"stat_io AS (" +
+		"SELECT sum(writes) AS buffers_backend, sum(fsyncs) AS buffers_backend_fsync FROM pg_stat_io WHERE backend_type='background writer') " +
+		"SELECT ckpt.*, bgwr.*, stat_io.* FROM ckpt, bgwr, stat_io"
 )
 
 type postgresBgwriterCollector struct {
@@ -74,8 +86,32 @@ func NewPostgresBgwriterCollector(constLabels labels, settings model.CollectorSe
 				nil, constLabels,
 				settings.Filters,
 			),
-			"stats_age_seconds": newBuiltinTypedDesc(
+			"bgwr_stats_age_seconds": newBuiltinTypedDesc(
 				descOpts{"postgres", "bgwriter", "stats_age_seconds_total", "The age of the background writer activity statistics, in seconds.", 0},
+				prometheus.CounterValue,
+				nil, constLabels,
+				settings.Filters,
+			),
+			"ckpt_stats_age_seconds": newBuiltinTypedDesc(
+				descOpts{"postgres", "checkpoints", "stats_age_seconds_total", "The age of the checkpointer activity statistics, in seconds (since v17).", 0},
+				prometheus.CounterValue,
+				nil, constLabels,
+				settings.Filters,
+			),
+			"checkpoint_restartpointstimed": newBuiltinTypedDesc(
+				descOpts{"postgres", "checkpoints", "restartpoints_timed", "Number of scheduled restartpoints due to timeout or after a failed attempt to perform it (since v17).", 0},
+				prometheus.CounterValue,
+				nil, constLabels,
+				settings.Filters,
+			),
+			"checkpoint_restartpointsreq": newBuiltinTypedDesc(
+				descOpts{"postgres", "checkpoints", "restartpoints_req", "Number of requested restartpoints (since v17).", 0},
+				prometheus.CounterValue,
+				nil, constLabels,
+				settings.Filters,
+			),
+			"checkpoint_restartpointsdone": newBuiltinTypedDesc(
+				descOpts{"postgres", "checkpoints", "restartpoints_done", "Number of restartpoints that have been performed (since v17).", 0},
 				prometheus.CounterValue,
 				nil, constLabels,
 				settings.Filters,
@@ -92,7 +128,7 @@ func (c *postgresBgwriterCollector) Update(config Config, ch chan<- prometheus.M
 	}
 	defer conn.Close()
 
-	res, err := conn.Query(postgresBgwriterQuery)
+	res, err := conn.Query(selectBgwriterQuery(config.serverVersionNum))
 	if err != nil {
 		return err
 	}
@@ -122,8 +158,16 @@ func (c *postgresBgwriterCollector) Update(config Config, ch chan<- prometheus.M
 			ch <- desc.newConstMetric(stats.backendFsync)
 		case "alloc_bytes":
 			ch <- desc.newConstMetric(stats.backendAllocated * blockSize)
-		case "stats_age_seconds":
-			ch <- desc.newConstMetric(stats.statsAgeSeconds)
+		case "bgwr_stats_age_seconds":
+			ch <- desc.newConstMetric(stats.bgwrStatsAgeSeconds)
+		case "ckpt_stats_age_seconds":
+			ch <- desc.newConstMetric(stats.ckptStatsAgeSeconds)
+		case "checkpoint_restartpointstimed":
+			ch <- desc.newConstMetric(stats.ckptRestartpointsTimed)
+		case "checkpoint_restartpointsreq":
+			ch <- desc.newConstMetric(stats.ckptRestartpointsReq)
+		case "checkpoint_restartpointsdone":
+			ch <- desc.newConstMetric(stats.ckptRestartpointsDone)
 		default:
 			log.Debugf("unknown desc name: %s, skip", name)
 			continue
@@ -135,17 +179,21 @@ func (c *postgresBgwriterCollector) Update(config Config, ch chan<- prometheus.M
 
 // postgresBgwriterStat describes stats related to Postgres background writes.
 type postgresBgwriterStat struct {
-	ckptTimed        float64
-	ckptReq          float64
-	ckptWriteTime    float64
-	ckptSyncTime     float64
-	ckptBuffers      float64
-	bgwrBuffers      float64
-	bgwrMaxWritten   float64
-	backendBuffers   float64
-	backendFsync     float64
-	backendAllocated float64
-	statsAgeSeconds  float64
+	ckptTimed              float64
+	ckptReq                float64
+	ckptWriteTime          float64
+	ckptSyncTime           float64
+	ckptBuffers            float64
+	ckptRestartpointsTimed float64
+	ckptRestartpointsReq   float64
+	ckptRestartpointsDone  float64
+	ckptStatsAgeSeconds    float64
+	bgwrBuffers            float64
+	bgwrMaxWritten         float64
+	backendBuffers         float64
+	backendFsync           float64
+	backendAllocated       float64
+	bgwrStatsAgeSeconds    float64
 }
 
 // parsePostgresBgwriterStats parses PGResult and returns struct with data values
@@ -190,8 +238,16 @@ func parsePostgresBgwriterStats(r *model.PGResult) postgresBgwriterStat {
 				stats.backendFsync = v
 			case "buffers_alloc":
 				stats.backendAllocated = v
-			case "stats_age_seconds":
-				stats.statsAgeSeconds = v
+			case "bgwr_stats_age_seconds":
+				stats.bgwrStatsAgeSeconds = v
+			case "ckpt_stats_age_seconds":
+				stats.ckptStatsAgeSeconds = v
+			case "restartpoints_timed":
+				stats.ckptRestartpointsTimed = v
+			case "restartpoints_req":
+				stats.ckptRestartpointsReq = v
+			case "restartpoints_done":
+				stats.ckptRestartpointsDone = v
 			default:
 				continue
 			}
@@ -199,4 +255,14 @@ func parsePostgresBgwriterStats(r *model.PGResult) postgresBgwriterStat {
 	}
 
 	return stats
+}
+
+// selectBgwriterQuery returns suitable bgwriter/checkpointer query depending on passed version.
+func selectBgwriterQuery(version int) string {
+	switch {
+	case version < PostgresV17:
+		return postgresBgwriterQuery16
+	default:
+		return postgresBgwriterQueryLatest
+	}
 }

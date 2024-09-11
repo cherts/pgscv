@@ -1,12 +1,13 @@
 package collector
 
 import (
+	"strconv"
+	"strings"
+
 	"github.com/cherts/pgscv/internal/log"
 	"github.com/cherts/pgscv/internal/model"
 	"github.com/cherts/pgscv/internal/store"
 	"github.com/prometheus/client_golang/prometheus"
-	"strconv"
-	"strings"
 )
 
 const (
@@ -17,7 +18,6 @@ const (
 	postgresReplicationSlotQueryLatest = "SELECT database, slot_name, slot_type, active, pg_current_wal_lsn() - restart_lsn AS since_restart_bytes FROM pg_replication_slots"
 )
 
-//
 type postgresReplicationSlotCollector struct {
 	restart typedDesc
 }
@@ -48,7 +48,7 @@ func (c *postgresReplicationSlotCollector) Update(config Config, ch chan<- prome
 		return err
 	}
 
-	// parse pg_stat_statements stats
+	// parse pg_replication_slots stats
 	stats := parsePostgresReplicationSlotStats(res, c.restart.labelNames)
 
 	for _, stat := range stats {
