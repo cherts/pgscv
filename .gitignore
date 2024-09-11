@@ -36,3 +36,18 @@ debug_run.*
 bin/*
 # Test
 .test_coverage.*
+# Exclude demo-stack data
+deploy/demo-lab/pgbench/stop_pgbench_*
+deploy/demo-lab/grafana/data/*
+deploy/demo-lab/patroni/etc_data1/*
+deploy/demo-lab/patroni/etc_data2/*
+deploy/demo-lab/patroni/etc_data3/*
+deploy/demo-lab/patroni/pg_data1/*
+deploy/demo-lab/patroni/pg_data2/*
+deploy/demo-lab/patroni/pg_data3/*
+deploy/demo-lab/postgres/pg12data/*
+deploy/demo-lab/postgres/pg13data/*
+deploy/demo-lab/postgres/pg14data/*
+deploy/demo-lab/postgres/pg15data/*
+deploy/demo-lab/postgres/pg16data/*
+deploy/demo-lab/victoriametrics/data/*

@@ -1,0 +1,21 @@
+global:
+  scrape_interval: 30s
+
+scrape_configs:
+  - job_name: 'pgscv'
+    static_configs:
+      - targets:
+        - pgscv:9890
+    metric_relabel_configs:
+      # truncate query label of postgres_statements_query_info to 72 characters
+#      - action: replace
+#        source_labels: [ query ]
+#        regex: (.{1,72}).*
+#        target_label: query
+#        replacement: $1
+  - job_name: 'vmagent'
+    static_configs:
+      - targets: ['vmagent:8429']
+  - job_name: 'victoriametrics'
+    static_configs:
+      - targets: ['victoriametrics:8428']
