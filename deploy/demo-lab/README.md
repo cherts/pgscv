@@ -28,6 +28,7 @@
 Run pgSCV demo laboratory:
 ```bash
 docker-compose up -d
+./start_pgbench.sh
 ```
 
 Open Grafana into Web browser URL: http://127.0.0.1:3000
@@ -45,6 +46,7 @@ docker logs pgscv
 
 Stop pgSCV demo laboratory:
 ```bash
+./stop_pgbench.sh
 docker-compose down
 ```
 
