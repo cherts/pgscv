@@ -49,10 +49,14 @@ _logging "Starting script."
 for DATA in ${PG_VERSIONS[@]}; do
     PG_VER=$(echo "${DATA}" | awk -F',' '{print $1}')
     PGREPACK_VER=$(echo "${DATA}" | awk -F',' '{print $2}')
-    STOP_FILE=${SCRIPT_DIR}/pgbench/stop_pgbench_${PG_VER}
+    STOP_FILE="${SCRIPT_DIR}/pgbench/stop_pgbench_postgres${PG_VER}"
     _logging "Creating stop-file '${STOP_FILE}'"
     touch "${STOP_FILE}" >/dev/null 2>&1
 done
+
+STOP_FILE="${SCRIPT_DIR}/pgbench/stop_pgbench_haproxy"
+_logging "Creating stop-file '${STOP_FILE}'"
+touch "${STOP_FILE}" >/dev/null 2>&1
 
 _logging "All done."
 _duration "${DATE_START}"

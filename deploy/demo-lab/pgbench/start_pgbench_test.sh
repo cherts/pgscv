@@ -1,13 +1,22 @@
 #!/bin/bash
 
 PG_VER=$1
+PG_HOST=$2
+PG_PORT=$3
 
 if [ -z "${PG_VER}" ]; then
-    echo "Use $0 PGVERSION"
-    exit 1
+    PG_VER=16
 fi
 
-STOP_FLAG="/pg_repack/stop_pgbench_${PG_VER}"
+if [ -z "${PG_HOST}" ]; then
+    PG_HOST="postgres${PG_VER}"
+fi
+
+if [ -z "${PG_PORT}" ]; then
+    PG_PORT=5432
+fi
+
+STOP_FLAG="/pg_repack/stop_pgbench_${PG_HOST}"
 DATE_START=$(date +"%s")
 
 # Logging function
@@ -38,15 +47,17 @@ _logging "Starting script."
 
 source /pg_repack/.env
 
-_logging "Use pgbench for PostgreSQL v${PG_VER}"
+_logging "Use pgbench for PostgreSQL v${PG_VER}, host=${PG_HOST}, port=${PG_PORT}"
+_logging "STOP_FLAG: ${STOP_FLAG}"
+rm -f "${STOP_FLAG}" >/dev/null 2>&1
 
 _logging "Prepare pgbench database..."
-pgbench -h postgres${PG_VER} -p 5432 -U pgbench pgbench -i -s 10
+pgbench -h ${PG_HOST} -p ${PG_PORT} -U pgbench pgbench -i -s 10
 
 ITERATION=1
 while true; do
     _logging "Run pgbench tests, iteration '${ITERATION}'..."
-    pgbench -h postgres${PG_VER} -p 5432 -U pgbench pgbench -T 10 -j 4 -P 2
+    pgbench -h ${PG_HOST} -p ${PG_PORT} -U pgbench pgbench -T 10 -j 4 -P 2
     if [ -f "${STOP_FLAG}" ]; then
         _logging "Found stop-file '${STOP_FLAG}', end pgbench process."
         rm -f "${STOP_FLAG}" >/dev/null 2>&1
@@ -56,7 +67,7 @@ while true; do
 done
 
 _logging "Remove pgbench database..."
-pgbench -h postgres${PG_VER} -p 5432 -U pgbench pgbench -i -I d
+pgbench -h ${PG_HOST} -p ${PG_PORT} -U pgbench pgbench -i -I d
 
 _logging "All done."
 _duration "${DATE_START}"

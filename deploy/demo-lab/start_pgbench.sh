@@ -65,7 +65,7 @@ for DATA in ${PG_VERSIONS[@]}; do
     PG_VER=$(echo "${DATA}" | awk -F',' '{print $1}')
     PGREPACK_VER=$(echo "${DATA}" | awk -F',' '{print $2}')
     _logging "Running pgbench for PostgreSQL v${PG_VER} in an infinite loop..."
-    _logging "If you want to stop the test to create step-file '${SCRIPT_DIR}/pgbench/stop_pgbench_${PG_VER}'"
+    _logging "If you want to stop the test to create step-file '${SCRIPT_DIR}/pgbench/stop_pgbench_postgres${PG_VER}'"
     ${DOCKER_BIN} run -it -d --rm --network "$(basename ${SCRIPT_DIR})_${DOCKER_NETWORK}" \
         --name pgbench_${PG_VER} \
         -e ${PWD}/pgbench/.env \
@@ -78,6 +78,30 @@ for DATA in ${PG_VERSIONS[@]}; do
         _logging "ERROR: Container 'pgbench_${PG_VER}' not runned."
     fi
 done
+
+_logging "Creating pgbench database for Patroni..."
+${DOCKER_BIN} run -it --rm --network "$(basename ${SCRIPT_DIR})_${DOCKER_NETWORK}" \
+    --name pgbench_patroni \
+    -v ${PWD}/patroni/.env:/pg_repack/.env \
+    -v ${PWD}/postgres/init.sql:/pg_repack/init.sql \
+    cherts/pg-repack:1.5.0 bash -c "source /pg_repack/.env && psql -h haproxy -p 5000 -U postgres postgres -f /pg_repack/init.sql" >/dev/null 2>&1
+if [ $? -eq 0 ]; then
+    _logging "Done, database 'pgbench' is created."
+else
+    _logging "ERROR: Database 'pgbench' not created."
+fi
+_logging "Running pgbench for Patroni in an infinite loop..."
+_logging "If you want to stop the test to create step-file '${SCRIPT_DIR}/pgbench/stop_pgbench_haproxy'"
+${DOCKER_BIN} run -it -d --rm --network "$(basename ${SCRIPT_DIR})_${DOCKER_NETWORK}" \
+    --name pgbench_patroni \
+    -v ${PWD}/pgbench:/pg_repack \
+    cherts/pg-repack:1.5.0 bash -c "/pg_repack/start_pgbench_test.sh 16 haproxy 5000" >/dev/null 2>&1
+if [ $? -eq 0 ]; then
+    _logging "Done, container 'pgbench_${PG_VER}' is runned."
+    _logging "View process: docker logs pgbench_patroni -f"
+else
+    _logging "ERROR: Container 'pgbench_${PG_VER}' not runned."
+fi
 
 _logging "All done."
 _duration "${DATE_START}"

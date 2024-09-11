@@ -42,7 +42,7 @@ services:
   "patroni_3":
     service_type: "patroni"
     baseurl: "http://patroni3:8008"
-databases: "^pgbench.*$"
+databases: "pgbench"
 disable_collectors:
   - system
 #  - postgres/pgscv
