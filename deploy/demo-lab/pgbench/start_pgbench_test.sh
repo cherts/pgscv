@@ -52,7 +52,7 @@ _logging "STOP_FLAG: ${STOP_FLAG}"
 rm -f "${STOP_FLAG}" >/dev/null 2>&1
 
 _logging "Prepare pgbench database..."
-pgbench -h ${PG_HOST} -p ${PG_PORT} -U pgbench pgbench -i -s 100
+pgbench -h ${PG_HOST} -p ${PG_PORT} -U pgbench pgbench -i -s 10
 
 ITERATION=1
 while true; do
