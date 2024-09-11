@@ -2,6 +2,8 @@
 
 # postgres OR pgbouncer
 PG_HOST="pgbouncer"
+# default port
+PG_PORT=5432
 # base name of docker network
 DOCKER_NETWORK="monitoring"
 
@@ -68,12 +70,12 @@ for DATA in ${PG_VERSIONS[@]}; do
     PG_VER=$(echo "${DATA}" | awk -F',' '{print $1}')
     PGREPACK_VER=$(echo "${DATA}" | awk -F',' '{print $2}')
     _logging "Running pgbench for PostgreSQL v${PG_VER} in an infinite loop..."
-    _logging "If you want to stop the test to create step-file '${SCRIPT_DIR}/pgbench/stop_pgbench_${PG_HOST}${PG_VER}'"
+    _logging "If you want to stop the test to create step-file '${SCRIPT_DIR}/pgbench/stop_pgbench_${PG_HOST}${PG_VER}_${PG_PORT}'"
     ${DOCKER_BIN} run -it -d --rm --network "$(basename ${SCRIPT_DIR})_${DOCKER_NETWORK}" \
         --name pgbench_${PG_VER} \
         -e ${PWD}/pgbench/.env \
         -v ${PWD}/pgbench:/pg_repack \
-        cherts/pg-repack:${PGREPACK_VER} bash -c "/pg_repack/start_pgbench_test.sh ${PG_VER} ${PG_HOST}${PG_VER}" >/dev/null 2>&1
+        cherts/pg-repack:${PGREPACK_VER} bash -c "/pg_repack/start_pgbench_test.sh ${PG_VER} ${PG_HOST}${PG_VER} ${PG_PORT}" >/dev/null 2>&1
     if [ $? -eq 0 ]; then
         _logging "Done, container 'pgbench_${PG_VER}' is runned."
         _logging "View process: docker logs pgbench_${PG_VER} -f"
@@ -94,16 +96,28 @@ else
     _logging "ERROR: Database 'pgbench' not created."
 fi
 _logging "Running pgbench for Patroni in an infinite loop..."
-_logging "If you want to stop the test to create step-file '${SCRIPT_DIR}/pgbench/stop_pgbench_haproxy'"
+_logging "If you want to stop the test to create step-file '${SCRIPT_DIR}/pgbench/stop_pgbench_haproxy_5000'"
 ${DOCKER_BIN} run -it -d --rm --network "$(basename ${SCRIPT_DIR})_${DOCKER_NETWORK}" \
     --name pgbench_patroni \
     -v ${PWD}/pgbench:/pg_repack \
     cherts/pg-repack:1.5.0 bash -c "/pg_repack/start_pgbench_test.sh 16 haproxy 5000" >/dev/null 2>&1
 if [ $? -eq 0 ]; then
-    _logging "Done, container 'pgbench_${PG_VER}' is runned."
+    _logging "Done, container 'pgbench_patroni' is runned."
     _logging "View process: docker logs pgbench_patroni -f"
 else
-    _logging "ERROR: Container 'pgbench_${PG_VER}' not runned."
+    _logging "ERROR: Container 'pgbench_patroni' not runned."
+fi
+_logging "Running pgbench (only select) for Patroni in an infinite loop..."
+_logging "If you want to stop the test to create step-file '${SCRIPT_DIR}/pgbench/stop_pgbench_haproxy_5001'"
+${DOCKER_BIN} run -it -d --rm --network "$(basename ${SCRIPT_DIR})_${DOCKER_NETWORK}" \
+    --name pgbench_patroni_s \
+    -v ${PWD}/pgbench:/pg_repack \
+    cherts/pg-repack:1.5.0 bash -c "/pg_repack/start_pgbench_test.sh 16 haproxy 5001 1" >/dev/null 2>&1
+if [ $? -eq 0 ]; then
+    _logging "Done, container 'pgbench_patroni_s' is runned."
+    _logging "View process: docker logs pgbench_patroni_s -f"
+else
+    _logging "ERROR: Container 'pgbench_patroni_s' not runned."
 fi
 
 _logging "All done."

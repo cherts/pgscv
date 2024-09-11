@@ -3,6 +3,7 @@
 PG_VER=$1
 PG_HOST=$2
 PG_PORT=$3
+ONLY_SELECT=${4:-"0"}
 
 if [ -z "${PG_VER}" ]; then
     PG_VER=16
@@ -16,7 +17,7 @@ if [ -z "${PG_PORT}" ]; then
     PG_PORT=5432
 fi
 
-STOP_FLAG="/pg_repack/stop_pgbench_${PG_HOST}"
+STOP_FLAG="/pg_repack/stop_pgbench_${PG_HOST}_${PG_PORT}"
 DATE_START=$(date +"%s")
 
 # Logging function
@@ -49,22 +50,27 @@ source /pg_repack/.env
 
 _logging "Use pgbench for PostgreSQL v${PG_VER}, host=${PG_HOST}, port=${PG_PORT}"
 _logging "STOP_FLAG: ${STOP_FLAG}"
+_logging "ONLY_SELECT: ${ONLY_SELECT}"
 rm -f "${STOP_FLAG}" >/dev/null 2>&1
 
-_logging "Prepare pgbench database..."
-pgbench -h ${PG_HOST} -p ${PG_PORT} -U pgbench pgbench -i -s 10
+if [[ ${ONLY_SELECT} -eq 0 ]]; then
+    _logging "Prepare pgbench database..."
+    pgbench -h ${PG_HOST} -p ${PG_PORT} -U pgbench pgbench -i -s 10
+fi
 
 ITERATION=1
 while true; do
-    _logging "Run pgbench tests, iteration '${ITERATION}'..."
-    pgbench -h ${PG_HOST} -p ${PG_PORT} -U pgbench pgbench -T 10 -j 4 -P 10 -c 5
-    if [ -f "${STOP_FLAG}" ]; then
-        _logging "Found stop-file '${STOP_FLAG}', end pgbench process."
-        rm -f "${STOP_FLAG}" >/dev/null 2>&1
-        break
+    if [[ ${ONLY_SELECT} -eq 0 ]]; then
+        _logging "Run pgbench tests, iteration '${ITERATION}'..."
+        pgbench -h ${PG_HOST} -p ${PG_PORT} -U pgbench pgbench -T 10 -j 4 -P 10 -c 5
+        if [ -f "${STOP_FLAG}" ]; then
+            _logging "Found stop-file '${STOP_FLAG}', end pgbench process."
+            rm -f "${STOP_FLAG}" >/dev/null 2>&1
+            break
+        fi
     fi
     _logging "Run pgbench tests (select only), iteration '${ITERATION}'..."
-    pgbench -h ${PG_HOST} -p ${PG_PORT} -U pgbench pgbench -T 10 -j 4 -P 10 -c 5 -S
+    pgbench -h ${PG_HOST} -p ${PG_PORT} -U pgbench pgbench -T 10 -j 4 -P 10 -c 5 -S -n
     if [ -f "${STOP_FLAG}" ]; then
         _logging "Found stop-file '${STOP_FLAG}', end pgbench process."
         rm -f "${STOP_FLAG}" >/dev/null 2>&1
@@ -73,8 +79,10 @@ while true; do
     ((ITERATION++))
 done
 
-_logging "Remove pgbench database..."
-pgbench -h ${PG_HOST} -p ${PG_PORT} -U pgbench pgbench -i -I d
+if [[ ${ONLY_SELECT} -eq 0 ]]; then
+    _logging "Remove pgbench database..."
+    pgbench -h ${PG_HOST} -p ${PG_PORT} -U pgbench pgbench -i -I d
+fi
 
 _logging "All done."
 _duration "${DATE_START}"

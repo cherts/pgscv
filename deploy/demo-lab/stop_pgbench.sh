@@ -2,6 +2,8 @@
 
 # postgres OR pgbouncer
 PG_HOST="pgbouncer"
+# default port
+PG_PORT=5432
 
 # Don't edit this config
 SOURCE="${BASH_SOURCE[0]}"
@@ -52,12 +54,16 @@ _logging "Starting script."
 for DATA in ${PG_VERSIONS[@]}; do
     PG_VER=$(echo "${DATA}" | awk -F',' '{print $1}')
     PGREPACK_VER=$(echo "${DATA}" | awk -F',' '{print $2}')
-    STOP_FILE="${SCRIPT_DIR}/pgbench/stop_pgbench_${PG_HOST}${PG_VER}"
+    STOP_FILE="${SCRIPT_DIR}/pgbench/stop_pgbench_${PG_HOST}${PG_VER}_${PG_PORT}"
     _logging "Creating stop-file '${STOP_FILE}'"
     touch "${STOP_FILE}" >/dev/null 2>&1
 done
 
-STOP_FILE="${SCRIPT_DIR}/pgbench/stop_pgbench_haproxy"
+STOP_FILE="${SCRIPT_DIR}/pgbench/stop_pgbench_haproxy_5000"
+_logging "Creating stop-file '${STOP_FILE}'"
+touch "${STOP_FILE}" >/dev/null 2>&1
+
+STOP_FILE="${SCRIPT_DIR}/pgbench/stop_pgbench_haproxy_5001"
 _logging "Creating stop-file '${STOP_FILE}'"
 touch "${STOP_FILE}" >/dev/null 2>&1
 
