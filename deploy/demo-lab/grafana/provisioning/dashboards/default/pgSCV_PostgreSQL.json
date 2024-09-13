@@ -15,12 +15,12 @@
       }
     ]
   },
-  "description": "PostgreSQL dashboard for pgSCV metrics (Prometheus version, pgSCV 0.8.4 edition)",
+  "description": "PostgreSQL dashboard for pgSCV metrics (Prometheus version, pgSCV 0.9.2 edition)",
   "editable": true,
   "fiscalYearStartMonth": 0,
   "gnetId": 21430,
   "graphTooltip": 1,
-  "id": 4,
+  "id": 7,
   "links": [
     {
       "asDropdown": true,
@@ -180,6 +180,93 @@
         "type": "prometheus",
         "uid": "DS_VM_01"
       },
+      "description": "Current role of PostgreSQL node (Primary or Replica).",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [
+            {
+              "options": {
+                "0": {
+                  "index": 0,
+                  "text": "Primary"
+                },
+                "1": {
+                  "index": 1,
+                  "text": "Replica"
+                }
+              },
+              "type": "value"
+            }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "light-blue",
+                "value": 1
+              }
+            ]
+          },
+          "unit": "none"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 4,
+        "x": 4,
+        "y": 1
+      },
+      "id": 84,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "text": {},
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "11.3.0-196028",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "DS_VM_01"
+          },
+          "editorMode": "code",
+          "exemplar": false,
+          "expr": "postgres_recovery_info{instance=\"$instance\",service_id=\"$postgres\"}",
+          "instant": true,
+          "interval": "",
+          "legendFormat": "statements",
+          "refId": "A"
+        }
+      ],
+      "title": "Role",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "DS_VM_01"
+      },
       "description": "Rate of successfully executed statements per second.",
       "fieldConfig": {
         "defaults": {
@@ -215,7 +302,7 @@
       "gridPos": {
         "h": 5,
         "w": 4,
-        "x": 4,
+        "x": 8,
         "y": 1
       },
       "id": 90,
@@ -292,7 +379,7 @@
       "gridPos": {
         "h": 5,
         "w": 4,
-        "x": 8,
+        "x": 12,
         "y": 1
       },
       "id": 74,
@@ -369,7 +456,7 @@
       "gridPos": {
         "h": 5,
         "w": 4,
-        "x": 12,
+        "x": 16,
         "y": 1
       },
       "id": 73,
@@ -446,7 +533,7 @@
       "gridPos": {
         "h": 5,
         "w": 4,
-        "x": 16,
+        "x": 20,
         "y": 1
       },
       "id": 75,
@@ -527,8 +614,8 @@
       "gridPos": {
         "h": 5,
         "w": 4,
-        "x": 20,
-        "y": 1
+        "x": 0,
+        "y": 6
       },
       "id": 76,
       "options": {
@@ -570,93 +657,7 @@
     },
     {
       "datasource": {
-        "type": "prometheus",
-        "uid": "DS_VM_01"
-      },
-      "description": "Current role of PostgreSQL node (Primary or Replica).",
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "thresholds"
-          },
-          "mappings": [
-            {
-              "options": {
-                "0": {
-                  "index": 0,
-                  "text": "Primary"
-                },
-                "1": {
-                  "index": 1,
-                  "text": "Replica"
-                }
-              },
-              "type": "value"
-            }
-          ],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "light-blue",
-                "value": 1
-              }
-            ]
-          },
-          "unit": "none"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 5,
-        "w": 4,
-        "x": 0,
-        "y": 6
-      },
-      "id": 84,
-      "options": {
-        "colorMode": "background",
-        "graphMode": "area",
-        "justifyMode": "auto",
-        "orientation": "auto",
-        "percentChangeColorMode": "standard",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "showPercentChange": false,
-        "text": {},
-        "textMode": "auto",
-        "wideLayout": true
-      },
-      "pluginVersion": "11.3.0-196028",
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "DS_VM_01"
-          },
-          "editorMode": "code",
-          "exemplar": false,
-          "expr": "postgres_recovery_info{instance=\"$instance\",service_id=\"$postgres\"}",
-          "instant": true,
-          "interval": "",
-          "legendFormat": "statements",
-          "refId": "A"
-        }
-      ],
-      "title": "Role",
-      "type": "stat"
-    },
-    {
-      "datasource": {
+        "default": true,
         "type": "prometheus",
         "uid": "DS_VM_01"
       },
@@ -721,11 +722,471 @@
           "expr": "count(postgres_index_scans_total{instance=\"$instance\",service_id=\"$postgres\",isvalid=\"false\"})",
           "instant": false,
           "interval": "",
-          "legendFormat": "response time",
+          "legendFormat": "count",
           "refId": "A"
         }
       ],
-      "title": "Total invalid indexes",
+      "title": "Invalid indexes",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "default": true,
+        "type": "prometheus",
+        "uid": "DS_VM_01"
+      },
+      "description": "Total number of inactive replication slots.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 1
+              }
+            ]
+          },
+          "unit": "none"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 4,
+        "x": 8,
+        "y": 6
+      },
+      "id": 96,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "text": {},
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "11.3.0-196028",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "DS_VM_01"
+          },
+          "editorMode": "code",
+          "exemplar": false,
+          "expr": "count(postgres_replication_slot_wal_retain_bytes{instance=\"$instance\",service_id=\"$postgres\",active=\"false\"})",
+          "instant": false,
+          "interval": "",
+          "legendFormat": "count",
+          "refId": "A"
+        }
+      ],
+      "title": "Inactive replication slots",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "default": true,
+        "type": "prometheus",
+        "uid": "DS_VM_01"
+      },
+      "description": "Total number of rollbacks. See \"Client activity\" dashboard for more detail. Select primary node.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 10
+              },
+              {
+                "color": "orange",
+                "value": 30
+              },
+              {
+                "color": "red",
+                "value": 50
+              }
+            ]
+          },
+          "unit": "none"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 4,
+        "x": 12,
+        "y": 6
+      },
+      "id": 97,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "text": {},
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "11.3.0-196028",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "DS_VM_01"
+          },
+          "editorMode": "code",
+          "exemplar": false,
+          "expr": "sum(increase(postgres_database_xact_rollbacks_total{instance=\"$instance\",service_id=\"$postgres\",database!~\"^$exclude$\",user!~\"^$exclude$\"}[1m]))",
+          "instant": false,
+          "interval": "",
+          "legendFormat": "count",
+          "refId": "A"
+        }
+      ],
+      "title": "Rollbacks",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "default": true,
+        "type": "prometheus",
+        "uid": "DS_VM_01"
+      },
+      "description": "Total number of conflicts per minute. See the documentation for the pg_stat_database view for more details.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 0.001
+              }
+            ]
+          },
+          "unit": "none"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 4,
+        "x": 16,
+        "y": 6
+      },
+      "id": 98,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "text": {},
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "11.3.0-196028",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "DS_VM_01"
+          },
+          "editorMode": "code",
+          "exemplar": false,
+          "expr": "sum(increase(postgres_database_conflicts_total{instance=\"$instance\",service_id=\"$postgres\"}[1m]))",
+          "instant": false,
+          "interval": "",
+          "legendFormat": "count",
+          "refId": "A"
+        }
+      ],
+      "title": "Conflicts",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "default": true,
+        "type": "prometheus",
+        "uid": "DS_VM_01"
+      },
+      "description": "Total number of deadlocks occurred. See \"Deadlocks, per minute\" dashboard for more detail.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 1
+              }
+            ]
+          },
+          "unit": "none"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 4,
+        "x": 20,
+        "y": 6
+      },
+      "id": 99,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "text": {},
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "11.3.0-196028",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "DS_VM_01"
+          },
+          "editorMode": "code",
+          "exemplar": false,
+          "expr": "sum(increase(postgres_database_deadlocks_total{instance=\"$instance\",service_id=\"$postgres\"}[1m]))",
+          "instant": false,
+          "interval": "",
+          "legendFormat": "count",
+          "refId": "A"
+        }
+      ],
+      "title": "Deadlocks",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "default": true,
+        "type": "prometheus",
+        "uid": "DS_VM_01"
+      },
+      "description": "Total number of checksum failures occurred per minute.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 1
+              }
+            ]
+          },
+          "unit": "none"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 4,
+        "x": 0,
+        "y": 11
+      },
+      "id": 100,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "text": {},
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "11.3.0-196028",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "DS_VM_01"
+          },
+          "editorMode": "code",
+          "exemplar": false,
+          "expr": "sum(increase(postgres_database_checksum_failures_total{instance=\"$instance\",service_id=\"$postgres\"}[1m]))",
+          "instant": false,
+          "interval": "",
+          "legendFormat": "count",
+          "refId": "A"
+        }
+      ],
+      "title": "Checksum failures",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "default": true,
+        "type": "prometheus",
+        "uid": "DS_VM_01"
+      },
+      "description": "Total number of sessions established to this database and closed by reason abandoned, fatal or killed. See \"Session activity\" dashboard for more detail.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 10
+              },
+              {
+                "color": "orange",
+                "value": 30
+              },
+              {
+                "color": "red",
+                "value": 50
+              }
+            ]
+          },
+          "unit": "none"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 4,
+        "x": 4,
+        "y": 11
+      },
+      "id": 101,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "text": {},
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "11.3.0-196028",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "DS_VM_01"
+          },
+          "editorMode": "code",
+          "exemplar": false,
+          "expr": "sum(increase(postgres_database_sessions_total{instance=\"$instance\",service_id=\"$postgres\",reason=~\"abandoned|fatal|killed\",database!~\"^$exclude$\"}[1m]))",
+          "instant": false,
+          "interval": "",
+          "legendFormat": "count",
+          "refId": "A"
+        }
+      ],
+      "title": "Session failures",
       "type": "stat"
     },
     {
@@ -738,7 +1199,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 11
+        "y": 16
       },
       "id": 15,
       "panels": [
@@ -760,6 +1221,7 @@
                 "axisLabel": "",
                 "axisPlacement": "auto",
                 "barAlignment": 0,
+                "barWidthFactor": 0.6,
                 "drawStyle": "line",
                 "fillOpacity": 10,
                 "gradientMode": "none",
@@ -818,7 +1280,7 @@
             "h": 8,
             "w": 12,
             "x": 0,
-            "y": 12
+            "y": 17
           },
           "id": 7,
           "options": {
@@ -899,6 +1361,7 @@
                 "axisLabel": "",
                 "axisPlacement": "auto",
                 "barAlignment": 0,
+                "barWidthFactor": 0.6,
                 "drawStyle": "points",
                 "fillOpacity": 10,
                 "gradientMode": "none",
@@ -941,7 +1404,7 @@
             "h": 8,
             "w": 12,
             "x": 12,
-            "y": 12
+            "y": 17
           },
           "id": 13,
           "options": {
@@ -994,6 +1457,7 @@
                 "axisLabel": "",
                 "axisPlacement": "auto",
                 "barAlignment": 0,
+                "barWidthFactor": 0.6,
                 "drawStyle": "line",
                 "fillOpacity": 80,
                 "gradientMode": "none",
@@ -1127,7 +1591,7 @@
             "h": 8,
             "w": 12,
             "x": 0,
-            "y": 20
+            "y": 25
           },
           "id": 11,
           "options": {
@@ -1180,6 +1644,7 @@
                 "axisLabel": "",
                 "axisPlacement": "auto",
                 "barAlignment": 0,
+                "barWidthFactor": 0.6,
                 "drawStyle": "line",
                 "fillOpacity": 80,
                 "gradientMode": "none",
@@ -1313,7 +1778,7 @@
             "h": 8,
             "w": 12,
             "x": 12,
-            "y": 20
+            "y": 25
           },
           "id": 92,
           "options": {
@@ -1347,6 +1812,221 @@
           ],
           "title": "Client connections (without idle)",
           "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "default": true,
+            "type": "prometheus",
+            "uid": "DS_VM_01"
+          },
+          "description": "Total number of sessions established to this database and closed by each reason. See the documentation for the pg_stat_database view for more details. Require PostgreSQL v14+",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisBorderShow": false,
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "barWidthFactor": 0.6,
+                "drawStyle": "line",
+                "fillOpacity": 80,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "insertNulls": false,
+                "lineInterpolation": "linear",
+                "lineWidth": 0,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "never",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "normal"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green"
+                  }
+                ]
+              },
+              "unit": "short"
+            },
+            "overrides": [
+              {
+                "matcher": {
+                  "id": "byRegexp",
+                  "options": "/.*abandoned/"
+                },
+                "properties": [
+                  {
+                    "id": "color",
+                    "value": {
+                      "fixedColor": "orange",
+                      "mode": "fixed"
+                    }
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byRegexp",
+                  "options": "/.*normal/"
+                },
+                "properties": [
+                  {
+                    "id": "color",
+                    "value": {
+                      "fixedColor": "green",
+                      "mode": "fixed"
+                    }
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byRegexp",
+                  "options": "/.*fatal/"
+                },
+                "properties": [
+                  {
+                    "id": "color",
+                    "value": {
+                      "fixedColor": "red",
+                      "mode": "fixed"
+                    }
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byRegexp",
+                  "options": "/.*killed/"
+                },
+                "properties": [
+                  {
+                    "id": "color",
+                    "value": {
+                      "fixedColor": "yellow",
+                      "mode": "fixed"
+                    }
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byRegexp",
+                  "options": "/.*TOTAL/"
+                },
+                "properties": [
+                  {
+                    "id": "color",
+                    "value": {
+                      "fixedColor": "blue",
+                      "mode": "fixed"
+                    }
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "TOTAL"
+                },
+                "properties": [
+                  {
+                    "id": "color",
+                    "value": {
+                      "mode": "shades"
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 0,
+            "y": 33
+          },
+          "id": 95,
+          "options": {
+            "legend": {
+              "calcs": [],
+              "displayMode": "list",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "tooltip": {
+              "maxHeight": 600,
+              "mode": "multi",
+              "sort": "desc"
+            }
+          },
+          "pluginVersion": "7.5.7",
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "DS_VM_01"
+              },
+              "editorMode": "code",
+              "exemplar": true,
+              "expr": "sum by (database,reason) (increase(postgres_database_sessions_total{instance=\"$instance\",service_id=\"$postgres\",database=~\"$database\",user!~\"^$exclude$\"}[1m]))",
+              "interval": "",
+              "legendFormat": "{{database}}/{{reason}}",
+              "range": true,
+              "refId": "A"
+            },
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "DS_VM_01"
+              },
+              "editorMode": "code",
+              "exemplar": true,
+              "expr": "sum by (database) (increase(postgres_database_sessions_all_total{instance=\"$instance\",service_id=\"$postgres\",database=~\"$database\",user!~\"^$exclude$\"}[1m]))",
+              "hide": false,
+              "interval": "",
+              "legendFormat": "{{database}}/TOTAL",
+              "range": true,
+              "refId": "B"
+            },
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "DS_VM_01"
+              },
+              "editorMode": "code",
+              "exemplar": true,
+              "expr": "sum by (service_id) (increase(postgres_database_sessions_all_total{instance=\"$instance\",service_id=\"$postgres\",database=~\"$database\",user!~\"^$exclude$\"}[1m]))",
+              "hide": false,
+              "interval": "",
+              "legendFormat": "TOTAL",
+              "range": true,
+              "refId": "C"
+            }
+          ],
+          "title": "Session activity",
+          "type": "timeseries"
         }
       ],
       "targets": [
@@ -1371,7 +2051,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 12
+        "y": 17
       },
       "id": 82,
       "panels": [
@@ -1747,7 +2427,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 13
+        "y": 18
       },
       "id": 24,
       "panels": [
@@ -2156,7 +2836,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 14
+        "y": 19
       },
       "id": 31,
       "panels": [
@@ -2572,7 +3252,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 15
+        "y": 20
       },
       "id": 40,
       "panels": [
@@ -2787,7 +3467,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 16
+        "y": 21
       },
       "id": 37,
       "panels": [
@@ -3128,7 +3808,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 17
+        "y": 22
       },
       "id": 50,
       "panels": [
@@ -3768,7 +4448,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 18
+        "y": 23
       },
       "id": 55,
       "panels": [
@@ -4112,7 +4792,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 19
+        "y": 24
       },
       "id": 72,
       "panels": [
@@ -4737,7 +5417,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 20
+        "y": 25
       },
       "id": 63,
       "panels": [
@@ -5564,7 +6244,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 21
+        "y": 26
       },
       "id": 44,
       "panels": [
@@ -5919,10 +6599,9 @@
       {
         "allValue": ".*",
         "current": {
-          "isNone": true,
-          "selected": true,
-          "text": "None",
-          "value": ""
+          "selected": false,
+          "text": "pgscv:9890",
+          "value": "pgscv:9890"
         },
         "datasource": {
           "type": "prometheus",
@@ -5951,10 +6630,9 @@
       },
       {
         "current": {
-          "isNone": true,
-          "selected": true,
-          "text": "None",
-          "value": ""
+          "selected": false,
+          "text": "patroni_pg_1",
+          "value": "patroni_pg_1"
         },
         "datasource": {
           "type": "prometheus",
@@ -5983,13 +6661,9 @@
       },
       {
         "current": {
-          "selected": true,
-          "text": [
-            "All"
-          ],
-          "value": [
-            "$__all"
-          ]
+          "selected": false,
+          "text": "All",
+          "value": "$__all"
         },
         "datasource": {
           "type": "prometheus",
@@ -6072,7 +6746,7 @@
   },
   "timezone": "",
   "title": "pgSCV: PostgreSQL",
-  "uid": "N6PwjKeGz",
-  "version": 1,
+  "uid": "N6PwjKeGz1",
+  "version": 7,
   "weekStart": ""
 }
