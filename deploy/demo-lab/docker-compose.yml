@@ -117,7 +117,7 @@ services:
   postgres17:
     <<: *postgres_base
     container_name: postgres17
-    image: postgres:17rc1-alpine
+    image: postgres:17-alpine
     hostname: postgres17
     volumes:
        - pg17_data:/data/postgres
