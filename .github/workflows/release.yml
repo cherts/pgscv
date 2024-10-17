@@ -5,8 +5,9 @@ on:
   workflow_dispatch:
   push:
     tags:
-      - "v0.*"
-      - "v1.*"
+      - "v*"
+    branches:
+      - master
 
 jobs:
   test:
