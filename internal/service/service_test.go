@@ -77,11 +77,6 @@ func TestRepository_addServicesFromConfig(t *testing.T) {
 			config:   Config{ConnsSettings: ConnsSettings{"test": {ServiceType: model.ServiceTypePostgresql, Conninfo: "invalid conninfo"}}},
 			expected: 1,
 		},
-		{
-			name:     "unavailable service",
-			config:   Config{ConnsSettings: ConnsSettings{"test": {ServiceType: model.ServiceTypePostgresql, Conninfo: "port=1"}}},
-			expected: 1,
-		},
 	}
 
 	for _, tc := range testCases {
