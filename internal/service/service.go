@@ -128,7 +128,7 @@ func (repo *Repository) addServicesFromConfig(config Config) {
 		return
 	}
 
-	// Check all passed connection settings and try to connect using them. In case of success, create a 'Service' instance
+	// Check all passed connection settings and try to connect using them. Create a 'Service' instance
 	// in the repo.
 	for k, cs := range config.ConnsSettings {
 		var msg string
@@ -154,15 +154,14 @@ func (repo *Repository) addServicesFromConfig(config Config) {
 			// Check connection using created *ConnConfig, go next if connection failed.
 			db, err := store.NewWithConfig(pgconfig)
 			if err != nil {
-				log.Warnf("%s: %s, skip", cs.Conninfo, err)
-				continue
+				log.Warnf("%s: %s", cs.Conninfo, err)
+			} else {
+				msg = fmt.Sprintf("service [%s] available through: %s@%s:%d/%s", k, pgconfig.User, pgconfig.Host, pgconfig.Port, pgconfig.Database)
+				db.Close()
 			}
-			db.Close()
-
-			msg = fmt.Sprintf("service [%s] available through: %s@%s:%d/%s", k, pgconfig.User, pgconfig.Host, pgconfig.Port, pgconfig.Database)
 		}
 
-		// Connection was successful, create 'Service' struct with service-related properties and add it to service repo.
+		// Create 'Service' struct with service-related properties and add it to service repo.
 		s := Service{
 			ServiceID:    k,
 			ConnSettings: cs,
