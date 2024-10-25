@@ -16,15 +16,16 @@ func Start(ctx context.Context, config *Config) error {
 	serviceRepo := service.NewRepository()
 
 	serviceConfig := service.Config{
-		NoTrackMode:        config.NoTrackMode,
-		ConnDefaults:       config.Defaults,
-		ConnsSettings:      config.ServicesConnsSettings,
-		DatabasesRE:        config.DatabasesRE,
-		DisabledCollectors: config.DisableCollectors,
-		CollectorsSettings: config.CollectorsSettings,
-		CollectTopTable:    config.CollectTopTable,
-		CollectTopIndex:    config.CollectTopIndex,
-		CollectTopQuery:    config.CollectTopQuery,
+		NoTrackMode:               config.NoTrackMode,
+		ConnDefaults:              config.Defaults,
+		ConnsSettings:             config.ServicesConnsSettings,
+		DatabasesRE:               config.DatabasesRE,
+		DisabledCollectors:        config.DisableCollectors,
+		CollectorsSettings:        config.CollectorsSettings,
+		CollectTopTable:           config.CollectTopTable,
+		CollectTopIndex:           config.CollectTopIndex,
+		CollectTopQuery:           config.CollectTopQuery,
+		TestDbConnectionOnStartup: config.TestDbConnectionOnStartup,
 	}
 
 	if len(config.ServicesConnsSettings) == 0 {

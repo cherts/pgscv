@@ -27,19 +27,19 @@ const (
 
 // Config defines application's configuration.
 type Config struct {
-	NoTrackMode           bool                     `yaml:"no_track_mode"`      // controls tracking sensitive information (query texts, etc)
-	ListenAddress         string                   `yaml:"listen_address"`     // Network address and port where the application should listen on
-	ServicesConnsSettings service.ConnsSettings    `yaml:"services"`           // All connections settings for exact services
-	Defaults              map[string]string        `yaml:"defaults"`           // Defaults
-	DisableCollectors     []string                 `yaml:"disable_collectors"` // List of collectors which should be disabled. DEPRECATED in favor collectors settings
-	CollectorsSettings    model.CollectorsSettings `yaml:"collectors"`         // Collectors settings propagated from main YAML configuration
-	Databases             string                   `yaml:"databases"`          // Regular expression string specifies databases from which metrics should be collected
-	DatabasesRE           *regexp.Regexp           // Regular expression object compiled from Databases
-	AuthConfig            http.AuthConfig          `yaml:"authentication"`    // TLS and Basic auth configuration
-	CollectTopTable       int                      `yaml:"collect_top_table"` // Limit elements on Table collector
-	CollectTopIndex       int                      `yaml:"collect_top_index"` // Limit elements on Indexes collector
-	CollectTopQuery       int                      `yaml:"collect_top_query"` // Limit elements on Statements collector
-
+	NoTrackMode               bool                     `yaml:"no_track_mode"`      // controls tracking sensitive information (query texts, etc)
+	ListenAddress             string                   `yaml:"listen_address"`     // Network address and port where the application should listen on
+	ServicesConnsSettings     service.ConnsSettings    `yaml:"services"`           // All connections settings for exact services
+	Defaults                  map[string]string        `yaml:"defaults"`           // Defaults
+	DisableCollectors         []string                 `yaml:"disable_collectors"` // List of collectors which should be disabled. DEPRECATED in favor collectors settings
+	CollectorsSettings        model.CollectorsSettings `yaml:"collectors"`         // Collectors settings propagated from main YAML configuration
+	Databases                 string                   `yaml:"databases"`          // Regular expression string specifies databases from which metrics should be collected
+	DatabasesRE               *regexp.Regexp           // Regular expression object compiled from Databases
+	AuthConfig                http.AuthConfig          `yaml:"authentication"`                // TLS and Basic auth configuration
+	CollectTopTable           int                      `yaml:"collect_top_table"`             // Limit elements on Table collector
+	CollectTopIndex           int                      `yaml:"collect_top_index"`             // Limit elements on Indexes collector
+	CollectTopQuery           int                      `yaml:"collect_top_query"`             // Limit elements on Statements collector
+	TestDbConnectionOnStartup bool                     `yaml:"test_db_connection_on_startup"` // Check connection settings and try to connect using them. In case of failure, don't create a Service instance.
 }
 
 // NewConfig creates new config based on config file or return default config if config file is not specified.
@@ -65,6 +65,7 @@ func NewConfig(configFilePath string) (*Config, error) {
 
 	// Get configuration from environment variables
 	configFromEnv, err := newConfigFromEnv()
+	fmt.Println(configFromEnv.TestDbConnectionOnStartup)
 	if err != nil {
 		return nil, err
 	}
@@ -108,6 +109,9 @@ func NewConfig(configFilePath string) (*Config, error) {
 		}
 		if configFromEnv.CollectTopQuery > 0 {
 			configFromFile.CollectTopQuery = configFromEnv.CollectTopQuery
+		}
+		if !configFromEnv.TestDbConnectionOnStartup {
+			configFromFile.TestDbConnectionOnStartup = false
 		}
 		return configFromFile, nil
 	}
@@ -336,8 +340,9 @@ func newConfigFromEnv() (*Config, error) {
 	log.Infoln("read configuration from environment")
 
 	config := &Config{
-		Defaults:              map[string]string{},
-		ServicesConnsSettings: map[string]service.ConnSetting{},
+		Defaults:                  map[string]string{},
+		ServicesConnsSettings:     map[string]service.ConnSetting{},
+		TestDbConnectionOnStartup: true,
 	}
 
 	for _, env := range os.Environ() {
@@ -387,12 +392,7 @@ func newConfigFromEnv() (*Config, error) {
 		case "PGSCV_LISTEN_ADDRESS":
 			config.ListenAddress = value
 		case "PGSCV_NO_TRACK_MODE":
-			switch value {
-			case "y", "yes", "Yes", "YES", "t", "true", "True", "TRUE", "1", "on":
-				config.NoTrackMode = true
-			default:
-				config.NoTrackMode = false
-			}
+			config.NoTrackMode = toBool(value)
 		case "PGSCV_DATABASES":
 			config.Databases = value
 		case "PGSCV_DISABLE_COLLECTORS":
@@ -423,10 +423,22 @@ func newConfigFromEnv() (*Config, error) {
 				return nil, fmt.Errorf("invalid setting PGSCV_COLLECT_TOP_INDEX, value '%s', allowed only digits", value)
 			}
 			config.CollectTopIndex = collectTopIndex
+		case "PGSCV_TEST_DB_CONNECTION_ON_STARTUP":
+			config.TestDbConnectionOnStartup = toBool(value)
 		}
 	}
-
 	return config, nil
+}
+
+func toBool(s string) bool {
+	switch s {
+	case "y", "yes", "Yes", "YES", "t", "true", "True", "TRUE", "1", "on":
+		return true
+	case "n", "no", "No", "NO", "f", "false", "False", "FALSE", "0", "off":
+		return false
+	default:
+		return false
+	}
 }
 
 // newDatabasesRegexp creates new regexp depending on passed string.

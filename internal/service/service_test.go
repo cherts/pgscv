@@ -62,9 +62,12 @@ func TestRepository_addServicesFromConfig(t *testing.T) {
 	}{
 		{
 			name: "valid",
-			config: Config{ConnsSettings: ConnsSettings{
-				"test": {ServiceType: model.ServiceTypePostgresql, Conninfo: "host=127.0.0.1 port=5432 user=pgscv dbname=pgscv_fixtures"},
-			}},
+			config: Config{
+				TestDbConnectionOnStartup: true,
+				ConnsSettings: ConnsSettings{
+					"test": {ServiceType: model.ServiceTypePostgresql,
+						Conninfo: "host=127.0.0.1 port=5432 user=pgscv dbname=pgscv_fixtures"},
+				}},
 			expected: 2,
 		},
 		{
@@ -73,9 +76,27 @@ func TestRepository_addServicesFromConfig(t *testing.T) {
 			expected: 1,
 		},
 		{
-			name:     "invalid service",
-			config:   Config{ConnsSettings: ConnsSettings{"test": {ServiceType: model.ServiceTypePostgresql, Conninfo: "invalid conninfo"}}},
+			name: "invalid service",
+			config: Config{
+				TestDbConnectionOnStartup: true,
+				ConnsSettings:             ConnsSettings{"test": {ServiceType: model.ServiceTypePostgresql, Conninfo: "invalid conninfo"}}},
 			expected: 1,
+		},
+		{
+			name: "unavailable service",
+			config: Config{
+				TestDbConnectionOnStartup: true,
+				ConnsSettings:             ConnsSettings{"test": {ServiceType: model.ServiceTypePostgresql, Conninfo: "port=1"}},
+			},
+			expected: 1,
+		},
+		{
+			name: "unavailable service",
+			config: Config{
+				TestDbConnectionOnStartup: false,
+				ConnsSettings:             ConnsSettings{"test": {ServiceType: model.ServiceTypePostgresql, Conninfo: "port=1"}},
+			},
+			expected: 2,
 		},
 	}
 
