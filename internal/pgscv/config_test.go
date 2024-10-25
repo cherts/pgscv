@@ -546,7 +546,11 @@ func Test_newConfigFromEnv(t *testing.T) {
 		{
 			valid:   true, // No env variables
 			envvars: map[string]string{},
-			want:    &Config{Defaults: map[string]string{}, ServicesConnsSettings: map[string]service.ConnSetting{}},
+			want: &Config{
+				Defaults:                  map[string]string{},
+				ServicesConnsSettings:     map[string]service.ConnSetting{},
+				TestDbConnectionOnStartup: true,
+			},
 		},
 		{
 			valid: true, // Completely valid variables
