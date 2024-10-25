@@ -585,7 +585,8 @@ func Test_newConfigFromEnv(t *testing.T) {
 					Keyfile:  "keyfile.key",
 					Certfile: "certfile.cert",
 				},
-				Defaults: map[string]string{},
+				Defaults:                  map[string]string{},
+				TestDbConnectionOnStartup: true,
 			},
 		},
 		{
