@@ -35,11 +35,11 @@ type Config struct {
 	CollectorsSettings    model.CollectorsSettings `yaml:"collectors"`         // Collectors settings propagated from main YAML configuration
 	Databases             string                   `yaml:"databases"`          // Regular expression string specifies databases from which metrics should be collected
 	DatabasesRE           *regexp.Regexp           // Regular expression object compiled from Databases
-	AuthConfig            http.AuthConfig          `yaml:"authentication"`    // TLS and Basic auth configuration
-	CollectTopTable       int                      `yaml:"collect_top_table"` // Limit elements on Table collector
-	CollectTopIndex       int                      `yaml:"collect_top_index"` // Limit elements on Indexes collector
-	CollectTopQuery       int                      `yaml:"collect_top_query"` // Limit elements on Statements collector
-
+	AuthConfig            http.AuthConfig          `yaml:"authentication"`       // TLS and Basic auth configuration
+	CollectTopTable       int                      `yaml:"collect_top_table"`    // Limit elements on Table collector
+	CollectTopIndex       int                      `yaml:"collect_top_index"`    // Limit elements on Indexes collector
+	CollectTopQuery       int                      `yaml:"collect_top_query"`    // Limit elements on Statements collector
+	SkipConnErrorMode     bool                     `yaml:"skip_conn_error_mode"` // Skipping connection errors and creating a Service instance.
 }
 
 // NewConfig creates new config based on config file or return default config if config file is not specified.
@@ -109,6 +109,9 @@ func NewConfig(configFilePath string) (*Config, error) {
 		if configFromEnv.CollectTopQuery > 0 {
 			configFromFile.CollectTopQuery = configFromEnv.CollectTopQuery
 		}
+		if configFromEnv.SkipConnErrorMode {
+			configFromFile.SkipConnErrorMode = configFromEnv.SkipConnErrorMode
+		}
 		return configFromFile, nil
 	}
 
@@ -177,6 +180,10 @@ func (c *Config) Validate() error {
 		log.Infoln("no-track enabled for [pg_stat_statements.query].")
 	} else {
 		log.Infoln("no-track disabled, for details check the documentation about 'no_track_mode' option.")
+	}
+
+	if c.SkipConnErrorMode {
+		log.Infoln("skipping connection errors is enabled.")
 	}
 
 	// setup defaults
@@ -387,12 +394,7 @@ func newConfigFromEnv() (*Config, error) {
 		case "PGSCV_LISTEN_ADDRESS":
 			config.ListenAddress = value
 		case "PGSCV_NO_TRACK_MODE":
-			switch value {
-			case "y", "yes", "Yes", "YES", "t", "true", "True", "TRUE", "1", "on":
-				config.NoTrackMode = true
-			default:
-				config.NoTrackMode = false
-			}
+			config.NoTrackMode = toBool(value)
 		case "PGSCV_DATABASES":
 			config.Databases = value
 		case "PGSCV_DISABLE_COLLECTORS":
@@ -423,10 +425,22 @@ func newConfigFromEnv() (*Config, error) {
 				return nil, fmt.Errorf("invalid setting PGSCV_COLLECT_TOP_INDEX, value '%s', allowed only digits", value)
 			}
 			config.CollectTopIndex = collectTopIndex
+		case "PGSCV_SKIP_CONN_ERROR_MODE":
+			config.SkipConnErrorMode = toBool(value)
 		}
 	}
-
 	return config, nil
+}
+
+func toBool(s string) bool {
+	switch s {
+	case "y", "yes", "Yes", "YES", "t", "true", "True", "TRUE", "1", "on":
+		return true
+	case "n", "no", "No", "NO", "f", "false", "False", "FALSE", "0", "off":
+		return false
+	default:
+		return false
+	}
 }
 
 // newDatabasesRegexp creates new regexp depending on passed string.

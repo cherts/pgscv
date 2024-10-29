@@ -3,10 +3,11 @@ package pgscv
 import (
 	"context"
 	"errors"
+	"sync"
+
 	"github.com/cherts/pgscv/internal/http"
 	"github.com/cherts/pgscv/internal/log"
 	"github.com/cherts/pgscv/internal/service"
-	"sync"
 )
 
 // Start is the application's starting point.
@@ -25,6 +26,7 @@ func Start(ctx context.Context, config *Config) error {
 		CollectTopTable:    config.CollectTopTable,
 		CollectTopIndex:    config.CollectTopIndex,
 		CollectTopQuery:    config.CollectTopQuery,
+		SkipConnErrorMode:  config.SkipConnErrorMode,
 	}
 
 	if len(config.ServicesConnsSettings) == 0 {
