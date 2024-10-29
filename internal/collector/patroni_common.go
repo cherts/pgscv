@@ -379,7 +379,7 @@ type apiPatroniConfigResponse struct {
 	LoopWait         int  `json:"loop_wait"`
 	MaxLagOnFailover int  `json:"maximum_lag_on_failover"`
 	RetryTimeout     int  `json:"retry_timeout"`
-	Ttl              int  `json:"ttl"`
+	TTL              int  `json:"ttl"`
 }
 
 // patroniConfigInfo implements metrics values extracted from the response of '/config' endpoint.
@@ -431,7 +431,7 @@ func parsePatroniConfigResponse(resp *apiPatroniConfigResponse) (*patroniConfigI
 		loopWait:             float64(resp.LoopWait),
 		maximumLagOnFailover: float64(resp.MaxLagOnFailover),
 		retryTimeout:         float64(resp.RetryTimeout),
-		ttl:                  float64(resp.Ttl),
+		ttl:                  float64(resp.TTL),
 	}, nil
 }
 

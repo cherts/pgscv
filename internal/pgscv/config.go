@@ -433,6 +433,7 @@ func newConfigFromEnv() (*Config, error) {
 	return config, nil
 }
 
+// toBool string to bool
 func toBool(s string) bool {
 	switch s {
 	case "y", "yes", "Yes", "YES", "t", "true", "True", "TRUE", "1", "on":
