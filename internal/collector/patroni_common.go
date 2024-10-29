@@ -223,6 +223,7 @@ func NewPatroniCommonCollector(constLabels labels, settings model.CollectorSetti
 	}, nil
 }
 
+// Update method collects statistics, parse it and produces metrics that are sent to Prometheus.
 func (c *patroniCommonCollector) Update(config Config, ch chan<- prometheus.Metric) error {
 	if strings.HasPrefix(config.BaseURL, "https://") {
 		c.client.EnableTLSInsecure()
@@ -372,7 +373,7 @@ type patroniInfo struct {
 	syncStandby       float64
 }
 
-// apiPatroniResponse implements API response returned by '/config' endpoint.
+// apiPatroniConfigResponse implements API response returned by '/config' endpoint.
 type apiPatroniConfigResponse struct {
 	FailSafeMode     bool `json:"failsafe_mode"`
 	LoopWait         int  `json:"loop_wait"`
@@ -390,7 +391,7 @@ type patroniConfigInfo struct {
 	ttl                  float64
 }
 
-// requestPatroniConfigInfo requests to /config endpoint of API and returns parsed response.
+// requestApiPatroniConfig requests to /config endpoint of API and returns parsed response.
 func requestApiPatroniConfig(c *http.Client, baseurl string) (*apiPatroniConfigResponse, error) {
 	resp, err := c.Get(baseurl + "/config")
 	if err != nil {
@@ -434,7 +435,7 @@ func parsePatroniConfigResponse(resp *apiPatroniConfigResponse) (*patroniConfigI
 	}, nil
 }
 
-// requestPatroniInfo requests to /patroni endpoint of API and returns parsed response.
+// requestApiPatroni requests to /patroni endpoint of API and returns parsed response.
 func requestApiPatroni(c *http.Client, baseurl string) (*apiPatroniResponse, error) {
 	resp, err := c.Get(baseurl + "/patroni")
 	if err != nil {
