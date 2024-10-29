@@ -46,6 +46,9 @@ archives:
 changelog:
   sort: asc
 
+checksum:
+  name_template: 'checksums.txt'
+
 nfpms:
   - vendor: pgscv
     homepage: https://github.com/cherts/pgscv
