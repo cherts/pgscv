@@ -3,12 +3,13 @@ package main
 import (
 	"context"
 	"fmt"
-	"github.com/cherts/pgscv/internal/log"
-	"github.com/cherts/pgscv/internal/pgscv"
-	"gopkg.in/alecthomas/kingpin.v2"
 	"os"
 	"os/signal"
 	"syscall"
+
+	"github.com/alecthomas/kingpin/v2"
+	"github.com/cherts/pgscv/internal/log"
+	"github.com/cherts/pgscv/internal/pgscv"
 )
 
 var (
