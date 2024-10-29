@@ -1,6 +1,6 @@
 module github.com/cherts/pgscv
 
-go 1.23
+go 1.23.2
 
 require (
 	github.com/jackc/pgproto3/v2 v2.3.3
