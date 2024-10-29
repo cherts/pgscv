@@ -41,11 +41,11 @@ type Config struct {
 	DatabasesRE        *regexp.Regexp
 	DisabledCollectors []string
 	// CollectorsSettings defines all collector settings propagated from main YAML configuration.
-	CollectorsSettings        model.CollectorsSettings
-	CollectTopTable           int
-	CollectTopIndex           int
-	CollectTopQuery           int
-	TestDbConnectionOnStartup bool
+	CollectorsSettings model.CollectorsSettings
+	CollectTopTable    int
+	CollectTopIndex    int
+	CollectTopQuery    int
+	SkipConnErrorMode  bool
 }
 
 // Collector is an interface for prometheus.Collector.
@@ -155,11 +155,11 @@ func (repo *Repository) addServicesFromConfig(config Config) {
 			// Check connection using created *ConnConfig, go next if connection failed.
 			db, err := store.NewWithConfig(pgconfig)
 			if err != nil {
-				if config.TestDbConnectionOnStartup {
+				if config.SkipConnErrorMode {
+					log.Warnf("%s: %s", cs.Conninfo, err)
+				} else {
 					log.Warnf("%s: %s skip", cs.Conninfo, err)
 					continue
-				} else {
-					log.Warnf("%s: %s", cs.Conninfo, err)
 				}
 			} else {
 				msg = fmt.Sprintf("service [%s] available through: %s@%s:%d/%s", k, pgconfig.User, pgconfig.Host, pgconfig.Port, pgconfig.Database)

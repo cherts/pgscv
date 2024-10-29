@@ -3,10 +3,11 @@ package pgscv
 import (
 	"context"
 	"errors"
+	"sync"
+
 	"github.com/cherts/pgscv/internal/http"
 	"github.com/cherts/pgscv/internal/log"
 	"github.com/cherts/pgscv/internal/service"
-	"sync"
 )
 
 // Start is the application's starting point.
@@ -16,16 +17,16 @@ func Start(ctx context.Context, config *Config) error {
 	serviceRepo := service.NewRepository()
 
 	serviceConfig := service.Config{
-		NoTrackMode:               config.NoTrackMode,
-		ConnDefaults:              config.Defaults,
-		ConnsSettings:             config.ServicesConnsSettings,
-		DatabasesRE:               config.DatabasesRE,
-		DisabledCollectors:        config.DisableCollectors,
-		CollectorsSettings:        config.CollectorsSettings,
-		CollectTopTable:           config.CollectTopTable,
-		CollectTopIndex:           config.CollectTopIndex,
-		CollectTopQuery:           config.CollectTopQuery,
-		TestDbConnectionOnStartup: config.TestDbConnectionOnStartup,
+		NoTrackMode:        config.NoTrackMode,
+		ConnDefaults:       config.Defaults,
+		ConnsSettings:      config.ServicesConnsSettings,
+		DatabasesRE:        config.DatabasesRE,
+		DisabledCollectors: config.DisableCollectors,
+		CollectorsSettings: config.CollectorsSettings,
+		CollectTopTable:    config.CollectTopTable,
+		CollectTopIndex:    config.CollectTopIndex,
+		CollectTopQuery:    config.CollectTopQuery,
+		SkipConnErrorMode:  config.SkipConnErrorMode,
 	}
 
 	if len(config.ServicesConnsSettings) == 0 {

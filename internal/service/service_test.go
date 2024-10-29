@@ -1,10 +1,11 @@
 package service
 
 import (
+	"testing"
+
 	"github.com/cherts/pgscv/internal/model"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/stretchr/testify/assert"
-	"testing"
 )
 
 func TestRepository_addService(t *testing.T) {
@@ -63,10 +64,20 @@ func TestRepository_addServicesFromConfig(t *testing.T) {
 		{
 			name: "valid",
 			config: Config{
-				TestDbConnectionOnStartup: true,
+				SkipConnErrorMode: false,
 				ConnsSettings: ConnsSettings{
 					"test": {ServiceType: model.ServiceTypePostgresql,
 						Conninfo: "host=127.0.0.1 port=5432 user=pgscv dbname=pgscv_fixtures"},
+				}},
+			expected: 2,
+		},
+		{
+			name: "valid_skip_error",
+			config: Config{
+				SkipConnErrorMode: true,
+				ConnsSettings: ConnsSettings{
+					"test": {ServiceType: model.ServiceTypePostgresql,
+						Conninfo: "host=127.0.0.1 port=5430 user=pgscv dbname=pgscv_fixtures"},
 				}},
 			expected: 2,
 		},
@@ -78,25 +89,17 @@ func TestRepository_addServicesFromConfig(t *testing.T) {
 		{
 			name: "invalid service",
 			config: Config{
-				TestDbConnectionOnStartup: true,
-				ConnsSettings:             ConnsSettings{"test": {ServiceType: model.ServiceTypePostgresql, Conninfo: "invalid conninfo"}}},
+				SkipConnErrorMode: true,
+				ConnsSettings:     ConnsSettings{"test": {ServiceType: model.ServiceTypePostgresql, Conninfo: "invalid conninfo"}}},
 			expected: 1,
 		},
 		{
 			name: "unavailable service",
 			config: Config{
-				TestDbConnectionOnStartup: true,
-				ConnsSettings:             ConnsSettings{"test": {ServiceType: model.ServiceTypePostgresql, Conninfo: "port=1"}},
+				SkipConnErrorMode: false,
+				ConnsSettings:     ConnsSettings{"test": {ServiceType: model.ServiceTypePostgresql, Conninfo: "port=1"}},
 			},
 			expected: 1,
-		},
-		{
-			name: "unavailable service",
-			config: Config{
-				TestDbConnectionOnStartup: false,
-				ConnsSettings:             ConnsSettings{"test": {ServiceType: model.ServiceTypePostgresql, Conninfo: "port=1"}},
-			},
-			expected: 2,
 		},
 	}
 
