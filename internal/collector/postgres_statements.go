@@ -388,7 +388,7 @@ func (c *postgresStatementsCollector) Update(config Config, ch chan<- prometheus
 	return nil
 }
 
-// postgresStatementsStat represents stats values for single statement based on pg_stat_statements.
+// postgresStatementStat represents stats values for single statement based on pg_stat_statements.
 type postgresStatementStat struct {
 	database          string
 	user              string

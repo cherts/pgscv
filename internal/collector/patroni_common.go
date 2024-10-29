@@ -230,7 +230,7 @@ func (c *patroniCommonCollector) Update(config Config, ch chan<- prometheus.Metr
 	}
 
 	// Check liveness.
-	err := requestApiLiveness(c.client, config.BaseURL)
+	err := requestAPILiveness(c.client, config.BaseURL)
 	if err != nil {
 		ch <- c.up.newConstMetric(0)
 		return err
@@ -239,7 +239,7 @@ func (c *patroniCommonCollector) Update(config Config, ch chan<- prometheus.Metr
 	ch <- c.up.newConstMetric(1)
 
 	// Request general info.
-	respInfo, err := requestApiPatroni(c.client, config.BaseURL)
+	respInfo, err := requestAPIPatroni(c.client, config.BaseURL)
 	if err != nil {
 		return err
 	}
@@ -275,7 +275,7 @@ func (c *patroniCommonCollector) Update(config Config, ch chan<- prometheus.Metr
 	ch <- c.syncStandby.newConstMetric(info.syncStandby, info.scope)
 
 	// Request and parse config.
-	respConfig, err := requestApiPatroniConfig(c.client, config.BaseURL)
+	respConfig, err := requestAPIPatroniConfig(c.client, config.BaseURL)
 	if err != nil {
 		return err
 	}
@@ -290,7 +290,7 @@ func (c *patroniCommonCollector) Update(config Config, ch chan<- prometheus.Metr
 	}
 
 	// Request and parse history.
-	respHist, err := requestApiHistory(c.client, config.BaseURL)
+	respHist, err := requestAPIHistory(c.client, config.BaseURL)
 	if err != nil {
 		return err
 	}
@@ -303,8 +303,8 @@ func (c *patroniCommonCollector) Update(config Config, ch chan<- prometheus.Metr
 	return nil
 }
 
-// requestApiLiveness requests to /liveness endpoint of API and returns error if failed.
-func requestApiLiveness(c *http.Client, baseurl string) error {
+// requestAPILiveness requests to /liveness endpoint of API and returns error if failed.
+func requestAPILiveness(c *http.Client, baseurl string) error {
 	_, err := c.Get(baseurl + "/liveness")
 	if err != nil {
 		return err
@@ -391,8 +391,8 @@ type patroniConfigInfo struct {
 	ttl                  float64
 }
 
-// requestApiPatroniConfig requests to /config endpoint of API and returns parsed response.
-func requestApiPatroniConfig(c *http.Client, baseurl string) (*apiPatroniConfigResponse, error) {
+// requestAPIPatroniConfig requests to /config endpoint of API and returns parsed response.
+func requestAPIPatroniConfig(c *http.Client, baseurl string) (*apiPatroniConfigResponse, error) {
 	resp, err := c.Get(baseurl + "/config")
 	if err != nil {
 		return nil, err
@@ -435,8 +435,8 @@ func parsePatroniConfigResponse(resp *apiPatroniConfigResponse) (*patroniConfigI
 	}, nil
 }
 
-// requestApiPatroni requests to /patroni endpoint of API and returns parsed response.
-func requestApiPatroni(c *http.Client, baseurl string) (*apiPatroniResponse, error) {
+// requestAPIPatroni requests to /patroni endpoint of API and returns parsed response.
+func requestAPIPatroni(c *http.Client, baseurl string) (*apiPatroniResponse, error) {
 	resp, err := c.Get(baseurl + "/patroni")
 	if err != nil {
 		return nil, err
@@ -582,8 +582,8 @@ type patroniHistory struct {
 	lastTimelineChangeUnix   float64
 }
 
-// requestApiHistory requests /history endpoint of API and returns parsed response.
-func requestApiHistory(c *http.Client, baseurl string) (apiHistoryResponse, error) {
+// requestAPIHistory requests /history endpoint of API and returns parsed response.
+func requestAPIHistory(c *http.Client, baseurl string) (apiHistoryResponse, error) {
 	resp, err := c.Get(baseurl + "/history")
 	if err != nil {
 		return nil, err
