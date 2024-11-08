@@ -166,9 +166,8 @@ func RealPath(filePath string) (string, error) {
 	} else if fileInfo.Mode().IsDir() {
 		log.Debugln("is directory")
 		return filePath, err
-	} else {
-		return filePath, err
 	}
+	return filePath, err
 }
 
 // Validate checks configuration for stupid values and set defaults

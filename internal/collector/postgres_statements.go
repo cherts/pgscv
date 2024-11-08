@@ -538,10 +538,9 @@ func selectStatementsQuery(version int, schema string, notrackmode bool, topK in
 			return fmt.Sprintf(postgresStatementsQuery16TopK, queryColumm, schema)
 		}
 		return fmt.Sprintf(postgresStatementsQuery16, queryColumm, schema)
-	} else {
-		if topK > 0 {
-			return fmt.Sprintf(postgresStatementsQueryLatestTopK, queryColumm, schema)
-		}
-		return fmt.Sprintf(postgresStatementsQueryLatest, queryColumm, schema)
 	}
+	if topK > 0 {
+		return fmt.Sprintf(postgresStatementsQueryLatestTopK, queryColumm, schema)
+	}
+	return fmt.Sprintf(postgresStatementsQueryLatest, queryColumm, schema)
 }

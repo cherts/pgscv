@@ -162,7 +162,7 @@ func collectSystemCatalogSize(conn *store.DB, ch chan<- prometheus.Metric, desc 
 // getSystemCatalogSize returns size of system catalog in bytes.
 func getSystemCatalogSize(conn *store.DB) (float64, error) {
 	var query = `SELECT sum(pg_total_relation_size(relname::regclass)) AS bytes FROM pg_stat_sys_tables WHERE schemaname = 'pg_catalog'`
-	var size int64 = 0
+	var size int64
 	if err := conn.Conn().QueryRow(context.Background(), query).Scan(&size); err != nil {
 		return 0, err
 	}
