@@ -1,3 +1,4 @@
+// Package pgscv is a pgSCV main helper
 package pgscv
 
 import (
@@ -141,7 +142,7 @@ func mergeServicesConnsSettings(dest, src service.ConnsSettings) service.ConnsSe
 	return dest
 }
 
-// Read real config file path
+// RealPath read real config file path
 func RealPath(filePath string) (string, error) {
 	log.Infoln("reading file information ", filePath)
 	fileInfo, err := os.Lstat(filepath.Clean(filePath))
@@ -165,9 +166,8 @@ func RealPath(filePath string) (string, error) {
 	} else if fileInfo.Mode().IsDir() {
 		log.Debugln("is directory")
 		return filePath, err
-	} else {
-		return filePath, err
 	}
+	return filePath, err
 }
 
 // Validate checks configuration for stupid values and set defaults
@@ -432,6 +432,7 @@ func newConfigFromEnv() (*Config, error) {
 	return config, nil
 }
 
+// toBool string to bool
 func toBool(s string) bool {
 	switch s {
 	case "y", "yes", "Yes", "YES", "t", "true", "True", "TRUE", "1", "on":

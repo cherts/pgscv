@@ -1,19 +1,21 @@
+// Package collector is a pgSCV collectors
 package collector
 
 import (
 	"bufio"
 	"context"
 	"fmt"
-	"github.com/jackc/pgx/v4"
-	"github.com/cherts/pgscv/internal/log"
-	"github.com/cherts/pgscv/internal/model"
-	"github.com/cherts/pgscv/internal/store"
-	"github.com/prometheus/client_golang/prometheus"
 	"os"
 	"path/filepath"
 	"regexp"
 	"strconv"
 	"strings"
+
+	"github.com/cherts/pgscv/internal/log"
+	"github.com/cherts/pgscv/internal/model"
+	"github.com/cherts/pgscv/internal/store"
+	"github.com/jackc/pgx/v4"
+	"github.com/prometheus/client_golang/prometheus"
 )
 
 const (
@@ -89,12 +91,12 @@ func (c *pgbouncerSettingsCollector) Update(config Config, ch chan<- prometheus.
 	settings := parsePgbouncerSettings(res)
 
 	for k, v := range settings {
+		f, err := strconv.ParseFloat(v, 64)
 		// If value could be converted to numeric, send it as value. For string values use "1".
-		if f, err := strconv.ParseFloat(v, 64); err != nil {
+		if err != nil {
 			ch <- c.settings.newConstMetric(1, k, v)
-		} else {
-			ch <- c.settings.newConstMetric(f, k, v)
 		}
+		ch <- c.settings.newConstMetric(f, k, v)
 	}
 
 	if conffile, ok := settings["conffile"]; ok {
@@ -112,12 +114,12 @@ func (c *pgbouncerSettingsCollector) Update(config Config, ch chan<- prometheus.
 		for _, p := range dbSettings {
 			ch <- c.dbSettings.newConstMetric(1, p.name, p.mode, p.size)
 
-			if f, err := strconv.ParseFloat(p.size, 64); err != nil {
+			f, err := strconv.ParseFloat(p.size, 64)
+			if err != nil {
 				log.Warnf("invalid input, parse '%s' failed: %s; skip", p.size, err)
 				continue
-			} else {
-				ch <- c.poolSize.newConstMetric(f, p.name)
 			}
+			ch <- c.poolSize.newConstMetric(f, p.name)
 		}
 	}
 

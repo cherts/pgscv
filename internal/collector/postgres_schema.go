@@ -1,13 +1,15 @@
+// Package collector is a pgSCV collectors
 package collector
 
 import (
-	"github.com/jackc/pgx/v4"
+	"strings"
+
 	"github.com/cherts/pgscv/internal/log"
 	"github.com/cherts/pgscv/internal/model"
 	"github.com/cherts/pgscv/internal/store"
+	"github.com/jackc/pgx/v4"
 	"github.com/prometheus/client_golang/prometheus"
 	"golang.org/x/net/context"
-	"strings"
 )
 
 // postgresSchemaCollector defines metric descriptors and stats store.
@@ -21,7 +23,7 @@ type postgresSchemaCollector struct {
 	difftypefkey typedDesc
 }
 
-// NewPostgresSchemaCollector returns a new Collector exposing postgres schema stats. Stats are based on different
+// NewPostgresSchemasCollector returns a new Collector exposing postgres schema stats. Stats are based on different
 // sources inside system catalog.
 func NewPostgresSchemasCollector(constLabels labels, settings model.CollectorSettings) (Collector, error) {
 	return &postgresSchemaCollector{
@@ -160,7 +162,7 @@ func collectSystemCatalogSize(conn *store.DB, ch chan<- prometheus.Metric, desc 
 // getSystemCatalogSize returns size of system catalog in bytes.
 func getSystemCatalogSize(conn *store.DB) (float64, error) {
 	var query = `SELECT sum(pg_total_relation_size(relname::regclass)) AS bytes FROM pg_stat_sys_tables WHERE schemaname = 'pg_catalog'`
-	var size int64 = 0
+	var size int64
 	if err := conn.Conn().QueryRow(context.Background(), query).Scan(&size); err != nil {
 		return 0, err
 	}
