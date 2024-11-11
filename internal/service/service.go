@@ -149,7 +149,7 @@ func (repo *Repository) addServicesFromConfig(config Config) {
 			//   2) getting connection properties to define service-specific parameters.
 			pgconfig, err := pgx.ParseConfig(cs.Conninfo)
 			if err != nil {
-				log.Warnf("%s: %s, skip", cs.Conninfo, err)
+				log.Warnf("%s@%s:%d/%s: %s, skip", pgconfig.User, pgconfig.Host, pgconfig.Port, pgconfig.Database, err)
 				continue
 			}
 
@@ -157,9 +157,9 @@ func (repo *Repository) addServicesFromConfig(config Config) {
 			db, err := store.NewWithConfig(pgconfig)
 			if err != nil {
 				if config.SkipConnErrorMode {
-					log.Warnf("%s: %s", cs.Conninfo, err)
+					log.Warnf("%s@%s:%d/%s: %s", pgconfig.User, pgconfig.Host, pgconfig.Port, pgconfig.Database, err)
 				} else {
-					log.Warnf("%s: %s skip", cs.Conninfo, err)
+					log.Warnf("%s@%s:%d/%s: %s skip", pgconfig.User, pgconfig.Host, pgconfig.Port, pgconfig.Database, err)
 					continue
 				}
 			} else {
