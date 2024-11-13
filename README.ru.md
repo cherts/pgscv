@@ -35,6 +35,7 @@ mv /tmp/pgscv.service /etc/systemd/system &&  \
 mv /tmp/pgscv.default /etc/default/pgscv && \
 mv /tmp/pgscv /usr/sbin && \
 chown postgres:postgres /etc/pgscv.yaml && \
+chmod 640 /etc/pgscv.yaml && \
 systemctl daemon-reload && \
 systemctl enable pgscv --now
 ```
