@@ -6,6 +6,7 @@ builds:
   - binary: pgscv
     main: ./cmd
     goarch:
+      - '386'
       - amd64
       - arm64
     goos:
