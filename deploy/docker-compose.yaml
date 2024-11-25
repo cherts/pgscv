@@ -11,7 +11,9 @@ services:
     environment:
       PGSCV_DISABLE_COLLECTORS: "system"
       PGSCV_LISTEN_ADDRESS: "0.0.0.0:9890"
-      DATABASE_DSN: "postgresql://postgres:password@dbhost:5432/postgres"
+      POSTGRES_DSN: "postgresql://pgscv:secretpassword@example.org:5432/postgres"
+      #PGBOUNCER_DSN: "postgresql://pgscv:secretpassword@example.org:6432/pgbouncer"
+      #PATRONI_URL: "http://localhost:8008"
 #    command:
 #      - --config-file=/app/conf/pgscv.yaml
 #    volumes:

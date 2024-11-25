@@ -24,12 +24,14 @@ spec:
           args:
             - --config-file=/app/conf/pgscv.yaml
 #          env:
-#          - name: PGSCV_DISABLE_COLLECTORS
-#            value: "system"
 #          - name: PGSCV_LISTEN_ADDRESS
 #            value: "0.0.0.0:9890"
-#          - name: DATABASE_DSN
-#            value: "postgresql://postgres:password@127.0.0.1:5432/postgres"
+#          - name: PGSCV_DISABLE_COLLECTORS
+#            value: "system"
+#          - name: POSTGRES_DSN
+#            value: "postgres://postgres:password@127.0.0.1:5432/postgres"
+#          - name: PGBOUNCER_DSN
+#            value: "postgres://pgbouncer:password@127.0.0.1:6432/pgbouncer"
           ports:
             - name: http
               containerPort: 9890
@@ -93,6 +95,8 @@ metadata:
 data:
   pgscv.yaml: |
     listen_address: 0.0.0.0:9890
+    disable_collectors:
+      - system
     services:
       "postgres:5432":
         service_type: "postgres"
