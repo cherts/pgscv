@@ -5,6 +5,10 @@
 #  keyfile: /etc/ssl/private/ssl-cert-snakeoil.key
 #  certfile: /etc/ssl/certs/ssl-cert-snakeoil.pem
 #no_track_mode: false
+#collect_top_query: 10
+#collect_top_table: 10
+#collect_top_index: 10
+#skip_conn_error_mode: false
 services:
   "postgres:5432":
     service_type: "postgres"
