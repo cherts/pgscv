@@ -56,7 +56,7 @@ func (c *postgresConflictsCollector) Update(config Config, ch chan<- prometheus.
 		ch <- c.conflicts.newConstMetric(stat.snapshot, stat.database, "snapshot")
 		ch <- c.conflicts.newConstMetric(stat.bufferpin, stat.database, "bufferpin")
 		ch <- c.conflicts.newConstMetric(stat.deadlock, stat.database, "deadlock")
-		ch <- c.conflicts.newConstMetric(stat.active_logicalslot, stat.database, "active_logicalslot")
+		ch <- c.conflicts.newConstMetric(stat.activeLogicalslot, stat.database, "active_logicalslot")
 	}
 
 	return nil
@@ -64,13 +64,13 @@ func (c *postgresConflictsCollector) Update(config Config, ch chan<- prometheus.
 
 // postgresConflictStat represents per-database recovery conflicts stats based on pg_stat_database_conflicts.
 type postgresConflictStat struct {
-	database           string
-	tablespace         float64
-	lock               float64
-	snapshot           float64
-	bufferpin          float64
-	deadlock           float64
-	active_logicalslot float64
+	database          string
+	tablespace        float64
+	lock              float64
+	snapshot          float64
+	bufferpin         float64
+	deadlock          float64
+	activeLogicalslot float64
 }
 
 // parsePostgresDatabasesStats parses PGResult, extract data and return struct with stats values.
@@ -131,7 +131,7 @@ func parsePostgresConflictStats(r *model.PGResult, labelNames []string) map[stri
 			case "confl_deadlock":
 				s.deadlock = v
 			case "confl_active_logicalslot":
-				s.active_logicalslot = v
+				s.activeLogicalslot = v
 			default:
 				continue
 			}
