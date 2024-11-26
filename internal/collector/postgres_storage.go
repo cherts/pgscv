@@ -478,6 +478,8 @@ func getLogStat(conn *store.DB, logcollector bool) (string, int64, int64, error)
 	if err != nil {
 		return "", 0, 0, fmt.Errorf("get log directory size failed: %s", err)
 	}
+
+	return path, size, count, nil
 }
 
 // getLogdirStat returns filesystem info related to LOGDIR.
