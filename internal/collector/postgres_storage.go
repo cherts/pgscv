@@ -139,14 +139,20 @@ func (c *postgresStorageCollector) Update(config Config, ch chan<- prometheus.Me
 
 	if !config.localService {
 		// Collect a limited set of Wal metrics
-		log.Debugln("[postgres storage collector]: collecting limited WAL metrics from remote services")
-		dirstats, err := newPostgresWalStat(conn)
+		log.Debugln("[postgres storage collector]: collecting limited WAL and Log metrics from remote services")
+		dirstats, err := newPostgresStat(conn, config.loggingCollector)
 		if err != nil {
 			return err
 		}
 		// WAL directory
 		ch <- c.waldirBytes.newConstMetric(dirstats.waldirSizeBytes, "unknown", "unknown", dirstats.waldirPath)
 		ch <- c.waldirFiles.newConstMetric(dirstats.waldirFilesCount, "unknown", "unknown", dirstats.waldirPath)
+
+		// Log directory (only if logging_collector is enabled).
+		if config.loggingCollector {
+			ch <- c.logdirBytes.newConstMetric(dirstats.logdirSizeBytes, "unknown", "unknown", dirstats.logdirPath)
+			ch <- c.logdirFiles.newConstMetric(dirstats.logdirFilesCount, "unknown", "unknown", dirstats.logdirPath)
+		}
 
 		log.Debugln("[postgres storage collector]: skip collecting full directories metrics from remote services")
 		return nil
@@ -277,10 +283,15 @@ type postgresDirStat struct {
 	tmpfilesCount     float64
 }
 
-// newPostgresWalStat returns sizes of Postgres server directories.
-func newPostgresWalStat(conn *store.DB) (*postgresDirStat, error) {
+// newPostgresStat returns sizes of Postgres server directories.
+func newPostgresStat(conn *store.DB, logcollector bool) (*postgresDirStat, error) {
 	// Get Wal properties.
 	waldirPath, waldirSize, waldirFilesCount, err := getWalStat(conn)
+	if err != nil {
+		log.Errorln(err)
+	}
+
+	logdirPath, logdirSize, logdirFilesCount, err := getLogStat(conn, logcollector)
 	if err != nil {
 		log.Errorln(err)
 	}
@@ -290,6 +301,9 @@ func newPostgresWalStat(conn *store.DB) (*postgresDirStat, error) {
 		waldirPath:       waldirPath,
 		waldirSizeBytes:  float64(waldirSize),
 		waldirFilesCount: float64(waldirFilesCount),
+		logdirPath:       logdirPath,
+		logdirSizeBytes:  float64(logdirSize),
+		logdirFilesCount: float64(logdirFilesCount),
 	}, nil
 }
 
@@ -448,12 +462,12 @@ func getWaldirStat(conn *store.DB, mounts []mount) (string, string, string, int6
 	return device, path, mountpoint, size, count, nil
 }
 
-// getLogdirStat returns filesystem info related to LOGDIR.
-func getLogdirStat(conn *store.DB, logcollector bool, datadir string, mounts []mount) (string, string, string, int64, int64, error) {
+// getLogStat returns Log info related to LOGDIR.
+func getLogStat(conn *store.DB, logcollector bool) (string, int64, int64, error) {
 	if !logcollector {
 		// Disabled logging_collector means all logs are written to stdout.
 		// There is no reliable way to understand file location of stdout (it can be a symlink from /proc/pid/fd/1 -> somewhere)
-		return "", "", "", 0, 0, nil
+		return "", 0, 0, nil
 	}
 
 	var size, count int64
@@ -462,7 +476,17 @@ func getLogdirStat(conn *store.DB, logcollector bool, datadir string, mounts []m
 		QueryRow(context.Background(), "SELECT current_setting('log_directory') AS path, coalesce(sum(size), 0) AS bytes, coalesce(count(name), 0) AS count FROM pg_ls_logdir()").
 		Scan(&path, &size, &count)
 	if err != nil {
-		return "", "", "", 0, 0, fmt.Errorf("get log directory size failed: %s", err)
+		return "", 0, 0, fmt.Errorf("get log directory size failed: %s", err)
+	}
+
+	return path, size, count, nil
+}
+
+// getLogdirStat returns filesystem info related to LOGDIR.
+func getLogdirStat(conn *store.DB, logcollector bool, datadir string, mounts []mount) (string, string, string, int64, int64, error) {
+	path, size, count, err := getLogStat(conn, logcollector)
+	if err != nil {
+		return "", "", "", 0, 0, err
 	}
 
 	// Append path to DATADIR if it is not an absolute.
