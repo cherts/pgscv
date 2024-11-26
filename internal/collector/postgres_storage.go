@@ -134,10 +134,19 @@ func (c *postgresStorageCollector) Update(config Config, ch chan<- prometheus.Me
 		}
 	}
 
-	// Collecting metrics about directories requires direct access to filesystems, which is
-	// impossible for remote services. If service is remote, stop here and return.
+	// Collecting metrics about directories requires direct access to filesystems, which is impossible for remote services.
+	// If the service is remote, collect a limited set of metrics about the Wal directory path, size and number of wal files.
 
 	if !config.localService {
+		// Collect a limited set of Wal metrics
+		dirstats, err := newPostgresWalStat(conn)
+		if err != nil {
+			return err
+		}
+		// WAL directory
+		ch <- c.waldirBytes.newConstMetric(dirstats.waldirSizeBytes, dirstats.waldirPath, dirstats.waldirPath, dirstats.waldirPath)
+		ch <- c.waldirFiles.newConstMetric(dirstats.waldirFilesCount, dirstats.waldirPath, dirstats.waldirPath, dirstats.waldirPath)
+
 		log.Debugln("[postgres storage collector]: skip collecting directories metrics from remote services")
 		return nil
 	}
@@ -267,6 +276,22 @@ type postgresDirStat struct {
 	tmpfilesCount     float64
 }
 
+// newPostgresWalStat returns sizes of Postgres server directories.
+func newPostgresWalStat(conn *store.DB) (*postgresDirStat, error) {
+	// Get Wal properties.
+	waldirPath, waldirSize, waldirFilesCount, err := getWalStat(conn)
+	if err != nil {
+		log.Errorln(err)
+	}
+
+	// Return stats.
+	return &postgresDirStat{
+		waldirPath:       waldirPath,
+		waldirSizeBytes:  float64(waldirSize),
+		waldirFilesCount: float64(waldirFilesCount),
+	}, nil
+}
+
 // newPostgresDirStat returns sizes of Postgres server directories.
 func newPostgresDirStat(conn *store.DB, datadir string, logcollector bool, version int) (*postgresDirStat, []tablespaceStat, error) {
 	// Get directories mountpoints.
@@ -391,15 +416,25 @@ func getTablespacesStat(conn *store.DB, mounts []mount) ([]tablespaceStat, error
 	return stats, nil
 }
 
-// getWaldirStat returns filesystem info related to WALDIR.
-func getWaldirStat(conn *store.DB, mounts []mount) (string, string, string, int64, int64, error) {
+// getWalStat returns Wal info related to WALDIR.
+func getWalStat(conn *store.DB) (string, int64, int64, error) {
 	var path string
 	var size, count int64
 	err := conn.Conn().
 		QueryRow(context.Background(), "SELECT current_setting('data_directory')||'/pg_wal' AS path, sum(size) AS bytes, count(name) AS count FROM pg_ls_waldir()").
 		Scan(&path, &size, &count)
 	if err != nil {
-		return "", "", "", 0, 0, fmt.Errorf("get WAL directory size failed: %s", err)
+		return "", 0, 0, fmt.Errorf("get WAL directory size failed: %s", err)
+	}
+
+	return path, size, count, nil
+}
+
+// getWaldirStat returns filesystem info related to WALDIR.
+func getWaldirStat(conn *store.DB, mounts []mount) (string, string, string, int64, int64, error) {
+	path, size, count, err := getWalStat(conn)
+	if err != nil {
+		return "", "", "", 0, 0, err
 	}
 
 	mountpoint, device, err := findMountpoint(mounts, path)
