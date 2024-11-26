@@ -139,7 +139,7 @@ func (c *postgresStorageCollector) Update(config Config, ch chan<- prometheus.Me
 
 	if !config.localService {
 		// Collect a limited set of Wal metrics
-		log.Debugln("[postgres storage collector]: collecting limited WAL and Log metrics from remote services")
+		log.Debugln("[postgres storage collector]: collecting limited WAL, Log and Temp file metrics from remote services")
 		dirstats, err := newPostgresStat(conn, config.loggingCollector, config.serverVersionNum)
 		if err != nil {
 			return err
