@@ -139,8 +139,8 @@ func (c *postgresStorageCollector) Update(config Config, ch chan<- prometheus.Me
 
 	if !config.localService {
 		// Collect a limited set of Wal metrics
-		log.Debugln("[postgres storage collector]: collecting limited WAL and Log metrics from remote services")
-		dirstats, err := newPostgresStat(conn, config.loggingCollector)
+		log.Debugln("[postgres storage collector]: collecting limited WAL, Log and Temp file metrics from remote services")
+		dirstats, err := newPostgresStat(conn, config.loggingCollector, config.serverVersionNum)
 		if err != nil {
 			return err
 		}
@@ -152,6 +152,11 @@ func (c *postgresStorageCollector) Update(config Config, ch chan<- prometheus.Me
 		if config.loggingCollector {
 			ch <- c.logdirBytes.newConstMetric(dirstats.logdirSizeBytes, "unknown", "unknown", dirstats.logdirPath)
 			ch <- c.logdirFiles.newConstMetric(dirstats.logdirFilesCount, "unknown", "unknown", dirstats.logdirPath)
+		}
+
+		// Temp directory
+		if config.serverVersionNum >= PostgresV12 {
+			ch <- c.tmpfilesBytes.newConstMetric(dirstats.tmpfilesSizeBytes, "temp", "temp", "temp")
 		}
 
 		log.Debugln("[postgres storage collector]: skip collecting full directories metrics from remote services")
@@ -284,7 +289,7 @@ type postgresDirStat struct {
 }
 
 // newPostgresStat returns sizes of Postgres server directories.
-func newPostgresStat(conn *store.DB, logcollector bool) (*postgresDirStat, error) {
+func newPostgresStat(conn *store.DB, logcollector bool, version int) (*postgresDirStat, error) {
 	// Get Wal properties.
 	waldirPath, waldirSize, waldirFilesCount, err := getWalStat(conn)
 	if err != nil {
@@ -296,14 +301,22 @@ func newPostgresStat(conn *store.DB, logcollector bool) (*postgresDirStat, error
 		log.Errorln(err)
 	}
 
+	// Get temp files and directories properties.
+	tmpfilesSize, tmpfilesCount, err := getTempfilesStat(conn, version)
+	if err != nil {
+		log.Errorln(err)
+	}
+
 	// Return stats.
 	return &postgresDirStat{
-		waldirPath:       waldirPath,
-		waldirSizeBytes:  float64(waldirSize),
-		waldirFilesCount: float64(waldirFilesCount),
-		logdirPath:       logdirPath,
-		logdirSizeBytes:  float64(logdirSize),
-		logdirFilesCount: float64(logdirFilesCount),
+		waldirPath:        waldirPath,
+		waldirSizeBytes:   float64(waldirSize),
+		waldirFilesCount:  float64(waldirFilesCount),
+		logdirPath:        logdirPath,
+		logdirSizeBytes:   float64(logdirSize),
+		logdirFilesCount:  float64(logdirFilesCount),
+		tmpfilesSizeBytes: float64(tmpfilesSize),
+		tmpfilesCount:     float64(tmpfilesCount),
 	}, nil
 }
 
