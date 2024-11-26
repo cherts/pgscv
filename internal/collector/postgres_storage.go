@@ -139,15 +139,16 @@ func (c *postgresStorageCollector) Update(config Config, ch chan<- prometheus.Me
 
 	if !config.localService {
 		// Collect a limited set of Wal metrics
+		log.Debugln("[postgres storage collector]: collecting limited WAL metrics from remote services")
 		dirstats, err := newPostgresWalStat(conn)
 		if err != nil {
 			return err
 		}
 		// WAL directory
-		ch <- c.waldirBytes.newConstMetric(dirstats.waldirSizeBytes, dirstats.waldirPath, dirstats.waldirPath, dirstats.waldirPath)
-		ch <- c.waldirFiles.newConstMetric(dirstats.waldirFilesCount, dirstats.waldirPath, dirstats.waldirPath, dirstats.waldirPath)
+		ch <- c.waldirBytes.newConstMetric(dirstats.waldirSizeBytes, "unknown", "unknown", dirstats.waldirPath)
+		ch <- c.waldirFiles.newConstMetric(dirstats.waldirFilesCount, "unknown", "unknown", dirstats.waldirPath)
 
-		log.Debugln("[postgres storage collector]: skip collecting directories metrics from remote services")
+		log.Debugln("[postgres storage collector]: skip collecting full directories metrics from remote services")
 		return nil
 	}
 
