@@ -11,7 +11,11 @@ import (
 )
 
 const (
-	postgresDatabaseConflictsQuery = "SELECT datname AS database, confl_tablespace, confl_lock, confl_snapshot, confl_bufferpin, confl_deadlock FROM pg_stat_database_conflicts where pg_is_in_recovery() = 't'"
+	postgresDatabaseConflictsQuery15 = "SELECT datname AS database, confl_tablespace, confl_lock, confl_snapshot, confl_bufferpin, confl_deadlock " +
+		"FROM pg_stat_database_conflicts WHERE pg_is_in_recovery() = 't'"
+
+	postgresDatabaseConflictsQueryLatest = "SELECT datname AS database, confl_tablespace, confl_lock, confl_snapshot, confl_bufferpin, confl_deadlock, confl_active_logicalslot " +
+		"FROM pg_stat_database_conflicts WHERE pg_is_in_recovery() = 't'"
 )
 
 type postgresConflictsCollector struct {
@@ -39,7 +43,7 @@ func (c *postgresConflictsCollector) Update(config Config, ch chan<- prometheus.
 	}
 	defer conn.Close()
 
-	res, err := conn.Query(postgresDatabaseConflictsQuery)
+	res, err := conn.Query(selectDatabaseConflictsQuery(config.serverVersionNum))
 	if err != nil {
 		return err
 	}
@@ -52,6 +56,7 @@ func (c *postgresConflictsCollector) Update(config Config, ch chan<- prometheus.
 		ch <- c.conflicts.newConstMetric(stat.snapshot, stat.database, "snapshot")
 		ch <- c.conflicts.newConstMetric(stat.bufferpin, stat.database, "bufferpin")
 		ch <- c.conflicts.newConstMetric(stat.deadlock, stat.database, "deadlock")
+		ch <- c.conflicts.newConstMetric(stat.active_logicalslot, stat.database, "active_logicalslot")
 	}
 
 	return nil
@@ -59,12 +64,13 @@ func (c *postgresConflictsCollector) Update(config Config, ch chan<- prometheus.
 
 // postgresConflictStat represents per-database recovery conflicts stats based on pg_stat_database_conflicts.
 type postgresConflictStat struct {
-	database   string
-	tablespace float64
-	lock       float64
-	snapshot   float64
-	bufferpin  float64
-	deadlock   float64
+	database           string
+	tablespace         float64
+	lock               float64
+	snapshot           float64
+	bufferpin          float64
+	deadlock           float64
+	active_logicalslot float64
 }
 
 // parsePostgresDatabasesStats parses PGResult, extract data and return struct with stats values.
@@ -124,6 +130,8 @@ func parsePostgresConflictStats(r *model.PGResult, labelNames []string) map[stri
 				s.bufferpin = v
 			case "confl_deadlock":
 				s.deadlock = v
+			case "confl_active_logicalslot":
+				s.active_logicalslot = v
 			default:
 				continue
 			}
@@ -133,4 +141,14 @@ func parsePostgresConflictStats(r *model.PGResult, labelNames []string) map[stri
 	}
 
 	return stats
+}
+
+// selectDatabaseConflictsQuery returns suitable pg_stat_database_conflicts query depending on passed version.
+func selectDatabaseConflictsQuery(version int) string {
+	switch {
+	case version < PostgresV16:
+		return postgresDatabaseConflictsQuery15
+	default:
+		return postgresDatabaseConflictsQueryLatest
+	}
 }
