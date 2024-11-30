@@ -56,6 +56,31 @@ func (c *postgresFunctionsCollector) Update(config Config, ch chan<- prometheus.
 		return err
 	}
 
+	collect := func(conn *store.DB) error {
+		res, err := conn.Query(postgresFunctionsQuery)
+
+		if err != nil {
+			log.Warnf("get functions stat failed: %s", err)
+			return err
+		}
+
+		stats := parsePostgresFunctionsStats(res, c.labelNames)
+
+		for _, stat := range stats {
+			ch <- c.calls.newConstMetric(stat.calls, stat.database, stat.schema, stat.function)
+			ch <- c.totaltime.newConstMetric(stat.totaltime, stat.database, stat.schema, stat.function)
+			ch <- c.selftime.newConstMetric(stat.selftime, stat.database, stat.schema, stat.function)
+		}
+		return nil
+	}
+
+	if config.DatabasesRE == nil {
+		// service discovery case
+		err = collect(conn)
+		conn.Close()
+		return err
+	}
+
 	databases, err := listDatabases(conn)
 	if err != nil {
 		return err
@@ -70,7 +95,7 @@ func (c *postgresFunctionsCollector) Update(config Config, ch chan<- prometheus.
 
 	for _, d := range databases {
 		// Skip database if not matched to allowed.
-		if config.DatabasesRE != nil && !config.DatabasesRE.MatchString(d) {
+		if !config.DatabasesRE.MatchString(d) {
 			continue
 		}
 
@@ -79,20 +104,10 @@ func (c *postgresFunctionsCollector) Update(config Config, ch chan<- prometheus.
 		if err != nil {
 			return err
 		}
-
-		res, err := conn.Query(postgresFunctionsQuery)
+		err = collect(conn)
 		conn.Close()
 		if err != nil {
-			log.Warnf("get functions stat of database %s failed: %s", d, err)
-			continue
-		}
-
-		stats := parsePostgresFunctionsStats(res, c.labelNames)
-
-		for _, stat := range stats {
-			ch <- c.calls.newConstMetric(stat.calls, stat.database, stat.schema, stat.function)
-			ch <- c.totaltime.newConstMetric(stat.totaltime, stat.database, stat.schema, stat.function)
-			ch <- c.selftime.newConstMetric(stat.selftime, stat.database, stat.schema, stat.function)
+			return err
 		}
 	}
 

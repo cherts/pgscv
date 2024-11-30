@@ -101,7 +101,7 @@ pgSCV / PostgreSQL metrics collector, for more info visit <a href="https://githu
 </html>
 `
 
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	return http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		_, err := w.Write([]byte(htmlTemplate))
 		if err != nil {
 			log.Warnln("response write failed: ", err)

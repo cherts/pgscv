@@ -3,6 +3,7 @@ package pgscv
 
 import (
 	"fmt"
+	sd "github.com/cherts/pgscv/internal/discovery/service"
 	"io/fs"
 	"os"
 	"path/filepath"
@@ -41,6 +42,8 @@ type Config struct {
 	CollectTopIndex       int                      `yaml:"collect_top_index"`    // Limit elements on Indexes collector
 	CollectTopQuery       int                      `yaml:"collect_top_query"`    // Limit elements on Statements collector
 	SkipConnErrorMode     bool                     `yaml:"skip_conn_error_mode"` // Skipping connection errors and creating a Service instance.
+	DiscoveryConfig       *interface{}             `yaml:"discovery"`
+	DiscoveryServices     *map[string]sd.Discovery
 }
 
 // NewConfig creates new config based on config file or return default config if config file is not specified.

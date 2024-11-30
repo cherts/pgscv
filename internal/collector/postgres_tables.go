@@ -221,39 +221,16 @@ func (c *postgresTablesCollector) Update(config Config, ch chan<- prometheus.Met
 		return err
 	}
 
-	databases, err := listDatabases(conn)
-	if err != nil {
-		return err
-	}
-
-	conn.Close()
-
-	pgconfig, err := pgx.ParseConfig(config.ConnString)
-	if err != nil {
-		return err
-	}
-
-	for _, d := range databases {
-		// Skip database if not matched to allowed.
-		if config.DatabasesRE != nil && !config.DatabasesRE.MatchString(d) {
-			continue
-		}
-
-		pgconfig.Database = d
-		conn, err := store.NewWithConfig(pgconfig)
-		if err != nil {
-			return err
-		}
+	collect := func(conn *store.DB) error {
 		var res *model.PGResult
 		if config.CollectTopTable > 0 {
 			res, err = conn.Query(userTablesQueryTopK, config.CollectTopTable)
 		} else {
 			res, err = conn.Query(userTablesQuery)
 		}
-		conn.Close()
 		if err != nil {
-			log.Warnf("get tables stat of database '%s' failed: %s; skip", d, err)
-			continue
+			log.Warnf("get tables stat failed: %s; skip", err)
+			return err
 		}
 
 		stats := parsePostgresTableStats(res, c.labelNames)
@@ -330,6 +307,43 @@ func (c *postgresTablesCollector) Update(config Config, ch chan<- prometheus.Met
 
 			ch <- c.sizes.newConstMetric(stat.sizebytes, stat.database, stat.schema, stat.table)
 			ch <- c.reltuples.newConstMetric(stat.reltuples, stat.database, stat.schema, stat.table)
+		}
+		return nil
+	}
+
+	if config.DatabasesRE == nil { // service discovery case
+		err := collect(conn)
+		conn.Close()
+		return err
+	}
+
+	databases, err := listDatabases(conn)
+	if err != nil {
+		return err
+	}
+
+	conn.Close()
+
+	pgconfig, err := pgx.ParseConfig(config.ConnString)
+	if err != nil {
+		return err
+	}
+
+	for _, d := range databases {
+		// Skip database if not matched to allowed.
+		if !config.DatabasesRE.MatchString(d) {
+			continue
+		}
+
+		pgconfig.Database = d
+		conn, err := store.NewWithConfig(pgconfig)
+		if err != nil {
+			return err
+		}
+		err = collect(conn)
+		conn.Close()
+		if err != nil {
+			return err
 		}
 	}
 

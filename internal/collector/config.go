@@ -35,6 +35,7 @@ type Config struct {
 	CollectTopTable int
 	CollectTopIndex int
 	CollectTopQuery int
+	ConstLabels     *map[string]string
 }
 
 // postgresServiceConfig defines Postgres-specific stuff required during collecting Postgres metrics.

@@ -39,6 +39,8 @@ func pipeline(t *testing.T, input pipelineInput) {
 	var config Config
 	switch input.service {
 	case model.ServiceTypePostgresql:
+		config.DatabasesRE, err = regexp.Compile(".+")
+		assert.NoError(t, err)
 		config.ConnString = "postgres://pgscv@127.0.0.1/postgres"
 		cfg, err := newPostgresServiceConfig(config.ConnString)
 		assert.NoError(t, err)

@@ -4,12 +4,17 @@ package pgscv
 import (
 	"context"
 	"errors"
+	"fmt"
+	sd "github.com/cherts/pgscv/internal/discovery/service"
+	"github.com/cherts/pgscv/internal/model"
 	"sync"
 
 	"github.com/cherts/pgscv/internal/http"
 	"github.com/cherts/pgscv/internal/log"
 	"github.com/cherts/pgscv/internal/service"
 )
+
+const pgSCVSubscriber = "pgscv_subscriber"
 
 // Start is the application's starting point.
 func Start(ctx context.Context, config *Config) error {
@@ -30,7 +35,7 @@ func Start(ctx context.Context, config *Config) error {
 		SkipConnErrorMode:  config.SkipConnErrorMode,
 	}
 
-	if len(config.ServicesConnsSettings) == 0 {
+	if len(config.ServicesConnsSettings) == 0 && config.DiscoveryServices == nil {
 		return errors.New("no services defined")
 	}
 
@@ -46,8 +51,31 @@ func Start(ctx context.Context, config *Config) error {
 	ctx, cancel := context.WithCancel(ctx)
 	var wg sync.WaitGroup
 
-	errCh := make(chan error)
+	errCh := make(chan error, 2)
 	defer close(errCh)
+	if config.DiscoveryServices != nil {
+		for _, ds := range *config.DiscoveryServices {
+			wg.Add(1)
+			go func() {
+				err := ds.Start(ctx, errCh)
+				if err != nil {
+					errCh <- err
+				}
+				wg.Done()
+			}()
+			switch dt := ds.(type) {
+			case *sd.YandexDiscovery:
+				err := subscribeYandex(&ds, config, serviceRepo)
+				if err != nil {
+					cancel()
+					return err
+				}
+			default:
+				log.Info(fmt.Sprintf("unknown discovery type %T", dt))
+			}
+
+		}
+	}
 
 	// Start HTTP metrics listener.
 	wg.Add(1)
@@ -72,6 +100,50 @@ func Start(ctx context.Context, config *Config) error {
 			return e
 		}
 	}
+}
+
+func subscribeYandex(ds *sd.Discovery, config *Config, serviceRepo *service.Repository) error {
+	err := (*ds).Subscribe(pgSCVSubscriber,
+		// addService
+		func(services map[string]sd.Service) error {
+			constLabels := make(map[string]*map[string]string)
+			serviceDiscoveryConfig := service.Config{
+				NoTrackMode:        config.NoTrackMode,
+				ConnDefaults:       config.Defaults,
+				DisabledCollectors: config.DisableCollectors,
+				CollectorsSettings: config.CollectorsSettings,
+				CollectTopTable:    config.CollectTopTable,
+				CollectTopIndex:    config.CollectTopIndex,
+				CollectTopQuery:    config.CollectTopQuery,
+				SkipConnErrorMode:  config.SkipConnErrorMode,
+				ConstLabels:        &constLabels,
+			}
+			var cs = make(service.ConnsSettings, len(services))
+			for serviceID, svc := range services {
+				cs[serviceID] = service.ConnSetting{
+					ServiceType: model.ServiceTypePostgresql,
+					Conninfo:    svc.DSN,
+				}
+				constLabels[serviceID] = &svc.ConstLabels
+			}
+			serviceDiscoveryConfig.ConnsSettings = cs
+			serviceRepo.AddServicesFromConfig(serviceDiscoveryConfig)
+			err := serviceRepo.SetupServices(serviceDiscoveryConfig)
+			if err != nil {
+				return err
+			}
+			return nil
+		},
+		// removeService
+		func(serviceIds []string) error {
+			for _, serviceID := range serviceIds {
+				log.Infof("unregister service [%s]", serviceID)
+				serviceRepo.RemoveService(serviceID)
+			}
+			return nil
+		},
+	)
+	return err
 }
 
 // runMetricsListener start HTTP listener accordingly to passed configuration.

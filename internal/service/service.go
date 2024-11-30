@@ -29,8 +29,11 @@ type Service struct {
 	ConnSettings ConnSetting
 	// Prometheus-based metrics collector associated with the service. Each 'service' has its own dedicated collector instance
 	// which implements a service-specific set of metric collectors.
-	Collector Collector
+	Collector   Collector
+	ConstLabels *map[string]string
 }
+
+const system0ServiceID = "system:0"
 
 // Config defines service's configuration.
 type Config struct {
@@ -47,6 +50,7 @@ type Config struct {
 	CollectTopIndex    int
 	CollectTopQuery    int
 	SkipConnErrorMode  bool
+	ConstLabels        *map[string]*map[string]string
 }
 
 // Collector is an interface for prometheus.Collector.
@@ -97,6 +101,18 @@ func (repo *Repository) getService(id string) Service {
 	return s
 }
 
+// RemoveService remove service from repo and unregister prometheus collector
+func (repo *Repository) RemoveService(id string) {
+	repo.Lock()
+	defer repo.Unlock()
+	if s, ok := repo.Services[id]; ok {
+		if s.Collector != nil {
+			prometheus.Unregister(s.Collector)
+		}
+		delete(repo.Services, id)
+	}
+}
+
 // totalServices returns the number of services registered in the repo.
 func (repo *Repository) totalServices() int {
 	repo.RLock()
@@ -116,13 +132,24 @@ func (repo *Repository) getServiceIDs() []string {
 	return serviceIDs
 }
 
+func (repo *Repository) serviceExists(serviceID string) bool {
+	for _, id := range repo.getServiceIDs() {
+		if id == serviceID {
+			return true
+		}
+	}
+	return false
+}
+
 // addServicesFromConfig reads info about services from the config file and fulfill the repo.
 func (repo *Repository) addServicesFromConfig(config Config) {
 	log.Debug("config: add services from configuration")
 
-	// Always add system service.
-	repo.addService(Service{ServiceID: "system:0", ConnSettings: ConnSetting{ServiceType: model.ServiceTypeSystem}})
-	log.Info("registered new service [system:0]")
+	if !repo.serviceExists(system0ServiceID) {
+		// Always add system service.
+		repo.addService(Service{ServiceID: system0ServiceID, ConnSettings: ConnSetting{ServiceType: model.ServiceTypeSystem}})
+		log.Info(fmt.Sprintf("registered new service [%s]", system0ServiceID))
+	}
 
 	// Sanity check, but basically should be always passed.
 	if config.ConnsSettings == nil {
@@ -174,6 +201,9 @@ func (repo *Repository) addServicesFromConfig(config Config) {
 			ConnSettings: cs,
 			Collector:    nil,
 		}
+		if config.ConstLabels != nil && (*config.ConstLabels)[k] != nil {
+			s.ConstLabels = (*config.ConstLabels)[k]
+		}
 
 		// Use entry key as ServiceID unique identifier.
 		repo.addService(s)
@@ -201,6 +231,9 @@ func (repo *Repository) setupServices(config Config) error {
 				CollectTopTable: config.CollectTopTable,
 				CollectTopIndex: config.CollectTopIndex,
 				CollectTopQuery: config.CollectTopQuery,
+			}
+			if config.ConstLabels != nil && (*config.ConstLabels)[id] != nil {
+				collectorConfig.ConstLabels = (*config.ConstLabels)[id]
 			}
 
 			switch service.ConnSettings.ServiceType {

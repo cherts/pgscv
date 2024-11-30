@@ -31,6 +31,7 @@ func TestMeminfoCollector_Update(t *testing.T) {
 			// vmstat
 			"node_vmstat_nr_anon_pages", "node_vmstat_nr_mapped", "node_vmstat_nr_dirty", "node_vmstat_nr_writeback",
 			"node_vmstat_pgpgin", "node_vmstat_pgpgout", "node_vmstat_pswpin", "node_vmstat_pswpout",
+			"node_vmstat_zswpwb",
 		},
 		optional: []string{
 			// meminfo
