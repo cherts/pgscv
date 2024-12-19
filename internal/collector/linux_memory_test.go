@@ -2,10 +2,11 @@ package collector
 
 import (
 	"fmt"
-	"github.com/stretchr/testify/assert"
 	"os"
 	"path/filepath"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestMeminfoCollector_Update(t *testing.T) {
@@ -101,7 +102,7 @@ func TestMeminfoCollector_Update(t *testing.T) {
 			"node_vmstat_pgpromote_candidate", "node_vmstat_pgscan_khugepaged", "node_vmstat_zswpin",
 			"node_vmstat_thp_scan_exceed_swap_pte", "node_vmstat_allocstall_device", "node_vmstat_pgpromote_success",
 			"node_vmstat_pgalloc_device", "node_vmstat_nr_sec_page_table_pages", "node_vmstat_cow_ksm",
-			"node_vmstat_ksm_swpin_copy", "node_vmstat_zswpout", "node_vmstat_nr_unaccepted",
+			"node_vmstat_ksm_swpin_copy", "node_vmstat_zswpout", "node_vmstat_nr_unaccepted", "node_vmstat_zswpwb",
 		},
 		collector: NewMeminfoCollector,
 	}
