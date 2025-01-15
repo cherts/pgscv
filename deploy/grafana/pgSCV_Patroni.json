@@ -52,7 +52,7 @@
       }
     ]
   },
-  "description": "Patroni dashboard for pgSCV metrics (Prometheus version, pgSCV 0.8.4 edition)",
+  "description": "Patroni dashboard for pgSCV metrics (Prometheus version, pgSCV 0.9.7 edition)",
   "editable": true,
   "fiscalYearStartMonth": 0,
   "gnetId": 21429,
@@ -2571,6 +2571,6 @@
   "timezone": "",
   "title": "pgSCV: Patroni",
   "uid": "aim7Ue3th",
-  "version": 21,
+  "version": 22,
   "weekStart": ""
 }
