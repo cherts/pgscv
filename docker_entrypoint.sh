@@ -4,10 +4,10 @@ ARG1=$1
 
 case "${ARG1}" in
 "bash" | "sh")
-  echo ${ARG1}
-  exec "$@"
-  ;;
+	echo ${ARG1}
+	exec "$@"
+	;;
 *)
-  exec /bin/pgscv "$@"
-  ;;
+	exec /bin/pgscv "$@"
+	;;
 esac
