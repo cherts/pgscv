@@ -58,7 +58,7 @@
       }
     ]
   },
-  "description": "PostgreSQL dashboard for pgSCV metrics (Prometheus version, pgSCV 0.9.2 edition)",
+  "description": "PostgreSQL dashboard for pgSCV metrics (Prometheus version, pgSCV 0.9.7 edition)",
   "editable": true,
   "fiscalYearStartMonth": 0,
   "gnetId": 21430,
@@ -6771,6 +6771,6 @@
   "timezone": "",
   "title": "pgSCV: PostgreSQL",
   "uid": "N6PwjKeGz",
-  "version": 30,
+  "version": 31,
   "weekStart": ""
 }

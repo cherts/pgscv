@@ -40,7 +40,13 @@
 
 ### Quick start
 
-Run pgSCV demo laboratory:
+Prepare demo laboratory::
+```bash
+cat docker-compose.yml | grep device | awk -F' ' '{print $2}' | sed -e 's/${PWD}\///g' | xargs mkdir -p
+cat docker-compose.yml | grep device | awk -F' ' '{print $2}' | sed -e 's/${PWD}\///g' | xargs chmod 777
+```
+
+Start demo laboratory:
 ```bash
 docker-compose up -d
 ```
