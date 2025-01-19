@@ -148,7 +148,7 @@ func (repo *Repository) addServicesFromConfig(config Config) {
 	if !repo.serviceExists(system0ServiceID) {
 		// Always add system service.
 		repo.addService(Service{ServiceID: system0ServiceID, ConnSettings: ConnSetting{ServiceType: model.ServiceTypeSystem}})
-		log.Info(fmt.Sprintf("registered new service [%s]", system0ServiceID))
+		log.Infof("registered new service [%s]", system0ServiceID)
 	}
 
 	// Sanity check, but basically should be always passed.

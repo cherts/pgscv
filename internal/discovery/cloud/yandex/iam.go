@@ -3,6 +3,7 @@ package yandex
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/cherts/pgscv/internal/log"
 	"github.com/golang-jwt/jwt/v4"
 	"net/http"
 	"os"
@@ -39,6 +40,7 @@ func newIAMToken(jsonFilePath string) (*tokenIAM, error) {
 }
 
 func (token *tokenIAM) GetToken() (*string, error) {
+	log.Debug("YCD Getting token")
 	if token.IsExpired() {
 		err := token.Renew()
 		if err != nil {
@@ -65,6 +67,7 @@ func (token *tokenIAM) IsExpired() bool {
 }
 
 func (token *tokenIAM) Renew() error {
+	log.Debug("Renewing IAM token")
 	token.Lock()
 	defer token.Unlock()
 	jwtToken, err := token.getJWTToken()
@@ -79,19 +82,23 @@ func (token *tokenIAM) Renew() error {
 		strings.NewReader(fmt.Sprintf(`{"jwt":"%s"}`, *jwtToken)),
 	)
 	if err != nil {
+		log.Errorf("YCD IAM token renew %s", err.Error())
 		return err
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode != http.StatusOK {
+		log.Errorf("YCD IAM token renew resp.Status %d", resp.StatusCode)
 		return fmt.Errorf("unexpected status code: %d", resp.StatusCode)
 	}
 	if err := json.NewDecoder(resp.Body).Decode(token); err != nil {
+		log.Errorf("YCD IAM token renew %s", err.Error())
 		return err
 	}
 	return nil
 }
 
 func (token *tokenIAM) getJWTToken() (*string, error) {
+	log.Debug("YCD getJWTToken")
 	rsaPrivateKey, err := jwt.ParseRSAPrivateKeyFromPEM([]byte(token.key.PrivateKey))
 	if err != nil {
 		return nil, err
@@ -107,18 +114,22 @@ func (token *tokenIAM) getJWTToken() (*string, error) {
 	jwtToken.Header["kid"] = token.key.ID
 	tokenString, err := jwtToken.SignedString(rsaPrivateKey)
 	if err != nil {
+		log.Errorf("YCD getJWTToken error %s", err.Error())
 		return nil, err
 	}
 	return &tokenString, nil
 }
 
 func (token *tokenIAM) loadAuthorizedKey(filePath string) error {
+	log.Debugf("YCD loadAuthorizedKey from path %s", filePath)
 	data, err := os.ReadFile(filepath.Clean(filePath))
 	if err != nil {
+		log.Errorf("YCD loadAuthorizedKey error %s", err.Error())
 		return err
 	}
 	err = json.Unmarshal(data, &token.key)
 	if err != nil {
+		log.Errorf("YCD loadAuthorizedKey error %s", err.Error())
 		return err
 	}
 	return nil

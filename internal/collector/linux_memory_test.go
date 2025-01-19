@@ -31,7 +31,6 @@ func TestMeminfoCollector_Update(t *testing.T) {
 			// vmstat
 			"node_vmstat_nr_anon_pages", "node_vmstat_nr_mapped", "node_vmstat_nr_dirty", "node_vmstat_nr_writeback",
 			"node_vmstat_pgpgin", "node_vmstat_pgpgout", "node_vmstat_pswpin", "node_vmstat_pswpout",
-			"node_vmstat_zswpwb",
 		},
 		optional: []string{
 			// meminfo
@@ -103,6 +102,7 @@ func TestMeminfoCollector_Update(t *testing.T) {
 			"node_vmstat_thp_scan_exceed_swap_pte", "node_vmstat_allocstall_device", "node_vmstat_pgpromote_success",
 			"node_vmstat_pgalloc_device", "node_vmstat_nr_sec_page_table_pages", "node_vmstat_cow_ksm",
 			"node_vmstat_ksm_swpin_copy", "node_vmstat_zswpout", "node_vmstat_nr_unaccepted",
+			"node_vmstat_zswpwb",
 		},
 		collector: NewMeminfoCollector,
 	}

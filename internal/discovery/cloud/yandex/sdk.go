@@ -3,6 +3,7 @@ package yandex
 
 import (
 	"context"
+	"github.com/cherts/pgscv/internal/log"
 	ycsdk "github.com/yandex-cloud/go-sdk"
 	"sync"
 )
@@ -15,6 +16,7 @@ type SDK struct {
 
 // NewSDK load authorized key from json file and return pointer on SDK structure
 func NewSDK(jsonFilePath string) (*SDK, error) {
+	log.Debug("YCD NewSDK")
 	token, err := newIAMToken(jsonFilePath)
 	if err != nil {
 		return nil, err
@@ -35,6 +37,7 @@ func (sdk *SDK) Build(ctx context.Context) (*ycsdk.SDK, error) {
 		Credentials: ycsdk.NewIAMTokenCredentials(*t),
 	})
 	if err != nil {
+		log.Debugf("YCD Build: %v", err)
 		return nil, err
 	}
 	return ysdk, nil

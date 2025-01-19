@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/cherts/pgscv/internal/discovery/cloud/yandex"
+	"github.com/cherts/pgscv/internal/log"
 	"maps"
 	"strings"
 	"sync"
@@ -41,6 +42,7 @@ func (ye *yandexEngine) Start(ctx context.Context) error {
 
 			clusters, err := ye.sdk.GetPostgreSQLClusters(ctx, folderID, filter)
 			if err != nil {
+				log.Errorf("Error getting clusters: %v, shutting down yandex discovery engine", err)
 				cancel()
 				return
 			}
@@ -73,6 +75,7 @@ func (ye *yandexEngine) Start(ctx context.Context) error {
 			ye.Unlock()
 			select {
 			case <-ctx.Done():
+				log.Debug("context canceled, shutting down yandex discovery engine")
 				cancel()
 				return
 			default:

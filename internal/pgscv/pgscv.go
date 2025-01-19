@@ -4,7 +4,6 @@ package pgscv
 import (
 	"context"
 	"errors"
-	"fmt"
 	sd "github.com/cherts/pgscv/internal/discovery/service"
 	"github.com/cherts/pgscv/internal/model"
 	"sync"
@@ -71,7 +70,7 @@ func Start(ctx context.Context, config *Config) error {
 					return err
 				}
 			default:
-				log.Info(fmt.Sprintf("unknown discovery type %T", dt))
+				log.Infof("unknown discovery type %T", dt)
 			}
 
 		}
