@@ -15,7 +15,7 @@
       }
     ]
   },
-  "description": "System dashboard for pgSCV metrics (Prometheus version, pgSCV 0.8.4 edition)",
+  "description": "System dashboard for pgSCV metrics (Prometheus version, pgSCV 0.9.7 edition)",
   "editable": true,
   "fiscalYearStartMonth": 0,
   "gnetId": 21409,
@@ -1232,7 +1232,7 @@
                 "uid": "DS_VM_01"
               },
               "exemplar": true,
-              "expr": "rate(node_vmstat_pswpin{}[1m])*4096",
+              "expr": "rate(node_vmstat_pswpin{instance=\"$instance\"}[1m])*4096",
               "interval": "",
               "legendFormat": "in",
               "refId": "A"
@@ -1243,7 +1243,7 @@
                 "uid": "${ds}"
               },
               "exemplar": true,
-              "expr": "rate(node_vmstat_pswpout{}[1m])*4096",
+              "expr": "rate(node_vmstat_pswpout{instance=\"$instance\"}[1m])*4096",
               "hide": false,
               "interval": "",
               "legendFormat": "out",

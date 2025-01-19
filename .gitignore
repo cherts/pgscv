@@ -30,6 +30,8 @@ Temporary Items
 .Trash-*
 # Linux .nfs files are created when an open file is removed but is still being accessed
 .nfs*
+# VSCode settings
+.vscode
 # Debug
 debug_run.*
 # Bin
