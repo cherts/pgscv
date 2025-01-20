@@ -136,7 +136,7 @@ func (yd *YandexDiscovery) Sync() error {
 			}
 		}
 		if len(appendSvc) > 0 {
-			log.Debugf("YCD appending %d services to sunscriber", len(appendSvc))
+			log.Debugf("YCD appending %d services to subscriber", len(appendSvc))
 			err := subscriber.AddService(appendSvc)
 			if err != nil {
 				return err
