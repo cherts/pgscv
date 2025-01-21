@@ -60,7 +60,6 @@ type postgresServiceConfig struct {
 	pgStatStatementsSchema string
 }
 
-// newPostgresServiceConfig defines new config for Postgres-based collectors.
 func newPostgresServiceConfig(connStr string) (postgresServiceConfig, error) {
 	var config = postgresServiceConfig{}
 
@@ -156,8 +155,14 @@ func newPostgresServiceConfig(connStr string) (postgresServiceConfig, error) {
 	config.pgStatStatements = exists
 	config.pgStatStatementsDatabase = database
 	config.pgStatStatementsSchema = schema
-
 	return config, nil
+}
+
+// FillPostgresServiceConfig defines new config for Postgres-based collectors.
+func (cfg *Config) FillPostgresServiceConfig() error {
+	var err error
+	cfg.postgresServiceConfig, err = newPostgresServiceConfig(cfg.ConnString)
+	return err
 }
 
 // isAddressLocal return true if passed address is local, and return false otherwise.

@@ -267,6 +267,10 @@ func (repo *Repository) setupServices(config Config) error {
 				factories.RegisterSystemCollectors(config.DisabledCollectors)
 			case model.ServiceTypePostgresql:
 				factories.RegisterPostgresCollectors(config.DisabledCollectors)
+				err := collectorConfig.FillPostgresServiceConfig()
+				if err != nil {
+					log.Errorf("update service config failed: %s", err.Error())
+				}
 			case model.ServiceTypePgbouncer:
 				factories.RegisterPgbouncerCollectors(config.DisabledCollectors)
 			case model.ServiceTypePatroni:
