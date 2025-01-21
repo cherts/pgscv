@@ -103,7 +103,7 @@ func getMetricsHandler(repository *service.Repository) func(w net_http.ResponseW
 }
 
 // getTargetsHandler return http handler function to /targets endpoint
-func getTargetsHandler(repository *service.Repository, urlPrefix string) func(w net_http.ResponseWriter, r *net_http.Request) {
+func getTargetsHandler(repository *service.Repository, urlPrefix string, enableTLS bool) func(w net_http.ResponseWriter, r *net_http.Request) {
 	return func(w net_http.ResponseWriter, r *net_http.Request) {
 		svcIDs := repository.GetServiceIDs()
 		targets := make([]string, len(svcIDs))
@@ -111,7 +111,11 @@ func getTargetsHandler(repository *service.Repository, urlPrefix string) func(w 
 		if urlPrefix != "" {
 			url = strings.Trim(urlPrefix, "/")
 		} else {
-			url = r.Host
+			if enableTLS {
+				url = fmt.Sprintf("https://%s", r.Host)
+			} else {
+				url = r.Host
+			}
 		}
 		for i, svcID := range svcIDs {
 			targets[i] = fmt.Sprintf("%s/metrics?target=%s", url, svcID)
@@ -141,7 +145,7 @@ func runMetricsListener(ctx context.Context, config *Config, repository *service
 		Addr:       config.ListenAddress,
 		AuthConfig: config.AuthConfig,
 	}
-	srv := http.NewServer(sCfg, getMetricsHandler(repository), getTargetsHandler(repository, config.URLPrefix))
+	srv := http.NewServer(sCfg, getMetricsHandler(repository), getTargetsHandler(repository, config.URLPrefix, config.AuthConfig.EnableTLS))
 
 	errCh := make(chan error)
 	defer close(errCh)
