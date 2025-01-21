@@ -45,7 +45,7 @@ type sdConfig struct {
 
 // Instantiate returns initialized service discoverers (converting abstract configs to determined structures)
 func Instantiate(discoveryConfig config) (*map[string]Discovery, error) {
-	log.Debug("Service Discovery Instantiating")
+	log.Debug("[Service Discovery] Instantiating")
 	var config = make(map[string]sdConfig)
 	var out, err = yaml.Marshal(discoveryConfig)
 	if err != nil {
@@ -57,18 +57,18 @@ func Instantiate(discoveryConfig config) (*map[string]Discovery, error) {
 	}
 	var services = make(map[string]Discovery)
 	for id, srv := range config {
-		log.Debugf("YCD found config %s", srv.Type)
+		log.Debugf("[Service Discovery] found config %s", srv.Type)
 		switch srv.Type {
 		case yandexMDB:
 			services[id] = &YandexDiscovery{subscribers: make(map[string]subscriber)}
 		default:
-			err := fmt.Errorf("unknown service discovery type: %s", srv.Type)
+			err := fmt.Errorf("[Service Discovery] unknown service discovery type: %s", srv.Type)
 			log.Debug(err.Error())
 			return nil, err
 		}
 		err := services[id].Init(srv.Config)
 		if err != nil {
-			log.Debugf("Error initializing: %s", err.Error())
+			log.Errorf("[Service Discovery] Error initializing %s: %s", id, err.Error())
 			return nil, err
 		}
 	}

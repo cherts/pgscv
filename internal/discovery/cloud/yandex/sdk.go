@@ -16,7 +16,7 @@ type SDK struct {
 
 // NewSDK load authorized key from json file and return pointer on SDK structure
 func NewSDK(jsonFilePath string) (*SDK, error) {
-	log.Debug("YCD NewSDK")
+	log.Debug("[Service Discovery] NewSDK")
 	token, err := newIAMToken(jsonFilePath)
 	if err != nil {
 		return nil, err
@@ -37,7 +37,7 @@ func (sdk *SDK) Build(ctx context.Context) (*ycsdk.SDK, error) {
 		Credentials: ycsdk.NewIAMTokenCredentials(*t),
 	})
 	if err != nil {
-		log.Debugf("YCD Build: %v", err)
+		log.Errorf("[Service Discovery] Build error: %v", err)
 		return nil, err
 	}
 	return ysdk, nil

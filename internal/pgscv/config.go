@@ -4,19 +4,18 @@ package pgscv
 import (
 	"fmt"
 	sd "github.com/cherts/pgscv/internal/discovery/service"
-	"io/fs"
-	"os"
-	"path/filepath"
-	"regexp"
-	"strconv"
-	"strings"
-
 	"github.com/cherts/pgscv/internal/http"
 	"github.com/cherts/pgscv/internal/log"
 	"github.com/cherts/pgscv/internal/model"
 	"github.com/cherts/pgscv/internal/service"
 	"github.com/jackc/pgx/v4"
 	"gopkg.in/yaml.v2"
+	"io/fs"
+	"os"
+	"path/filepath"
+	"regexp"
+	"strconv"
+	"strings"
 )
 
 const (
@@ -44,6 +43,7 @@ type Config struct {
 	SkipConnErrorMode     bool                     `yaml:"skip_conn_error_mode"` // Skipping connection errors and creating a Service instance.
 	DiscoveryConfig       *interface{}             `yaml:"discovery"`
 	DiscoveryServices     *map[string]sd.Discovery
+	ConnTimeout           int `yaml:"conn_timeout"`
 }
 
 // NewConfig creates new config based on config file or return default config if config file is not specified.
@@ -115,6 +115,9 @@ func NewConfig(configFilePath string) (*Config, error) {
 		}
 		if configFromEnv.SkipConnErrorMode {
 			configFromFile.SkipConnErrorMode = configFromEnv.SkipConnErrorMode
+		}
+		if configFromEnv.ConnTimeout > 0 {
+			configFromFile.ConnTimeout = configFromEnv.ConnTimeout
 		}
 		return configFromFile, nil
 	}
@@ -430,6 +433,12 @@ func newConfigFromEnv() (*Config, error) {
 			config.CollectTopIndex = collectTopIndex
 		case "PGSCV_SKIP_CONN_ERROR_MODE":
 			config.SkipConnErrorMode = toBool(value)
+		case "PGSCV_CONN_TIMEOUT":
+			timeout, err := strconv.Atoi(value)
+			if err != nil {
+				log.Errorf("invalid setting PGSCV_CONN_TIMEOUT, value '%s': %s", value, err)
+			}
+			config.ConnTimeout = timeout
 		}
 	}
 	return config, nil

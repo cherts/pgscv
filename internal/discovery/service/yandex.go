@@ -68,7 +68,7 @@ func (yd *YandexDiscovery) Unsubscribe(subscriberID string) error {
 func (yd *YandexDiscovery) Subscribe(subscriberID string, addService AddServiceFunc, removeService RemoveServiceFunc) error {
 	yd.Lock()
 	defer yd.Unlock()
-	log.Debugf("YCD Subscribe %s", subscriberID)
+	log.Debugf("[Service Discovery] Subscribe %s", subscriberID)
 	yd.subscribers[subscriberID] = subscriber{AddService: addService, RemoveService: removeService, syncedServices: make(map[string]Service), SyncedVersion: make(map[engineIdx]version)}
 	for engineID, e := range yd.engines {
 		e.RLock()
@@ -83,7 +83,7 @@ func (yd *YandexDiscovery) Subscribe(subscriberID string, addService AddServiceF
 	if len(yd.subscribers[subscriberID].syncedServices) > 0 {
 		err := addService(yd.subscribers[subscriberID].syncedServices)
 		if err != nil {
-			log.Errorf("Error adding synced services: %v", err)
+			log.Errorf("[Service Discovery] Error adding synced services: %v", err)
 		}
 		return err
 	}
@@ -94,7 +94,7 @@ func (yd *YandexDiscovery) Subscribe(subscriberID string, addService AddServiceF
 func (yd *YandexDiscovery) Sync() error {
 	yd.Lock()
 	defer yd.Unlock()
-	log.Debug("YCD Sync")
+	log.Debug("[Service Discovery] Sync")
 	for _, subscriber := range yd.subscribers {
 		needSync := false
 		engineServices := make(map[string]clusterDSN)
@@ -129,14 +129,14 @@ func (yd *YandexDiscovery) Sync() error {
 			}
 		}
 		if len(removeSvc) > 0 {
-			log.Debugf("YCD removing %d services from subscriber", len(removeSvc))
+			log.Debugf("[Service Discovery] removing %d services from subscriber", len(removeSvc))
 			err := subscriber.RemoveService(removeSvc)
 			if err != nil {
 				return err
 			}
 		}
 		if len(appendSvc) > 0 {
-			log.Debugf("YCD appending %d services to subscriber", len(appendSvc))
+			log.Debugf("[Service Discovery] appending %d services to subscriber", len(appendSvc))
 			err := subscriber.AddService(appendSvc)
 			if err != nil {
 				return err
@@ -150,7 +150,7 @@ func (yd *YandexDiscovery) Sync() error {
 func (yd *YandexDiscovery) Init(cfg config) error {
 	c, err := ensureConfigYandexMDB(cfg)
 	if err != nil {
-		log.Errorf("Error creating yandex discovery config: %v", err)
+		log.Errorf("[Service Discovery] Error creating yandex discovery config: %v", err)
 		return err
 	}
 	yd.config = c
@@ -164,13 +164,13 @@ func (yd *YandexDiscovery) Start(ctx context.Context, errCh chan<- error) error 
 	for _, c := range yd.config {
 		sdk, err := yandex.NewSDK(c.AuthorizedKey)
 		if err != nil {
-			log.Errorf("Error creating yandex sdk: %v", err)
+			log.Errorf("[Service Discovery] Error creating yandex sdk: %v", err)
 			return err
 		}
 		var engine = yandexEngine{sdk: sdk, config: c, dsn: make(map[hostDb]clusterDSN)}
 		err = engine.Start(ctx)
 		if err != nil {
-			log.Errorf("Error starting yandex engine: %v", err)
+			log.Errorf("[Service Discovery] Error starting yandex engine: %v", err)
 			return err
 		}
 		yd.engines = append(yd.engines, &engine)
@@ -179,12 +179,12 @@ func (yd *YandexDiscovery) Start(ctx context.Context, errCh chan<- error) error 
 	for {
 		err := yd.Sync()
 		if err != nil {
-			log.Errorf("YCD Sync error: %s", err.Error())
+			log.Errorf("[Service Discovery] Sync error: %s", err.Error())
 			errCh <- err
 		}
 		select {
 		case <-ctx.Done():
-			log.Debug("YCD context done")
+			log.Debug("[Service Discovery] context done")
 			return nil
 		default:
 			time.Sleep(10 * time.Second)

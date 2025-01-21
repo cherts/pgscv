@@ -42,7 +42,7 @@ func (ye *yandexEngine) Start(ctx context.Context) error {
 
 			clusters, err := ye.sdk.GetPostgreSQLClusters(ctx, folderID, filter)
 			if err != nil {
-				log.Errorf("Error getting clusters: %v, shutting down yandex discovery engine", err)
+				log.Errorf("[Service Discovery] Error getting clusters: %v, shutting down yandex discovery engine", err)
 				cancel()
 				return
 			}

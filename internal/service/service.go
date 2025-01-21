@@ -51,6 +51,7 @@ type Config struct {
 	CollectTopQuery    int
 	SkipConnErrorMode  bool
 	ConstLabels        *map[string]*map[string]string
+	ConnTimeout        int // in seconds
 }
 
 // Collector is an interface for prometheus.Collector.
@@ -157,61 +158,68 @@ func (repo *Repository) addServicesFromConfig(config Config) {
 		return
 	}
 
+	wg := sync.WaitGroup{}
+	wg.Add(len(config.ConnsSettings))
 	// Check all passed connection settings and try to connect using them. Create a 'Service' instance
 	// in the repo.
 	for k, cs := range config.ConnsSettings {
-		var msg string
+		go func() {
+			defer wg.Done()
+			var msg string
 
-		if cs.ServiceType == model.ServiceTypePatroni {
-			err := attemptRequest(cs.BaseURL)
-			if err != nil {
-				log.Warnf("%s: %s, skip", cs.BaseURL, err)
-				continue
-			}
-
-			msg = fmt.Sprintf("service [%s] available through: %s", k, cs.BaseURL)
-		} else {
-			// each ConnSetting struct is used for
-			//   1) doing connection;
-			//   2) getting connection properties to define service-specific parameters.
-			pgconfig, err := pgx.ParseConfig(cs.Conninfo)
-			if err != nil {
-				log.Warnf("%s: %s, skip", cs.Conninfo, err)
-				continue
-			}
-
-			// Check connection using created *ConnConfig, go next if connection failed.
-			db, err := store.NewWithConfig(pgconfig)
-			if err != nil {
-				if config.SkipConnErrorMode {
-					log.Warnf("%s@%s:%d/%s: %s", pgconfig.User, pgconfig.Host, pgconfig.Port, pgconfig.Database, err)
-				} else {
-					log.Warnf("%s@%s:%d/%s: %s skip", pgconfig.User, pgconfig.Host, pgconfig.Port, pgconfig.Database, err)
-					continue
+			if cs.ServiceType == model.ServiceTypePatroni {
+				err := attemptRequest(cs.BaseURL)
+				if err != nil {
+					log.Warnf("%s: %s, skip", cs.BaseURL, err)
+					return
 				}
+
+				msg = fmt.Sprintf("service [%s] available through: %s", k, cs.BaseURL)
 			} else {
-				msg = fmt.Sprintf("service [%s] available through: %s@%s:%d/%s", k, pgconfig.User, pgconfig.Host, pgconfig.Port, pgconfig.Database)
-				db.Close()
+				// each ConnSetting struct is used for
+				//   1) doing connection;
+				//   2) getting connection properties to define service-specific parameters.
+				pgconfig, err := pgx.ParseConfig(cs.Conninfo)
+				if err != nil {
+					log.Warnf("%s: %s, skip", cs.Conninfo, err)
+					return
+				}
+				if config.ConnTimeout > 0 {
+					pgconfig.ConnectTimeout = time.Duration(config.ConnTimeout) * time.Second
+				}
+
+				// Check connection using created *ConnConfig, go next if connection failed.
+				db, err := store.NewWithConfig(pgconfig)
+				if err != nil {
+					if config.SkipConnErrorMode {
+						log.Warnf("%s@%s:%d/%s: %s", pgconfig.User, pgconfig.Host, pgconfig.Port, pgconfig.Database, err)
+					} else {
+						log.Warnf("%s@%s:%d/%s: %s skip", pgconfig.User, pgconfig.Host, pgconfig.Port, pgconfig.Database, err)
+						return
+					}
+				} else {
+					msg = fmt.Sprintf("service [%s] available through: %s@%s:%d/%s", k, pgconfig.User, pgconfig.Host, pgconfig.Port, pgconfig.Database)
+					db.Close()
+				}
 			}
-		}
 
-		// Create 'Service' struct with service-related properties and add it to service repo.
-		s := Service{
-			ServiceID:    k,
-			ConnSettings: cs,
-			Collector:    nil,
-		}
-		if config.ConstLabels != nil && (*config.ConstLabels)[k] != nil {
-			s.ConstLabels = (*config.ConstLabels)[k]
-		}
+			// Create 'Service' struct with service-related properties and add it to service repo.
+			s := Service{
+				ServiceID:    k,
+				ConnSettings: cs,
+				Collector:    nil,
+			}
+			if config.ConstLabels != nil && (*config.ConstLabels)[k] != nil {
+				s.ConstLabels = (*config.ConstLabels)[k]
+			}
 
-		// Use entry key as ServiceID unique identifier.
-		repo.addService(s)
-
-		log.Infof("registered new service [%s]", s.ServiceID)
-
-		log.Debugln(msg)
+			// Use entry key as ServiceID unique identifier.
+			repo.addService(s)
+			log.Infof("registered new service [%s]", s.ServiceID)
+			log.Debugln(msg)
+		}()
 	}
+	wg.Wait()
 }
 
 // setupServices attaches metrics exporters to the services in the repo.

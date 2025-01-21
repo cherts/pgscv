@@ -32,6 +32,7 @@ func Start(ctx context.Context, config *Config) error {
 		CollectTopIndex:    config.CollectTopIndex,
 		CollectTopQuery:    config.CollectTopQuery,
 		SkipConnErrorMode:  config.SkipConnErrorMode,
+		ConnTimeout:        config.ConnTimeout,
 	}
 
 	if len(config.ServicesConnsSettings) == 0 && config.DiscoveryServices == nil {
