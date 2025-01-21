@@ -9,6 +9,7 @@ no_track_mode: false
 #collect_top_table: 10
 #collect_top_index: 10
 skip_conn_error_mode: true
+url_prefix: http://pgscv:9890
 services:
   "postgres12":
     service_type: "postgres"

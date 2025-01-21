@@ -24,7 +24,7 @@ else
 fi
 
 echo "Stopping all container via docker-compose, please waiting..."
-${DC_BIN} down >/dev/null 2>&1
+${DC_BIN} down --volumes >/dev/null 2>&1
 if [ $? -eq 0 ]; then
 	echo "Remove grafana data..."
 	rm -rf ${SCRIPT_DIR}/grafana/data/* >/dev/null 2>&1
