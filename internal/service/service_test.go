@@ -38,7 +38,7 @@ func TestRepository_getServiceIDs(t *testing.T) {
 	r.addService(s2)
 	r.addService(s3)
 
-	ids := r.getServiceIDs()
+	ids := r.GetServiceIDs()
 	assert.Equal(t, 3, len(ids))
 
 	contains := func(ss []string, s string) bool {

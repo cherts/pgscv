@@ -41,7 +41,7 @@ func Test_runMetricsListener(t *testing.T) {
 		ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
 		defer cancel()
 
-		err := runMetricsListener(ctx, config)
+		err := runMetricsListener(ctx, config, nil)
 		assert.NoError(t, err)
 		wg.Done()
 	}()

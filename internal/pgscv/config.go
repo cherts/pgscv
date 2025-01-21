@@ -41,6 +41,7 @@ type Config struct {
 	CollectTopIndex       int                      `yaml:"collect_top_index"`    // Limit elements on Indexes collector
 	CollectTopQuery       int                      `yaml:"collect_top_query"`    // Limit elements on Statements collector
 	SkipConnErrorMode     bool                     `yaml:"skip_conn_error_mode"` // Skipping connection errors and creating a Service instance.
+	URLPrefix             string                   `yaml:"url_prefix"`           // Url prefix
 }
 
 // NewConfig creates new config based on config file or return default config if config file is not specified.
@@ -112,6 +113,9 @@ func NewConfig(configFilePath string) (*Config, error) {
 		}
 		if configFromEnv.SkipConnErrorMode {
 			configFromFile.SkipConnErrorMode = configFromEnv.SkipConnErrorMode
+		}
+		if configFromEnv.URLPrefix != "" {
+			configFromFile.URLPrefix = configFromEnv.URLPrefix
 		}
 		return configFromFile, nil
 	}
@@ -427,6 +431,8 @@ func newConfigFromEnv() (*Config, error) {
 			config.CollectTopIndex = collectTopIndex
 		case "PGSCV_SKIP_CONN_ERROR_MODE":
 			config.SkipConnErrorMode = toBool(value)
+		case "PGSCV_URL_PREFIX":
+			config.URLPrefix = value
 		}
 	}
 	return config, nil

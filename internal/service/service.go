@@ -59,12 +59,14 @@ type Collector interface {
 type Repository struct {
 	sync.RWMutex                    // protect concurrent access
 	Services     map[string]Service // service repo store
+	Registries   map[string]*prometheus.Registry
 }
 
 // NewRepository creates new services repository.
 func NewRepository() *Repository {
 	return &Repository{
-		Services: make(map[string]Service),
+		Services:   make(map[string]Service),
+		Registries: make(map[string]*prometheus.Registry),
 	}
 }
 
@@ -89,6 +91,23 @@ func (repo *Repository) addService(s Service) {
 	repo.Unlock()
 }
 
+func (repo *Repository) addRegistry(serviceID string, r *prometheus.Registry) {
+	repo.Lock()
+	repo.Registries[serviceID] = r
+	repo.Unlock()
+}
+
+// GetRegistry returns registry with specified serviceID
+func (repo *Repository) GetRegistry(serviceID string) *prometheus.Registry {
+	repo.RLock()
+	r, ok := repo.Registries[serviceID]
+	repo.RUnlock()
+	if !ok {
+		return nil
+	}
+	return r
+}
+
 // getService returns the service from repo with specified ID.
 func (repo *Repository) getService(id string) Service {
 	repo.RLock()
@@ -105,8 +124,8 @@ func (repo *Repository) totalServices() int {
 	return size
 }
 
-// getServiceIDs returns slice of services' IDs in the repo.
-func (repo *Repository) getServiceIDs() []string {
+// GetServiceIDs returns slice of services' IDs in the repo.
+func (repo *Repository) GetServiceIDs() []string {
 	var serviceIDs = make([]string, 0, repo.totalServices())
 	repo.RLock()
 	for i := range repo.Services {
@@ -141,7 +160,6 @@ func (repo *Repository) addServicesFromConfig(config Config) {
 				log.Warnf("%s: %s, skip", cs.BaseURL, err)
 				continue
 			}
-
 			msg = fmt.Sprintf("service [%s] available through: %s", k, cs.BaseURL)
 		} else {
 			// each ConnSetting struct is used for
@@ -188,7 +206,7 @@ func (repo *Repository) addServicesFromConfig(config Config) {
 func (repo *Repository) setupServices(config Config) error {
 	log.Debug("config: setting up services")
 
-	for _, id := range repo.getServiceIDs() {
+	for _, id := range repo.GetServiceIDs() {
 		var service = repo.getService(id)
 		if service.Collector == nil {
 			factories := collector.Factories{}
@@ -228,6 +246,10 @@ func (repo *Repository) setupServices(config Config) error {
 
 			// Put updated service into repo.
 			repo.addService(service)
+			registry := prometheus.NewRegistry()
+			registry.MustRegister(service.Collector)
+			repo.addRegistry(service.ServiceID, registry)
+
 			log.Debugf("service configured [%s]", id)
 		}
 	}
