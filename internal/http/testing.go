@@ -11,7 +11,7 @@ import (
 
 // TestServer create http test server
 func TestServer(t *testing.T, code int, response string) *httptest.Server {
-	return httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
+	return httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, _ *http.Request) {
 		if code == http.StatusOK {
 			if response != "" {
 				_, err := fmt.Fprint(rw, response)
