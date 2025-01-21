@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/cherts/pgscv/internal/log"
-	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
 // AuthConfig defines configuration settings for authentication.
@@ -56,16 +55,19 @@ type Server struct {
 }
 
 // NewServer creates new HTTP server instance.
-func NewServer(cfg ServerConfig) *Server {
+func NewServer(cfg ServerConfig,
+	handlerMetrics func(http.ResponseWriter, *http.Request),
+	targetsMetrics func(http.ResponseWriter, *http.Request),
+) *Server {
 	mux := http.NewServeMux()
 
-	mux.Handle("/", handleRoot())
-
+	mux.HandleFunc("/", handleRoot())
 	if cfg.EnableAuth {
-		mux.Handle("/metrics", basicAuth(cfg.AuthConfig, promhttp.Handler()))
+		mux.HandleFunc("/metrics", basicAuth(cfg.AuthConfig, handlerMetrics))
 	} else {
-		mux.Handle("/metrics", promhttp.Handler())
+		mux.HandleFunc("/metrics", handlerMetrics)
 	}
+	mux.HandleFunc("/targets", targetsMetrics)
 
 	return &Server{
 		config: cfg,
@@ -91,12 +93,13 @@ func (s *Server) Serve() error {
 }
 
 // handleRoot defines handler for '/' endpoint.
-func handleRoot() http.Handler {
+func handleRoot() http.HandlerFunc {
 	const htmlTemplate = `<html>
 <head><title>pgSCV / PostgreSQL metrics collector</title></head>
 <body>
 pgSCV / PostgreSQL metrics collector, for more info visit <a href="https://github.com/cherts/pgscv">Github</a> page.
-<p><a href="/metrics">Metrics</a></p>
+<p><a href="/metrics">Metrics</a> (add ?target=service_id, to get metrics for one service)</p>
+<p><a href="/targets">Targets</a></p>
 </body>
 </html>
 `
@@ -109,8 +112,7 @@ pgSCV / PostgreSQL metrics collector, for more info visit <a href="https://githu
 	})
 }
 
-// basicAuth is a middleware for basic authentication.
-func basicAuth(cfg AuthConfig, next http.Handler) http.Handler {
+func basicAuth(cfg AuthConfig, next http.HandlerFunc) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		username, password, ok := r.BasicAuth()
 		if ok {

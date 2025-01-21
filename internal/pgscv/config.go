@@ -43,7 +43,8 @@ type Config struct {
 	SkipConnErrorMode     bool                     `yaml:"skip_conn_error_mode"` // Skipping connection errors and creating a Service instance.
 	DiscoveryConfig       *interface{}             `yaml:"discovery"`
 	DiscoveryServices     *map[string]sd.Discovery
-	ConnTimeout           int `yaml:"conn_timeout"`
+	ConnTimeout           int    `yaml:"conn_timeout"`
+	URLPrefix             string `yaml:"url_prefix"` // Url prefix
 }
 
 // NewConfig creates new config based on config file or return default config if config file is not specified.
@@ -118,6 +119,9 @@ func NewConfig(configFilePath string) (*Config, error) {
 		}
 		if configFromEnv.ConnTimeout > 0 {
 			configFromFile.ConnTimeout = configFromEnv.ConnTimeout
+		}
+		if configFromEnv.URLPrefix != "" {
+			configFromFile.URLPrefix = configFromEnv.URLPrefix
 		}
 		return configFromFile, nil
 	}
@@ -439,6 +443,8 @@ func newConfigFromEnv() (*Config, error) {
 				log.Errorf("invalid setting PGSCV_CONN_TIMEOUT, value '%s': %s", value, err)
 			}
 			config.ConnTimeout = timeout
+		case "PGSCV_URL_PREFIX":
+			config.URLPrefix = value
 		}
 	}
 	return config, nil
