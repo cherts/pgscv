@@ -2,6 +2,7 @@
 name: Default
 
 on:
+  workflow_dispatch:
   push:
     paths:
       - "cmd/**"
