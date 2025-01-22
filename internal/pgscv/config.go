@@ -443,7 +443,7 @@ func newConfigFromEnv() (*Config, error) {
 		case "PGSCV_CONN_TIMEOUT":
 			timeout, err := strconv.Atoi(value)
 			if err != nil {
-				log.Errorf("invalid setting PGSCV_CONN_TIMEOUT, value '%s': %s", value, err)
+				return nil, fmt.Errorf("invalid setting PGSCV_CONN_TIMEOUT, value '%s': %s", value, err)
 			}
 			config.ConnTimeout = timeout
 		case "PGSCV_URL_PREFIX":
