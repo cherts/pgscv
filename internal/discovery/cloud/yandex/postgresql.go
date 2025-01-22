@@ -37,7 +37,7 @@ type Cluster struct {
 
 // GetPostgreSQLClusters get a filtered list of clusters and their databases from Yandex cloud API
 func (sdk *SDK) GetPostgreSQLClusters(ctx context.Context, folderID string, filter []Filter) ([]Cluster, error) {
-	log.Debug("[Yandex.Cloud SD] GetPostgreSQLClusters")
+	log.Debug("[Yandex.Cloud SD] Init SDK...")
 	yandexSdk, err := sdk.Build(ctx)
 	if err != nil {
 		log.Errorf("[Yandex.Cloud SD] Failed to init SDK, error: %v", err)
@@ -57,14 +57,14 @@ func (sdk *SDK) GetPostgreSQLClusters(ctx context.Context, folderID string, filt
 			log.Debugf("[Yandex.Cloud SD] Cluster '%s' is not running, skipped.", cluster.Name)
 			continue
 		}
-		log.Debugf("[Yandex.Cloud SD] Found cluster '%s'.", cluster.Name)
+		log.Debugf("[Yandex.Cloud SD] Found cluster '%s'", cluster.Name)
 		matched := make([]int, 0)
 		for c, filterCluster := range filter {
 			if !filterCluster.MatchName(cluster.Name) {
-				log.Debugf("[Yandex.Cloud SD] Found not match for cluster '%s' in filter", cluster.Name)
+				log.Debugf("[Yandex.Cloud SD] Cluster '%s' not matched in filters, skipped.", cluster.Name)
 				continue
 			}
-			log.Debugf("[Yandex.Cloud SD] Found match for cluster '%s' in filter.", cluster.Name)
+			log.Debugf("[Yandex.Cloud SD] Cluster '%s' matched in filters.", cluster.Name)
 			matched = append(matched, c)
 		}
 		if len(matched) == 0 {

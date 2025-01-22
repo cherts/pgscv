@@ -69,7 +69,7 @@ func (yd *YandexDiscovery) Unsubscribe(subscriberID string) error {
 func (yd *YandexDiscovery) Subscribe(subscriberID string, addService AddServiceFunc, removeService RemoveServiceFunc) error {
 	yd.Lock()
 	defer yd.Unlock()
-	log.Debugf("[Yandex.Cloud SD] Subscribe %s", subscriberID)
+	log.Debugf("[Yandex.Cloud SD] Init subscribe '%s'", subscriberID)
 	yd.subscribers[subscriberID] = subscriber{AddService: addService, RemoveService: removeService, syncedServices: make(map[string]Service), SyncedVersion: make(map[engineIdx]version)}
 	for engineID, e := range yd.engines {
 		e.RLock()
