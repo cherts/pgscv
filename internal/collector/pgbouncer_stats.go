@@ -67,7 +67,7 @@ func NewPgbouncerStatsCollector(constLabels labels, settings model.CollectorSett
 
 // Update method collects statistics, parse it and produces metrics that are sent to Prometheus.
 func (c *pgbouncerStatsCollector) Update(config Config, ch chan<- prometheus.Metric) error {
-	conn, err := store.New(config.ConnString)
+	conn, err := store.New(config.ConnString, config.ConnTimeout)
 	if err != nil {
 		ch <- c.up.newConstMetric(0)
 		return err

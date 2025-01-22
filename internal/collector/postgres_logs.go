@@ -123,7 +123,7 @@ func (c *postgresLogsCollector) Update(config Config, ch chan<- prometheus.Metri
 	}
 
 	// Notify log collector goroutine if logfile has been changed.
-	logfile, err := queryCurrentLogfile(config.ConnString)
+	logfile, err := queryCurrentLogfile(config.ConnString, config.ConnTimeout)
 	if err != nil {
 		return err
 	}
@@ -244,8 +244,8 @@ func tailCollect(ctx context.Context, logfile string, init bool, wg *sync.WaitGr
 }
 
 // queryCurrentLogfile returns path to logfile used by database.
-func queryCurrentLogfile(conninfo string) (string, error) {
-	conn, err := store.New(conninfo)
+func queryCurrentLogfile(conninfo string, connTimeout int) (string, error) {
+	conn, err := store.New(conninfo, connTimeout)
 	if err != nil {
 		return "", err
 	}

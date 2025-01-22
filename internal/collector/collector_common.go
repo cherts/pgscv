@@ -234,7 +234,7 @@ func updateAllDescSets(config Config, descSets []typedDescSet, ch chan<- prometh
 
 // updateFromMultipleDatabases method visits all requested databases and collects necessary metrics.
 func updateFromMultipleDatabases(config Config, descSets []typedDescSet, ch chan<- prometheus.Metric) error {
-	conn, err := store.New(config.ConnString)
+	conn, err := store.New(config.ConnString, config.ConnTimeout)
 	if err != nil {
 		return err
 	}
@@ -281,7 +281,7 @@ func updateFromMultipleDatabases(config Config, descSets []typedDescSet, ch chan
 
 // updateFromSingleDatabase method visit only one database and collect necessary metrics.
 func updateFromSingleDatabase(config Config, descSets []typedDescSet, ch chan<- prometheus.Metric) error {
-	conn, err := store.New(config.ConnString)
+	conn, err := store.New(config.ConnString, config.ConnTimeout)
 	if err != nil {
 		return err
 	}

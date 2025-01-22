@@ -198,8 +198,7 @@ func (n PgscvCollector) Collect(out chan<- prometheus.Metric) {
 	if n.Config.ServiceType == "postgres" && n.Config.postgresServiceConfig.blockSize == 0 {
 		err := n.Config.FillPostgresServiceConfig(n.Config.ConnTimeout)
 		if err != nil {
-			log.Errorf("update service config failed: %s, skip collect", err.Error())
-			return
+			log.Errorf("update service config failed: %s", err.Error())
 		}
 	}
 

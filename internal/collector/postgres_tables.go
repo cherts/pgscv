@@ -216,7 +216,7 @@ func NewPostgresTablesCollector(constLabels labels, settings model.CollectorSett
 func (c *postgresTablesCollector) Update(config Config, ch chan<- prometheus.Metric) error {
 	var err error
 
-	conn, err := store.New(config.ConnString)
+	conn, err := store.New(config.ConnString, config.ConnTimeout)
 	if err != nil {
 		return err
 	}

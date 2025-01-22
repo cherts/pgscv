@@ -58,7 +58,7 @@ func NewPostgresLocksCollector(constLabels labels, settings model.CollectorSetti
 
 // Update method collects locks metrics.
 func (c *postgresLocksCollector) Update(config Config, ch chan<- prometheus.Metric) error {
-	conn, err := store.New(config.ConnString)
+	conn, err := store.New(config.ConnString, config.ConnTimeout)
 	if err != nil {
 		return err
 	}

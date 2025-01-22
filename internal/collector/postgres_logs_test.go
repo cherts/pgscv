@@ -140,11 +140,11 @@ func Test_tailCollect(t *testing.T) {
 }
 
 func Test_queryCurrentLogfile(t *testing.T) {
-	got, err := queryCurrentLogfile(store.TestPostgresConnStr)
+	got, err := queryCurrentLogfile(store.TestPostgresConnStr, 0)
 	assert.NoError(t, err)
 	assert.NotEqual(t, got, "")
 
-	got, err = queryCurrentLogfile("host=127.0.0.1 port=1 user=invalid dbname=invalid")
+	got, err = queryCurrentLogfile("host=127.0.0.1 port=1 user=invalid dbname=invalid", 0)
 	assert.Error(t, err)
 	assert.Equal(t, got, "")
 }
