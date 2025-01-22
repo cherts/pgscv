@@ -2,6 +2,7 @@ package yandex
 
 import (
 	"context"
+
 	"github.com/cherts/pgscv/internal/log"
 	"github.com/yandex-cloud/go-genproto/yandex/cloud/mdb/postgresql/v1"
 )
@@ -36,10 +37,10 @@ type Cluster struct {
 
 // GetPostgreSQLClusters get a filtered list of clusters and their databases from Yandex cloud API
 func (sdk *SDK) GetPostgreSQLClusters(ctx context.Context, folderID string, filter []Filter) ([]Cluster, error) {
-	log.Debug("[Service Discovery] GetPostgreSQLClusters")
+	log.Debug("[Yandex.Cloud SD] GetPostgreSQLClusters")
 	yandexSdk, err := sdk.Build(ctx)
 	if err != nil {
-		log.Errorf("[Service Discovery] GetPostgreSQLClusters failed: %v", err)
+		log.Errorf("[Yandex.Cloud SD] Failed to init SDK, error: %v", err)
 		return nil, err
 	}
 
@@ -47,24 +48,23 @@ func (sdk *SDK) GetPostgreSQLClusters(ctx context.Context, folderID string, filt
 	req.FolderId = folderID
 	resp, err := yandexSdk.MDB().PostgreSQL().Cluster().List(ctx, &req)
 	if err != nil {
-		log.Errorf("[Service Discovery] GetPostgreSQLClusters failed: %v", err)
+		log.Errorf("[Yandex.Cloud SD] Failed to get cluster list, error: %v", err)
 		return nil, err
 	}
 	var clusters []Cluster
 	for _, cluster := range resp.Clusters {
 		if !(cluster.Status == postgresql.Cluster_RUNNING || cluster.Status == postgresql.Cluster_UPDATING) {
-			log.Debugf("[Service Discovery] GetPostgreSQLClusters cluster %s is not running", cluster.Name)
+			log.Debugf("[Yandex.Cloud SD] Cluster '%s' is not running, skipped.", cluster.Name)
 			continue
-		} else {
-			log.Debugf("[Service Discovery] GetPostgreSQLClusters found cluster: %s", cluster.Name)
 		}
+		log.Debugf("[Yandex.Cloud SD] Found cluster '%s'.", cluster.Name)
 		matched := make([]int, 0)
 		for c, filterCluster := range filter {
 			if !filterCluster.MatchName(cluster.Name) {
-				log.Debugf("[Service Discovery] GetPostgreSQLClusters filter cluster %s not match", cluster.Name)
+				log.Debugf("[Yandex.Cloud SD] Found not match for cluster '%s' in filter", cluster.Name)
 				continue
 			}
-			log.Debugf("[Service Discovery] GetPostgreSQLClusters filter cluster %s match", cluster.Name)
+			log.Debugf("[Yandex.Cloud SD] Found match for cluster '%s' in filter.", cluster.Name)
 			matched = append(matched, c)
 		}
 		if len(matched) == 0 {
@@ -86,7 +86,7 @@ func (sdk *SDK) GetPostgreSQLClusters(ctx context.Context, folderID string, filt
 				Health: host.Health,
 			})
 		}
-		log.Debugf("[Service Discovery] GetPostgreSQLClusters found %d hosts", len(hosts))
+		log.Debugf("[Yandex.Cloud SD] In cluster '%s' found '%d' hosts.", cluster.Name, len(hosts))
 
 		dbResp, err := yandexSdk.MDB().PostgreSQL().Database().List(ctx,
 			&postgresql.ListDatabasesRequest{ClusterId: cluster.Id})
@@ -110,10 +110,10 @@ func (sdk *SDK) GetPostgreSQLClusters(ctx context.Context, folderID string, filt
 			}
 		}
 		if len(databases) == 0 {
-			log.Debugf("[Service Discovery] GetPostgreSQLClusters cluster %s not found databases", cluster.Name)
+			log.Debugf("[Yandex.Cloud SD] No databases found in cluster '%s'.", cluster.Name)
 			continue
 		}
-		log.Debugf("[Service Discovery] GetPostgreSQLClusters cluster %s found %d databases", cluster.Name, len(databases))
+		log.Debugf("[Yandex.Cloud SD] In cluster '%s' found '%d' databases.", cluster.Name, len(databases))
 		clusters = append(clusters, Cluster{
 			ID:               cluster.Id,
 			Name:             cluster.Name,

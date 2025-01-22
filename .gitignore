@@ -32,6 +32,7 @@ Temporary Items
 .nfs*
 # VSCode settings
 .vscode
+.vs
 # Debug
 debug_run.*
 # Bin
