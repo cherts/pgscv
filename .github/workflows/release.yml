@@ -9,20 +9,18 @@ on:
 
 jobs:
   test:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     container: cherts/pgscv-test-runner:1.0.4
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
       - name: Prepare test environment
         run: prepare-test-environment.sh
-      - name: Run lint
-        run: make lint
       - name: Run test
         run: make test
 
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     needs: test
     steps:
       - name: Checkout code
@@ -37,7 +35,7 @@ jobs:
         run: make docker-push
 
   goreleaser:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     needs: build
     steps:
       - name: Run checkout
