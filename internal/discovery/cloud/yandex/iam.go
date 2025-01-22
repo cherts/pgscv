@@ -3,14 +3,15 @@ package yandex
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/cherts/pgscv/internal/log"
-	"github.com/golang-jwt/jwt/v4"
 	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/cherts/pgscv/internal/log"
+	"github.com/golang-jwt/jwt/v4"
 )
 
 // authorizedKey describe authorized key json structure
@@ -40,7 +41,7 @@ func newIAMToken(jsonFilePath string) (*tokenIAM, error) {
 }
 
 func (token *tokenIAM) GetToken() (*string, error) {
-	log.Debug("[Service Discovery] Getting IAM token")
+	log.Debug("[SD] Getting IAM token...")
 	if token.IsExpired() {
 		err := token.Renew()
 		if err != nil {
@@ -67,7 +68,7 @@ func (token *tokenIAM) IsExpired() bool {
 }
 
 func (token *tokenIAM) Renew() error {
-	log.Debug("[Service Discovery] Renewing IAM token")
+	log.Debug("[SD] Renewing IAM token...")
 	token.Lock()
 	defer token.Unlock()
 	jwtToken, err := token.getJWTToken()
@@ -75,30 +76,30 @@ func (token *tokenIAM) Renew() error {
 		return err
 	}
 
-	//see https://yandex.cloud/ru/docs/iam/api-ref/IamToken/create
+	// See https://yandex.cloud/ru/docs/iam/api-ref/IamToken/create
 	resp, err := http.Post(
 		"https://iam.api.cloud.yandex.net/iam/v1/tokens",
 		"application/json",
 		strings.NewReader(fmt.Sprintf(`{"jwt":"%s"}`, *jwtToken)),
 	)
 	if err != nil {
-		log.Errorf("[Service Discovery] IAM token renew error %s", err.Error())
+		log.Errorf("[SD] Failed to renew IAM token, error: %s", err.Error())
 		return err
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode != http.StatusOK {
-		log.Errorf("[Service Discovery] IAM token renew responce returned unexpected status code: %d", resp.StatusCode)
+		log.Errorf("[SD] Failed to renew IAM token, unexpected status code: %d", resp.StatusCode)
 		return fmt.Errorf("unexpected status code: %d", resp.StatusCode)
 	}
 	if err := json.NewDecoder(resp.Body).Decode(token); err != nil {
-		log.Errorf("[Service Discovery] IAM token renew error: %s", err.Error())
+		log.Errorf("[SD] Failed to renew IAM token, decode error: %s", err.Error())
 		return err
 	}
 	return nil
 }
 
 func (token *tokenIAM) getJWTToken() (*string, error) {
-	log.Debug("[Service Discovery] getJWTToken")
+	log.Debug("[SD] Getting JWT token...")
 	rsaPrivateKey, err := jwt.ParseRSAPrivateKeyFromPEM([]byte(token.key.PrivateKey))
 	if err != nil {
 		return nil, err
@@ -114,22 +115,22 @@ func (token *tokenIAM) getJWTToken() (*string, error) {
 	jwtToken.Header["kid"] = token.key.ID
 	tokenString, err := jwtToken.SignedString(rsaPrivateKey)
 	if err != nil {
-		log.Errorf("[Service Discovery] getJWTToken error %s", err.Error())
+		log.Errorf("[SD] Failed to get JWT token, error: %s", err.Error())
 		return nil, err
 	}
 	return &tokenString, nil
 }
 
 func (token *tokenIAM) loadAuthorizedKey(filePath string) error {
-	log.Debugf("[Service Discovery] loadAuthorizedKey from path %s", filePath)
+	log.Debugf("[SD] Loading authorized key from path '%s'", filePath)
 	data, err := os.ReadFile(filepath.Clean(filePath))
 	if err != nil {
-		log.Errorf("[Service Discovery] loadAuthorizedKey error %s", err.Error())
+		log.Errorf("[SD] Failed to load authorized key, error: %s", err.Error())
 		return err
 	}
 	err = json.Unmarshal(data, &token.key)
 	if err != nil {
-		log.Errorf("[Service Discovery] loadAuthorizedKey error %s", err.Error())
+		log.Errorf("[SD] Failed to parse authorized key, JSON parse error: %s", err.Error())
 		return err
 	}
 	return nil

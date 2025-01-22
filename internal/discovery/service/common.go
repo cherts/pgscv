@@ -4,6 +4,7 @@ package service
 import (
 	"context"
 	"fmt"
+
 	"github.com/cherts/pgscv/internal/log"
 	"gopkg.in/yaml.v2"
 )
@@ -45,7 +46,7 @@ type sdConfig struct {
 
 // Instantiate returns initialized service discoverers (converting abstract configs to determined structures)
 func Instantiate(discoveryConfig config) (*map[string]Discovery, error) {
-	log.Debug("[Service Discovery] Instantiating")
+	log.Debug("[SD] Initializing discovery services...")
 	var config = make(map[string]sdConfig)
 	var out, err = yaml.Marshal(discoveryConfig)
 	if err != nil {
@@ -57,18 +58,18 @@ func Instantiate(discoveryConfig config) (*map[string]Discovery, error) {
 	}
 	var services = make(map[string]Discovery)
 	for id, srv := range config {
-		log.Debugf("[Service Discovery] found config %s", srv.Type)
+		log.Debugf("[SD] Found service discovery type '%s'", srv.Type)
 		switch srv.Type {
 		case yandexMDB:
 			services[id] = &YandexDiscovery{subscribers: make(map[string]subscriber)}
 		default:
-			err := fmt.Errorf("[Service Discovery] unknown service discovery type: %s", srv.Type)
+			err := fmt.Errorf("[SD] Unknown service discovery type '%s'", srv.Type)
 			log.Debug(err.Error())
 			return nil, err
 		}
 		err := services[id].Init(srv.Config)
 		if err != nil {
-			log.Errorf("[Service Discovery] Error initializing %s: %s", id, err.Error())
+			log.Errorf("[SD] Failed to initializing discovery service '%s', error: %s", id, err.Error())
 			return nil, err
 		}
 	}

@@ -3,12 +3,13 @@ package service
 import (
 	"context"
 	"fmt"
-	"github.com/cherts/pgscv/internal/discovery/cloud/yandex"
-	"github.com/cherts/pgscv/internal/log"
 	"maps"
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/cherts/pgscv/internal/discovery/cloud/yandex"
+	"github.com/cherts/pgscv/internal/log"
 )
 
 type clusterDSN struct {
@@ -42,7 +43,7 @@ func (ye *yandexEngine) Start(ctx context.Context) error {
 
 			clusters, err := ye.sdk.GetPostgreSQLClusters(ctx, folderID, filter)
 			if err != nil {
-				log.Errorf("[Service Discovery] Error getting clusters: %v, shutting down yandex discovery engine", err)
+				log.Errorf("[Yandex.Cloud SD] Failed to get cluster list, shutting down Yandex Discovery Engine, error: %v", err)
 				cancel()
 				return
 			}
@@ -75,7 +76,7 @@ func (ye *yandexEngine) Start(ctx context.Context) error {
 			ye.Unlock()
 			select {
 			case <-ctx.Done():
-				log.Debug("context canceled, shutting down yandex discovery engine")
+				log.Debug("[Yandex.Cloud SD] Context canceled, shutting down Yandex Discovery Engine.")
 				cancel()
 				return
 			default:

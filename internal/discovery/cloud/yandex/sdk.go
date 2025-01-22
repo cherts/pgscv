@@ -3,9 +3,10 @@ package yandex
 
 import (
 	"context"
+	"sync"
+
 	"github.com/cherts/pgscv/internal/log"
 	ycsdk "github.com/yandex-cloud/go-sdk"
-	"sync"
 )
 
 // SDK struct with limited lifespan token
@@ -16,7 +17,7 @@ type SDK struct {
 
 // NewSDK load authorized key from json file and return pointer on SDK structure
 func NewSDK(jsonFilePath string) (*SDK, error) {
-	log.Debug("[Service Discovery] NewSDK")
+	log.Debug("[SD] Loading authorized key from json file...")
 	token, err := newIAMToken(jsonFilePath)
 	if err != nil {
 		return nil, err
@@ -32,12 +33,12 @@ func (sdk *SDK) Build(ctx context.Context) (*ycsdk.SDK, error) {
 	if err != nil {
 		return nil, err
 	}
-
+	log.Debug("[SD] Build Yandex.Cloud SDK...")
 	ysdk, err := ycsdk.Build(ctx, ycsdk.Config{
 		Credentials: ycsdk.NewIAMTokenCredentials(*t),
 	})
 	if err != nil {
-		log.Errorf("[Service Discovery] Build error: %v", err)
+		log.Errorf("[SD] Failed to build Yandex.Cloud SDK, error: %v", err)
 		return nil, err
 	}
 	return ysdk, nil

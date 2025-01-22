@@ -2,13 +2,14 @@ package service
 
 import (
 	"context"
+	"maps"
+	"sync"
+	"time"
+
 	"github.com/cherts/pgscv/internal/discovery/cloud/yandex"
 	"github.com/cherts/pgscv/internal/discovery/mapops"
 	"github.com/cherts/pgscv/internal/log"
 	"gopkg.in/yaml.v2"
-	"maps"
-	"sync"
-	"time"
 )
 
 type cluster struct {
@@ -68,7 +69,7 @@ func (yd *YandexDiscovery) Unsubscribe(subscriberID string) error {
 func (yd *YandexDiscovery) Subscribe(subscriberID string, addService AddServiceFunc, removeService RemoveServiceFunc) error {
 	yd.Lock()
 	defer yd.Unlock()
-	log.Debugf("[Service Discovery] Subscribe %s", subscriberID)
+	log.Debugf("[Yandex.Cloud SD] Subscribe %s", subscriberID)
 	yd.subscribers[subscriberID] = subscriber{AddService: addService, RemoveService: removeService, syncedServices: make(map[string]Service), SyncedVersion: make(map[engineIdx]version)}
 	for engineID, e := range yd.engines {
 		e.RLock()
@@ -83,7 +84,7 @@ func (yd *YandexDiscovery) Subscribe(subscriberID string, addService AddServiceF
 	if len(yd.subscribers[subscriberID].syncedServices) > 0 {
 		err := addService(yd.subscribers[subscriberID].syncedServices)
 		if err != nil {
-			log.Errorf("[Service Discovery] Error adding synced services: %v", err)
+			log.Errorf("[Yandex.Cloud SD] Error adding synced services: %v", err)
 		}
 		return err
 	}
@@ -94,7 +95,7 @@ func (yd *YandexDiscovery) Subscribe(subscriberID string, addService AddServiceF
 func (yd *YandexDiscovery) Sync() error {
 	yd.Lock()
 	defer yd.Unlock()
-	log.Debug("[Service Discovery] Sync")
+	log.Debug("[Yandex.Cloud SD] Sync...")
 	for _, subscriber := range yd.subscribers {
 		needSync := false
 		engineServices := make(map[string]clusterDSN)
@@ -129,14 +130,14 @@ func (yd *YandexDiscovery) Sync() error {
 			}
 		}
 		if len(removeSvc) > 0 {
-			log.Debugf("[Service Discovery] removing %d services from subscriber", len(removeSvc))
+			log.Debugf("[Yandex.Cloud SD] Removing '%d' services from subscriber.", len(removeSvc))
 			err := subscriber.RemoveService(removeSvc)
 			if err != nil {
 				return err
 			}
 		}
 		if len(appendSvc) > 0 {
-			log.Debugf("[Service Discovery] appending %d services to subscriber", len(appendSvc))
+			log.Debugf("[Service Discovery] Appending '%d' services to subscriber.", len(appendSvc))
 			err := subscriber.AddService(appendSvc)
 			if err != nil {
 				return err
@@ -148,9 +149,10 @@ func (yd *YandexDiscovery) Sync() error {
 
 // Init implementation Init method of Discovery interface
 func (yd *YandexDiscovery) Init(cfg config) error {
+	log.Debug("[Yandex.Cloud SD] Init discovery config...")
 	c, err := ensureConfigYandexMDB(cfg)
 	if err != nil {
-		log.Errorf("[Service Discovery] Error creating yandex discovery config: %v", err)
+		log.Errorf("[Yandex.Cloud SD] Failed to init discovery config, error: %v", err)
 		return err
 	}
 	yd.config = c
@@ -164,13 +166,13 @@ func (yd *YandexDiscovery) Start(ctx context.Context, errCh chan<- error) error 
 	for _, c := range yd.config {
 		sdk, err := yandex.NewSDK(c.AuthorizedKey)
 		if err != nil {
-			log.Errorf("[Service Discovery] Error creating yandex sdk: %v", err)
+			log.Errorf("[Yandex.Cloud SD] Failed to creating Yandex SDK, error: %v", err)
 			return err
 		}
 		var engine = yandexEngine{sdk: sdk, config: c, dsn: make(map[hostDb]clusterDSN)}
 		err = engine.Start(ctx)
 		if err != nil {
-			log.Errorf("[Service Discovery] Error starting yandex engine: %v", err)
+			log.Errorf("[Yandex.Cloud SD] Failed to starting Yandex engine, error: %v", err)
 			return err
 		}
 		yd.engines = append(yd.engines, &engine)
@@ -179,12 +181,12 @@ func (yd *YandexDiscovery) Start(ctx context.Context, errCh chan<- error) error 
 	for {
 		err := yd.Sync()
 		if err != nil {
-			log.Errorf("[Service Discovery] Sync error: %s", err.Error())
+			log.Errorf("[Yandex.Cloud SD] Failed to sync, error: %s", err.Error())
 			errCh <- err
 		}
 		select {
 		case <-ctx.Done():
-			log.Debug("[Service Discovery] context done")
+			log.Debug("[Yandex.Cloud SD] Context done.")
 			return nil
 		default:
 			time.Sleep(10 * time.Second)
