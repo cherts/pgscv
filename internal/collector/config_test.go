@@ -18,7 +18,7 @@ func Test_newPostgresServiceConfig(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			_, err := newPostgresServiceConfig(tc.connStr)
+			_, err := newPostgresServiceConfig(tc.connStr, 0)
 			if tc.valid {
 				assert.NoError(t, err)
 			} else {

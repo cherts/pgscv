@@ -243,63 +243,74 @@ func (repo *Repository) addServicesFromConfig(config Config) {
 // setupServices attaches metrics exporters to the services in the repo.
 func (repo *Repository) setupServices(config Config) error {
 	log.Debug("config: setting up services")
+	sids := repo.GetServiceIDs()
+	wg := sync.WaitGroup{}
+	wg.Add(len(sids))
+	var retErr error
+	m := sync.Mutex{}
 
-	for _, id := range repo.GetServiceIDs() {
-		var service = repo.getService(id)
-		if service.Collector == nil {
-			factories := collector.Factories{}
-			collectorConfig := collector.Config{
-				NoTrackMode:     config.NoTrackMode,
-				ServiceType:     service.ConnSettings.ServiceType,
-				ConnString:      service.ConnSettings.Conninfo,
-				Settings:        config.CollectorsSettings,
-				DatabasesRE:     config.DatabasesRE,
-				CollectTopTable: config.CollectTopTable,
-				CollectTopIndex: config.CollectTopIndex,
-				CollectTopQuery: config.CollectTopQuery,
-			}
-			if config.ConstLabels != nil && (*config.ConstLabels)[id] != nil {
-				collectorConfig.ConstLabels = (*config.ConstLabels)[id]
-			}
-
-			switch service.ConnSettings.ServiceType {
-			case model.ServiceTypeSystem:
-				factories.RegisterSystemCollectors(config.DisabledCollectors)
-			case model.ServiceTypePostgresql:
-				factories.RegisterPostgresCollectors(config.DisabledCollectors)
-				err := collectorConfig.FillPostgresServiceConfig()
-				if err != nil {
-					log.Errorf("update service config failed: %s", err.Error())
+	for _, id := range sids {
+		go func() {
+			defer wg.Done()
+			var service = repo.getService(id)
+			if service.Collector == nil {
+				factories := collector.Factories{}
+				collectorConfig := collector.Config{
+					NoTrackMode:     config.NoTrackMode,
+					ServiceType:     service.ConnSettings.ServiceType,
+					ConnString:      service.ConnSettings.Conninfo,
+					Settings:        config.CollectorsSettings,
+					DatabasesRE:     config.DatabasesRE,
+					CollectTopTable: config.CollectTopTable,
+					CollectTopIndex: config.CollectTopIndex,
+					CollectTopQuery: config.CollectTopQuery,
+					ConnTimeout:     config.ConnTimeout,
 				}
-			case model.ServiceTypePgbouncer:
-				factories.RegisterPgbouncerCollectors(config.DisabledCollectors)
-			case model.ServiceTypePatroni:
-				factories.RegisterPatroniCollectors(config.DisabledCollectors)
-				collectorConfig.BaseURL = service.ConnSettings.BaseURL
-			default:
-				continue
+				if config.ConstLabels != nil && (*config.ConstLabels)[id] != nil {
+					collectorConfig.ConstLabels = (*config.ConstLabels)[id]
+				}
+
+				switch service.ConnSettings.ServiceType {
+				case model.ServiceTypeSystem:
+					factories.RegisterSystemCollectors(config.DisabledCollectors)
+				case model.ServiceTypePostgresql:
+					factories.RegisterPostgresCollectors(config.DisabledCollectors)
+					err := collectorConfig.FillPostgresServiceConfig(config.ConnTimeout)
+					if err != nil {
+						log.Errorf("update service config failed: %s", err.Error())
+					}
+				case model.ServiceTypePgbouncer:
+					factories.RegisterPgbouncerCollectors(config.DisabledCollectors)
+				case model.ServiceTypePatroni:
+					factories.RegisterPatroniCollectors(config.DisabledCollectors)
+					collectorConfig.BaseURL = service.ConnSettings.BaseURL
+				default:
+					return
+				}
+
+				mc, err := collector.NewPgscvCollector(service.ServiceID, factories, collectorConfig)
+				if err != nil {
+					m.Lock()
+					retErr = err
+					m.Unlock()
+				}
+				service.Collector = mc
+
+				// Register collector.
+				prometheus.MustRegister(service.Collector)
+
+				// Put updated service into repo.
+				repo.addService(service)
+				registry := prometheus.NewRegistry()
+				registry.MustRegister(service.Collector)
+				repo.addRegistry(service.ServiceID, registry)
+
+				log.Debugf("service configured [%s]", id)
 			}
-
-			mc, err := collector.NewPgscvCollector(service.ServiceID, factories, collectorConfig)
-			if err != nil {
-				return err
-			}
-			service.Collector = mc
-
-			// Register collector.
-			prometheus.MustRegister(service.Collector)
-
-			// Put updated service into repo.
-			repo.addService(service)
-			registry := prometheus.NewRegistry()
-			registry.MustRegister(service.Collector)
-			repo.addRegistry(service.ServiceID, registry)
-
-			log.Debugf("service configured [%s]", id)
-		}
+		}()
 	}
-
-	return nil
+	wg.Wait()
+	return retErr
 }
 
 // attemptRequest tries to make a real HTTP request using passed URL string.

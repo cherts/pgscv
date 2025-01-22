@@ -277,6 +277,9 @@ func (c *Config) Validate() error {
 	if c.CollectTopIndex > 0 {
 		log.Infof("TopIndex: limit (%d indexes) enabled", c.CollectTopIndex)
 	}
+	if c.ConnTimeout > 0 {
+		log.Infof("ConnTimeout: %d seconds timeout set for connecting to DB", c.ConnTimeout)
+	}
 
 	return nil
 }

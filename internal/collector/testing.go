@@ -42,7 +42,7 @@ func pipeline(t *testing.T, input pipelineInput) {
 		config.DatabasesRE, err = regexp.Compile(".+")
 		assert.NoError(t, err)
 		config.ConnString = "postgres://pgscv@127.0.0.1/postgres"
-		cfg, err := newPostgresServiceConfig(config.ConnString)
+		cfg, err := newPostgresServiceConfig(config.ConnString, 0)
 		assert.NoError(t, err)
 		config.postgresServiceConfig = cfg
 	case model.ServiceTypePgbouncer:

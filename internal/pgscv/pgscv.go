@@ -122,6 +122,7 @@ func subscribeYandex(ds *sd.Discovery, config *Config, serviceRepo *service.Repo
 				CollectTopQuery:    config.CollectTopQuery,
 				SkipConnErrorMode:  config.SkipConnErrorMode,
 				ConstLabels:        &constLabels,
+				ConnTimeout:        config.ConnTimeout,
 			}
 			var cs = make(service.ConnsSettings, len(services))
 			for serviceID, svc := range services {

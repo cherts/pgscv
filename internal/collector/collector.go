@@ -196,7 +196,7 @@ func (n PgscvCollector) Describe(ch chan<- *prometheus.Desc) {
 func (n PgscvCollector) Collect(out chan<- prometheus.Metric) {
 	// Update settings of Postgres collectors if service was unavailabled when register
 	if n.Config.ServiceType == "postgres" && n.Config.postgresServiceConfig.blockSize == 0 {
-		err := n.Config.FillPostgresServiceConfig()
+		err := n.Config.FillPostgresServiceConfig(n.Config.ConnTimeout)
 		if err != nil {
 			log.Errorf("update service config failed: %s, skip collect", err.Error())
 			return
