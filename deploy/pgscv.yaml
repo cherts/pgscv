@@ -9,6 +9,21 @@
 #collect_top_table: 10
 #collect_top_index: 10
 #skip_conn_error_mode: false
+#discovery:
+#  yandex_mdb:
+#    type: yandex-mdb
+#    config:
+#      - authorized_key: /path/to/secret/authorized_key.json
+#        folder_id: "b1000000000000"
+#        password: "password"
+#        user: "postgres_exporter"
+#        refresh_interval: 5
+#        clusters:
+#          - name: ".*"
+#            db:
+#            exclude_name:
+#            exclude_db:
+
 services:
   "postgres:5432":
     service_type: "postgres"

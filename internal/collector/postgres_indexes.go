@@ -82,44 +82,21 @@ func NewPostgresIndexesCollector(constLabels labels, settings model.CollectorSet
 // Update method collects statistics, parse it and produces metrics that are sent to Prometheus.
 func (c *postgresIndexesCollector) Update(config Config, ch chan<- prometheus.Metric) error {
 	var err error
-	conn, err := store.New(config.ConnString)
+	conn, err := store.New(config.ConnString, config.ConnTimeout)
 	if err != nil {
 		return err
 	}
 
-	databases, err := listDatabases(conn)
-	if err != nil {
-		return err
-	}
-
-	conn.Close()
-
-	pgconfig, err := pgx.ParseConfig(config.ConnString)
-	if err != nil {
-		return err
-	}
-
-	for _, d := range databases {
-		// Skip database if not matched to allowed.
-		if config.DatabasesRE != nil && !config.DatabasesRE.MatchString(d) {
-			continue
-		}
-
-		pgconfig.Database = d
-		conn, err := store.NewWithConfig(pgconfig)
-		if err != nil {
-			return err
-		}
+	collect := func(conn *store.DB) error {
 		var res *model.PGResult
 		if config.CollectTopIndex > 0 {
 			res, err = conn.Query(userIndexesQueryTopK, config.CollectTopIndex)
 		} else {
 			res, err = conn.Query(userIndexesQuery)
 		}
-		conn.Close()
 		if err != nil {
-			log.Warnf("get indexes stat of database %s failed: %s", d, err)
-			continue
+			log.Warnf("get indexes stat failed: %s", err)
+			return nil
 		}
 
 		stats := parsePostgresIndexStats(res, c.indexes.labelNames)
@@ -142,6 +119,44 @@ func (c *postgresIndexesCollector) Update(config Config, ch chan<- prometheus.Me
 			if stat.idxhit > 0 {
 				ch <- c.io.newConstMetric(stat.idxhit, stat.database, stat.schema, stat.table, stat.index, "hit")
 			}
+		}
+		return nil
+	}
+
+	if config.DatabasesRE == nil {
+		// service discovery case
+		err = collect(conn)
+		conn.Close()
+		return err
+	}
+
+	databases, err := listDatabases(conn)
+	if err != nil {
+		return err
+	}
+
+	conn.Close()
+
+	pgconfig, err := pgx.ParseConfig(config.ConnString)
+	if err != nil {
+		return err
+	}
+
+	for _, d := range databases {
+		// Skip database if not matched to allowed.
+		if !config.DatabasesRE.MatchString(d) {
+			continue
+		}
+
+		pgconfig.Database = d
+		conn, err := store.NewWithConfig(pgconfig)
+		if err != nil {
+			return err
+		}
+		err = collect(conn)
+		conn.Close()
+		if err != nil {
+			return err
 		}
 	}
 

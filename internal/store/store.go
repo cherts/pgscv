@@ -5,6 +5,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"time"
 
 	"github.com/cherts/pgscv/internal/log"
 	"github.com/cherts/pgscv/internal/model"
@@ -35,10 +36,13 @@ type DB struct {
 }
 
 // New creates new connection to Postgres/Pgbouncer using passed DSN
-func New(connString string) (*DB, error) {
+func New(connString string, connTimeout int) (*DB, error) {
 	config, err := pgx.ParseConfig(connString)
 	if err != nil {
 		return nil, err
+	}
+	if connTimeout > 0 {
+		config.ConnectTimeout = time.Duration(connTimeout) * time.Second
 	}
 
 	return NewWithConfig(config)

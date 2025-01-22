@@ -14,14 +14,14 @@ const TestPgbouncerConnStr = "host=127.0.0.1 port=6432 user=pgscv dbname=pgbounc
 
 // NewTest create PostgreSQL test
 func NewTest(t *testing.T) *DB {
-	db, err := New(TestPostgresConnStr)
+	db, err := New(TestPostgresConnStr, 0)
 	assert.NoError(t, err)
 	return db
 }
 
 // NewTestPgbouncer create Pgbouncer test
 func NewTestPgbouncer(t *testing.T) *DB {
-	db, err := New(TestPgbouncerConnStr)
+	db, err := New(TestPgbouncerConnStr, 0)
 	assert.NoError(t, err)
 	return db
 }

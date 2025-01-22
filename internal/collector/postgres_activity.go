@@ -148,7 +148,7 @@ func NewPostgresActivityCollector(constLabels labels, settings model.CollectorSe
 
 // Update method collects statistics, parse it and produces metrics that are sent to Prometheus.
 func (c *postgresActivityCollector) Update(config Config, ch chan<- prometheus.Metric) error {
-	conn, err := store.New(config.ConnString)
+	conn, err := store.New(config.ConnString, config.ConnTimeout)
 	if err != nil {
 		ch <- c.up.newConstMetric(0)
 		return err

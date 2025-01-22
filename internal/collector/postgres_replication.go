@@ -79,7 +79,7 @@ func NewPostgresReplicationCollector(constLabels labels, settings model.Collecto
 
 // Update method collects statistics, parse it and produces metrics that are sent to Prometheus.
 func (c *postgresReplicationCollector) Update(config Config, ch chan<- prometheus.Metric) error {
-	conn, err := store.New(config.ConnString)
+	conn, err := store.New(config.ConnString, config.ConnTimeout)
 	if err != nil {
 		return err
 	}

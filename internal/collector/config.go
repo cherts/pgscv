@@ -8,6 +8,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/cherts/pgscv/internal/log"
 	"github.com/cherts/pgscv/internal/model"
@@ -35,6 +36,8 @@ type Config struct {
 	CollectTopTable int
 	CollectTopIndex int
 	CollectTopQuery int
+	ConstLabels     *map[string]string
+	ConnTimeout     int // in seconds
 }
 
 // postgresServiceConfig defines Postgres-specific stuff required during collecting Postgres metrics.
@@ -59,8 +62,7 @@ type postgresServiceConfig struct {
 	pgStatStatementsSchema string
 }
 
-// newPostgresServiceConfig defines new config for Postgres-based collectors.
-func newPostgresServiceConfig(connStr string) (postgresServiceConfig, error) {
+func newPostgresServiceConfig(connStr string, connTimeout int) (postgresServiceConfig, error) {
 	var config = postgresServiceConfig{}
 
 	// Return empty config if empty connection string.
@@ -71,6 +73,9 @@ func newPostgresServiceConfig(connStr string) (postgresServiceConfig, error) {
 	pgconfig, err := pgx.ParseConfig(connStr)
 	if err != nil {
 		return config, err
+	}
+	if connTimeout > 0 {
+		pgconfig.ConnectTimeout = time.Duration(connTimeout) * time.Second
 	}
 
 	// Determine is service running locally.
@@ -155,8 +160,14 @@ func newPostgresServiceConfig(connStr string) (postgresServiceConfig, error) {
 	config.pgStatStatements = exists
 	config.pgStatStatementsDatabase = database
 	config.pgStatStatementsSchema = schema
-
 	return config, nil
+}
+
+// FillPostgresServiceConfig defines new config for Postgres-based collectors.
+func (cfg *Config) FillPostgresServiceConfig(connTimeout int) error {
+	var err error
+	cfg.postgresServiceConfig, err = newPostgresServiceConfig(cfg.ConnString, connTimeout)
+	return err
 }
 
 // isAddressLocal return true if passed address is local, and return false otherwise.
