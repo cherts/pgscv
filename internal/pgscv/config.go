@@ -19,11 +19,12 @@ import (
 )
 
 const (
-	defaultListenAddress     = "127.0.0.1:9890"
-	defaultPostgresUsername  = "pgscv"
-	defaultPostgresDbname    = "postgres"
-	defaultPgbouncerUsername = "pgscv"
-	defaultPgbouncerDbname   = "pgbouncer"
+	defaultListenAddress          = "127.0.0.1:9890"
+	defaultPostgresUsername       = "pgscv"
+	defaultPostgresDbname         = "postgres"
+	defaultPgbouncerUsername      = "pgscv"
+	defaultPgbouncerDbname        = "pgbouncer"
+	defaultThrottlingInterval int = 25 // seconds
 )
 
 // Config defines application's configuration.
@@ -45,6 +46,7 @@ type Config struct {
 	DiscoveryServices     *map[string]sd.Discovery
 	ConnTimeout           int    `yaml:"conn_timeout"`
 	URLPrefix             string `yaml:"url_prefix"` // Url prefix
+	ThrottlingInterval    *int   `yaml:"throttling_interval"`
 }
 
 // NewConfig creates new config based on config file or return default config if config file is not specified.
@@ -122,6 +124,9 @@ func NewConfig(configFilePath string) (*Config, error) {
 		}
 		if configFromEnv.URLPrefix != "" {
 			configFromFile.URLPrefix = configFromEnv.URLPrefix
+		}
+		if configFromEnv.ThrottlingInterval != nil {
+			configFromFile.ThrottlingInterval = configFromEnv.ThrottlingInterval
 		}
 		return configFromFile, nil
 	}
@@ -279,6 +284,15 @@ func (c *Config) Validate() error {
 	}
 	if c.ConnTimeout > 0 {
 		log.Infof("ConnTimeout: %d seconds timeout set for connecting to DB", c.ConnTimeout)
+	}
+
+	if c.ThrottlingInterval == nil {
+		throttlingInterval := defaultThrottlingInterval
+		c.ThrottlingInterval = &throttlingInterval
+	}
+
+	if *c.ThrottlingInterval > 0 {
+		log.Infof("ThrottlingInterval: %d seconds throttling interval set for scrape metrics", *c.ThrottlingInterval)
 	}
 
 	return nil
@@ -448,6 +462,12 @@ func newConfigFromEnv() (*Config, error) {
 			config.ConnTimeout = timeout
 		case "PGSCV_URL_PREFIX":
 			config.URLPrefix = value
+		case "PGSCV_THROTTLING_INTERVAL":
+			throttlingInterval, err := strconv.Atoi(value)
+			if err != nil {
+				return nil, fmt.Errorf("invalid setting PGSCV_THROTTLING_INTERVAL, value '%s': %s", value, err)
+			}
+			config.ThrottlingInterval = &throttlingInterval
 		}
 	}
 	return config, nil
