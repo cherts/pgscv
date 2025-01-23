@@ -16,6 +16,7 @@
 #      - authorized_key: /path/to/secret/authorized_key.json
 #        folder_id: "b1000000000000"
 #        password: "password"
+#        password_from_env: DB_PASSWORD
 #        user: "postgres_exporter"
 #        refresh_interval: 5
 #        clusters:

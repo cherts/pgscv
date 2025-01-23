@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"maps"
+	"os"
 	"sync"
 	"time"
 
@@ -27,6 +28,7 @@ type YandexConfig struct {
 	FolderID        string    `json:"folder_id" yaml:"folder_id"`
 	User            string    `json:"user" yaml:"user"`
 	Password        string    `json:"password" yaml:"password"`
+	PasswordFromEnv string    `json:"password_from_env" yaml:"password_from_env"`
 	RefreshInterval int       `json:"refresh_interval" yaml:"refresh_interval"`
 	Clusters        []cluster `json:"clusters" yaml:"clusters"`
 }
@@ -203,6 +205,11 @@ func ensureConfigYandexMDB(config config) ([]YandexConfig, error) {
 	err = yaml.Unmarshal(o, c)
 	if err != nil {
 		return nil, err
+	}
+	for i, yc := range *c {
+		if yc.PasswordFromEnv != "" {
+			(*c)[i].Password = os.Getenv(yc.PasswordFromEnv)
+		}
 	}
 	return *c, nil
 }
