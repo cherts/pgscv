@@ -24,7 +24,7 @@ const (
 	defaultPostgresDbname         = "postgres"
 	defaultPgbouncerUsername      = "pgscv"
 	defaultPgbouncerDbname        = "pgbouncer"
-	defaultThrottlingInterval int = 25 // seconds
+	defaultThrottlingInterval int = 0 // seconds
 )
 
 // Config defines application's configuration.

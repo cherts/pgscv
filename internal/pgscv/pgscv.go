@@ -165,7 +165,7 @@ func getMetricsHandler(repository *service.Repository, throttlingInterval *int) 
 
 	return func(w net_http.ResponseWriter, r *net_http.Request) {
 		target := r.URL.Query().Get("target")
-		if throttlingInterval != nil {
+		if throttlingInterval != nil && *throttlingInterval > 0 {
 			throttle.RLock()
 			t, ok := throttle.lastScrapeTime[target]
 			throttle.RUnlock()
