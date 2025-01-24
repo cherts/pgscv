@@ -16,6 +16,7 @@ import (
 	net_http "net/http"
 	"strings"
 	"sync"
+	"time"
 )
 
 const pgSCVSubscriber = "pgscv_subscriber"
@@ -38,6 +39,7 @@ func Start(ctx context.Context, config *Config) error {
 		CollectTopQuery:    config.CollectTopQuery,
 		SkipConnErrorMode:  config.SkipConnErrorMode,
 		ConnTimeout:        config.ConnTimeout,
+		ThrottlingInterval: config.ThrottlingInterval,
 	}
 
 	if len(config.ServicesConnsSettings) == 0 && config.DiscoveryServices == nil {
@@ -153,9 +155,31 @@ func subscribeYandex(ds *sd.Discovery, config *Config, serviceRepo *service.Repo
 }
 
 // getMetricsHandler return http handler function to /metrics endpoint
-func getMetricsHandler(repository *service.Repository) func(w net_http.ResponseWriter, r *net_http.Request) {
+func getMetricsHandler(repository *service.Repository, throttlingInterval *int) func(w net_http.ResponseWriter, r *net_http.Request) {
+	throttle := struct {
+		sync.RWMutex
+		lastScrapeTime map[string]time.Time
+	}{
+		lastScrapeTime: make(map[string]time.Time),
+	}
+
 	return func(w net_http.ResponseWriter, r *net_http.Request) {
 		target := r.URL.Query().Get("target")
+		if throttlingInterval != nil && *throttlingInterval > 0 {
+			throttle.RLock()
+			t, ok := throttle.lastScrapeTime[target]
+			throttle.RUnlock()
+			if ok {
+				if time.Now().Sub(t) < time.Duration(*throttlingInterval)*time.Second {
+					w.WriteHeader(http.StatusOK)
+					log.Warn("Skip scraping")
+					return
+				}
+			}
+			throttle.Lock()
+			throttle.lastScrapeTime[target] = time.Now()
+			throttle.Unlock()
+		}
 		if target == "" {
 			h := promhttp.InstrumentMetricHandler(
 				prometheus.DefaultRegisterer, promhttp.HandlerFor(prometheus.DefaultGatherer, promhttp.HandlerOpts{}),
@@ -218,7 +242,7 @@ func runMetricsListener(ctx context.Context, config *Config, repository *service
 		Addr:       config.ListenAddress,
 		AuthConfig: config.AuthConfig,
 	}
-	srv := http.NewServer(sCfg, getMetricsHandler(repository), getTargetsHandler(repository, config.URLPrefix, config.AuthConfig.EnableTLS))
+	srv := http.NewServer(sCfg, getMetricsHandler(repository, config.ThrottlingInterval), getTargetsHandler(repository, config.URLPrefix, config.AuthConfig.EnableTLS))
 
 	errCh := make(chan error)
 	defer close(errCh)

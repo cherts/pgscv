@@ -9,6 +9,9 @@
 #collect_top_table: 10
 #collect_top_index: 10
 #skip_conn_error_mode: false
+#url_prefix: "example.com"
+#conn_timeout: 3
+#throttling_interval: 5
 #discovery:
 #  yandex_mdb:
 #    type: yandex-mdb
@@ -24,6 +27,7 @@
 #            db:
 #            exclude_name:
 #            exclude_db:
+
 
 services:
   "postgres:5432":

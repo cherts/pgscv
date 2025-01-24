@@ -51,7 +51,8 @@ type Config struct {
 	CollectTopQuery    int
 	SkipConnErrorMode  bool
 	ConstLabels        *map[string]*map[string]string
-	ConnTimeout        int // in seconds
+	ConnTimeout        int  // in seconds
+	ThrottlingInterval *int // in seconds, default 25
 }
 
 // Collector is an interface for prometheus.Collector.
