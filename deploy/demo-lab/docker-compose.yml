@@ -185,6 +185,22 @@ services:
        - ${PWD}/postgres/init.sql:/docker-entrypoint-initdb.d/01-init.sql
     ports:
       - 5437:5432
+  postgres16replica1:
+    <<: *postgres_base
+    container_name: postgres16replica1
+    image: postgres:16-alpine
+    hostname: postgres16replica1
+    command: |
+      bash -c "
+      if [ ! -f /data/postgres/backup_label.old ]; then rm -rf /data/postgres/* && su - postgres -c 'PGPASSWORD=repluser pg_basebackup -P -R -X stream -c fast -h postgres16 -p 5432 -U repluser -D /data/postgres --slot=replica_slot1'; fi;
+      su - postgres -c 'PGDATA=/data/postgres postgres -c listen_addresses=* -c shared_buffers=128MB -c shared_preload_libraries=pg_stat_statements -c pg_stat_statements.max=10000 -c pg_stat_statements.track=all -c jit=off';
+      "
+    volumes:
+       - pg16_replica1data:/data/postgres
+    ports:
+      - 7436:5432
+    depends_on:
+      - postgres16
   postgres17replica1:
     <<: *postgres_base
     container_name: postgres17replica1
@@ -490,6 +506,9 @@ services:
       postgres17:
         condition: service_healthy
         restart: true
+      postgres16replica1:
+        condition: service_healthy
+        restart: true
       postgres17replica1:
         condition: service_healthy
         restart: true
@@ -561,6 +580,12 @@ volumes:
       o: bind
       type: rw
       device: ${PWD}/postgres/pg17data
+  pg16_replica1data:
+    driver: local
+    driver_opts:
+      o: bind
+      type: rw
+      device: ${PWD}/postgres/pg16replica1data
   pg17_replica1data:
     driver: local
     driver_opts:

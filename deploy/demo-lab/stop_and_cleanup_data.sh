@@ -46,6 +46,7 @@ if [ $? -eq 0 ]; then
 	rm -rf ${SCRIPT_DIR}/postgres/pg15data/* >/dev/null 2>&1
 	rm -rf ${SCRIPT_DIR}/postgres/pg16data/* >/dev/null 2>&1
 	rm -rf ${SCRIPT_DIR}/postgres/pg17data/* >/dev/null 2>&1
+	rm -rf ${SCRIPT_DIR}/postgres/pg16replica1data/* >/dev/null 2>&1
 	rm -rf ${SCRIPT_DIR}/postgres/pg17replica1data/* >/dev/null 2>&1
 	echo "Remove victoriametrics data..."
 	rm -rf ${SCRIPT_DIR}/victoriametrics/data/* >/dev/null 2>&1
