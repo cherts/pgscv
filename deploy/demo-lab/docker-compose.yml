@@ -33,10 +33,59 @@ services:
     ports:
       - 8429:8429
     networks: [ monitoring ]
-  postgres12: &postgres_base
-    container_name: postgres12
-    image: postgres:12-alpine
-    hostname: postgres12
+  postgres9: &postgres_old_base
+    container_name: postgres9
+    image: postgres:9-alpine
+    hostname: postgres9
+    command:
+      - "postgres"
+      - "-c"
+      - "listen_addresses=*"
+      - "-c"
+      - "shared_buffers=128MB"
+      - "-c"
+      - "shared_preload_libraries=pg_stat_statements"
+      - "-c"
+      - "pg_stat_statements.max=10000"
+      - "-c"
+      - "pg_stat_statements.track=all"
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-postgres}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      PGDATA: /data/postgres
+    ports:
+      - 5429:5432
+    volumes:
+       - pg9_data:/data/postgres
+       - ${PWD}/postgres/init_9.sql:/docker-entrypoint-initdb.d/01-init.sql
+    networks: [ monitoring ]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 400M
+  postgres10:
+    <<: *postgres_old_base
+    container_name: postgres10
+    image: postgres:10-alpine
+    hostname: postgres10
+    volumes:
+       - pg10_data:/data/postgres
+       - ${PWD}/postgres/init_10.sql:/docker-entrypoint-initdb.d/01-init.sql
+    ports:
+      - 5430:5432
+  postgres11: &postgres_base
+    container_name: postgres11
+    image: postgres:11-alpine
+    hostname: postgres11
     command:
       - "postgres"
       - "-c"
@@ -57,9 +106,9 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
       PGDATA: /data/postgres
     ports:
-      - 5432:5432
+      - 5431:5432
     volumes:
-       - pg12_data:/data/postgres
+       - pg11_data:/data/postgres
        - ${PWD}/postgres/init.sql:/docker-entrypoint-initdb.d/01-init.sql
     networks: [ monitoring ]
     healthcheck:
@@ -74,6 +123,16 @@ services:
         limits:
           cpus: '1'
           memory: 400M
+  postgres12:
+    <<: *postgres_base
+    container_name: postgres12
+    image: postgres:12-alpine
+    hostname: postgres12
+    volumes:
+       - pg12_data:/data/postgres
+       - ${PWD}/postgres/init.sql:/docker-entrypoint-initdb.d/01-init.sql
+    ports:
+      - 5432:5432
   postgres13:
     <<: *postgres_base
     container_name: postgres13
@@ -246,6 +305,45 @@ services:
       timeout: 5s
       retries: 10
       start_period: 10s
+  pgbouncer9:
+    container_name: pgbouncer9
+    image: edoburu/pgbouncer:latest
+    hostname: pgbouncer9
+    volumes:
+      - ${PWD}/pgbouncer/conf9:/etc/pgbouncer
+    networks: [ monitoring ]
+    ports:
+      - "6429:5432"
+    depends_on:
+      - postgres9
+    healthcheck:
+      test: ['CMD', 'pg_isready', '-h', 'localhost']
+  pgbouncer10:
+    container_name: pgbouncer10
+    image: edoburu/pgbouncer:latest
+    hostname: pgbouncer10
+    volumes:
+      - ${PWD}/pgbouncer/conf10:/etc/pgbouncer
+    networks: [ monitoring ]
+    ports:
+      - "6430:5432"
+    depends_on:
+      - postgres10
+    healthcheck:
+      test: ['CMD', 'pg_isready', '-h', 'localhost']
+  pgbouncer11:
+    container_name: pgbouncer11
+    image: edoburu/pgbouncer:latest
+    hostname: pgbouncer11
+    volumes:
+      - ${PWD}/pgbouncer/conf11:/etc/pgbouncer
+    networks: [ monitoring ]
+    ports:
+      - "6431:5432"
+    depends_on:
+      - postgres11
+    healthcheck:
+      test: ['CMD', 'pg_isready', '-h', 'localhost']
   pgbouncer12:
     container_name: pgbouncer12
     image: edoburu/pgbouncer:latest
@@ -376,6 +474,24 @@ volumes:
       o: bind
       type: rw
       device: ${PWD}/grafana/data
+  pg9_data:
+    driver: local
+    driver_opts:
+      o: bind
+      type: rw
+      device: ${PWD}/postgres/pg9data
+  pg10_data:
+    driver: local
+    driver_opts:
+      o: bind
+      type: rw
+      device: ${PWD}/postgres/pg10data
+  pg11_data:
+    driver: local
+    driver_opts:
+      o: bind
+      type: rw
+      device: ${PWD}/postgres/pg11data
   pg12_data:
     driver: local
     driver_opts:
