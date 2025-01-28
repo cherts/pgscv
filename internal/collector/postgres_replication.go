@@ -18,7 +18,7 @@ const (
 		"write_location - flush_location AS flush_lag_bytes, " +
 		"flush_location - replay_location AS replay_lag_bytes, " +
 		"pg_current_xlog_location() - replay_location AS total_lag_bytes, " +
-		"NULL AS write_lag_seconds, NULL AS flush_lag_seconds, NULL AS replay_lag_seconds, NULL AS total_lag_seconds " +
+		"NULL::numeric AS write_lag_seconds, NULL::numeric AS flush_lag_seconds, NULL::numeric AS replay_lag_seconds, NULL::numeric AS total_lag_seconds " +
 		"FROM pg_stat_replication"
 
 	// Query for Postgres versions from 10 and newer.
