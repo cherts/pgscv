@@ -37,6 +37,9 @@ if [ $? -eq 0 ]; then
 	rm -rf ${SCRIPT_DIR}/patroni/pg_data2/* >/dev/null 2>&1
 	rm -rf ${SCRIPT_DIR}/patroni/pg_data3/* >/dev/null 2>&1
 	echo "Remove postgres data..."
+	rm -rf ${SCRIPT_DIR}/postgres/pg9data/* >/dev/null 2>&1
+	rm -rf ${SCRIPT_DIR}/postgres/pg10data/* >/dev/null 2>&1
+	rm -rf ${SCRIPT_DIR}/postgres/pg11data/* >/dev/null 2>&1
 	rm -rf ${SCRIPT_DIR}/postgres/pg12data/* >/dev/null 2>&1
 	rm -rf ${SCRIPT_DIR}/postgres/pg13data/* >/dev/null 2>&1
 	rm -rf ${SCRIPT_DIR}/postgres/pg14data/* >/dev/null 2>&1
