@@ -8,8 +8,20 @@ no_track_mode: false
 #collect_top_query: 10
 #collect_top_table: 10
 #collect_top_index: 10
-#skip_conn_error_mode: true
+skip_conn_error_mode: true
+url_prefix: http://pgscv:9890
+#conn_timeout: 3
+#throttling_interval: 25
 services:
+  "postgres9":
+    service_type: "postgres"
+    conninfo: "postgres://pgscv:pgscv@postgres9:5432/postgres"
+  "postgres10":
+    service_type: "postgres"
+    conninfo: "postgres://pgscv:pgscv@postgres10:5432/postgres"
+  "postgres11":
+    service_type: "postgres"
+    conninfo: "postgres://pgscv:pgscv@postgres11:5432/postgres"
   "postgres12":
     service_type: "postgres"
     conninfo: "postgres://pgscv:pgscv@postgres12:5432/postgres"
@@ -46,22 +58,31 @@ services:
   "patroni_3":
     service_type: "patroni"
     baseurl: "http://patroni3:8008"
-  "pgbouncer12": 
+  "pgbouncer9":
+    service_type: "pgbouncer"
+    conninfo: "postgres://pgscv:pgscv@pgbouncer9:5432/pgbouncer"
+  "pgbouncer10":
+    service_type: "pgbouncer"
+    conninfo: "postgres://pgscv:pgscv@pgbouncer10:5432/pgbouncer"
+  "pgbouncer11":
+    service_type: "pgbouncer"
+    conninfo: "postgres://pgscv:pgscv@pgbouncer11:5432/pgbouncer"
+  "pgbouncer12":
     service_type: "pgbouncer"
     conninfo: "postgres://pgscv:pgscv@pgbouncer12:5432/pgbouncer"
-  "pgbouncer13": 
+  "pgbouncer13":
     service_type: "pgbouncer"
     conninfo: "postgres://pgscv:pgscv@pgbouncer13:5432/pgbouncer"
-  "pgbouncer14": 
+  "pgbouncer14":
     service_type: "pgbouncer"
     conninfo: "postgres://pgscv:pgscv@pgbouncer14:5432/pgbouncer"
-  "pgbouncer15": 
+  "pgbouncer15":
     service_type: "pgbouncer"
     conninfo: "postgres://pgscv:pgscv@pgbouncer15:5432/pgbouncer"
-  "pgbouncer16": 
+  "pgbouncer16":
     service_type: "pgbouncer"
     conninfo: "postgres://pgscv:pgscv@pgbouncer16:5432/pgbouncer"
-  "pgbouncer17": 
+  "pgbouncer17":
     service_type: "pgbouncer"
     conninfo: "postgres://pgscv:pgscv@pgbouncer17:5432/pgbouncer"
 databases: "pgbench"

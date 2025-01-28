@@ -112,7 +112,7 @@ func (c *postgresStorageCollector) Update(config Config, ch chan<- prometheus.Me
 		return nil
 	}
 
-	conn, err := store.New(config.ConnString)
+	conn, err := store.New(config.ConnString, config.ConnTimeout)
 	if err != nil {
 		return err
 	}

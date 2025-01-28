@@ -11,8 +11,11 @@
 
 ### Основные возможности
 - **Поддерживаемые сервисы**: поддержка сбора показателей работы PostgreSQL, Pgbouncer и Patroni;
-- **Метрики ОС:** поддержка сбора показателей работы операционной системы;
-- **TLS и аутентификация**: Эндпойнт `/metrics` может быть защищен с помощью базовой аутентификации и TLS;
+- **Обнаружение и мониторинг Облачных управляемых баз данных** Yandex Managed Service for PostgreSQL ([смотри документацию](https://github.com/cherts/pgscv/wiki/Monitoring-Cloud-Managed-Databases));
+- **Метрики ОС:** поддержка сбора показателей работы операционной системы (только Linux);
+- **Поддержка обнаружение сервисов мониторинга** Через специальный эндпойнт `/targets` можно производить обнаружение всех сервисов мониторинга ([смотри документацию](https://github.com/cherts/pgscv/wiki/Service-discovery))
+- **Поддержка тротлинга** Механизм тротлинга позволяет лимитировать обращения к эндпойнтам `/metrics` и `/metrics?target=xxx` для защиты баз данных от потока запросов мониторинга от множества агентов сбора метрик ([смотри документацию](https://github.com/cherts/pgscv/wiki/Throttling)).
+- **TLS и аутентификация**: Эндпойнт `/metrics` и `/metrics?target=xxx` может быть защищен с помощью базовой аутентификации и TLS;
 - **Сбор показателей из нескольких сервисов**: pgSCV может собирать метрики из многих экземпляров баз данных, включая базы данных расположенные в облачных средах (Amazon AWS, Yandex.Cloud, VK.Cloud);
 - **Настраиваемые пользовательские метрики**: pgSCV можно настроить на сбор кастомных пользовательских метрик;
 - **Управление коллекторами**: При необходимости коллекторы можно отключить;
@@ -29,7 +32,7 @@
 Загрузите архив со страницы [releases](https://github.com/cherts/pgscv/releases). Распакуйте архив. Создайте минимальный файл конфигураации. Запустите pgSCV под пользователем postgres.
 
 ```bash
-curl -s -L https://github.com/cherts/pgscv/releases/download/v0.9.6/pgscv_0.9.6_linux_$(uname -m).tar.gz -o - | tar xzf - -C /tmp && \
+curl -s -L https://github.com/cherts/pgscv/releases/download/v0.10.0/pgscv_0.10.0_linux_$(uname -m).tar.gz -o - | tar xzf - -C /tmp && \
 mv /tmp/pgscv.yaml /etc && \
 mv /tmp/pgscv.service /etc/systemd/system &&  \
 mv /tmp/pgscv.default /etc/default/pgscv && \

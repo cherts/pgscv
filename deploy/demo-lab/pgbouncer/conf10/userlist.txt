@@ -1,0 +1,3 @@
+"pgbench" "md5639270cd84190424fa8aac81550875bc"
+"pgscv" "md5cb3d06852b6b47c9df609b62a5e90591"
+"postgres" "md53175bce1d3201d16594cebf9d7eb3f9d"

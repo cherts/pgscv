@@ -41,7 +41,7 @@ func TestAuthConfig_Validate(t *testing.T) {
 
 func TestServer_Serve_HTTP(t *testing.T) {
 	addr := "127.0.0.1:17890"
-	srv := NewServer(ServerConfig{Addr: addr})
+	srv := NewServer(ServerConfig{Addr: addr}, getDummyHandler(), getDummyHandler())
 
 	var wg sync.WaitGroup
 	wg.Add(1)
@@ -63,13 +63,18 @@ func TestServer_Serve_HTTP(t *testing.T) {
 	}
 }
 
+func getDummyHandler() func(w http.ResponseWriter, r *http.Request) {
+	return func(http.ResponseWriter, *http.Request) {
+	}
+}
+
 func TestServer_Serve_HTTPS(t *testing.T) {
 	addr := "127.0.0.1:17891"
 	srv := NewServer(ServerConfig{Addr: addr, AuthConfig: AuthConfig{
 		EnableTLS: true,
 		Keyfile:   "./testdata/example.key",
 		Certfile:  "./testdata/example.crt",
-	}})
+	}}, getDummyHandler(), getDummyHandler())
 
 	var wg sync.WaitGroup
 	wg.Add(1)
@@ -129,7 +134,7 @@ func Test_basicAuth(t *testing.T) {
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
 			mux := http.NewServeMux()
-			mux.Handle("/", basicAuth(AuthConfig{Username: "user", Password: "pass"}, handleRoot()))
+			mux.HandleFunc("/", basicAuth(AuthConfig{Username: "user", Password: "pass"}, handleRoot()))
 
 			res := httptest.NewRecorder()
 			req := httptest.NewRequest(http.MethodGet, "/", nil)

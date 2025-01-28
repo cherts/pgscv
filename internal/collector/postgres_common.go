@@ -151,7 +151,19 @@ func parsePostgresCustomStats(r *model.PGResult, labelNames []string) postgresCu
 // listDatabases returns slice with databases names
 func listDatabases(db *store.DB) ([]string, error) {
 	// getDBList returns the list of databases that allowed for connection
-	rows, err := db.Conn().Query(context.Background(), "SELECT datname FROM pg_database WHERE NOT datistemplate AND datallowconn")
+	rows, err := db.Conn().Query(context.Background(),
+		`WITH GRANTS AS (SELECT datname,
+									   (aclexplode(datacl)).grantee,
+									   (aclexplode(datacl)).privilege_type
+								FROM pg_database)
+				SELECT d.datname
+				FROM pg_database d
+						 JOIN pg_roles u ON u.rolname = user
+						 LEFT JOIN grants g ON g.datname = d.datname AND g.grantee = u.oid AND g.privilege_type = 'CONNECT'
+				WHERE NOT datistemplate
+				  AND datallowconn
+				  AND (g IS NOT NULL OR u.rolsuper)`,
+	)
 	if err != nil {
 		return nil, err
 	}

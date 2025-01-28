@@ -2,6 +2,8 @@
 package collector
 
 import (
+	"github.com/jackc/pgx/v4"
+	"strconv"
 	"sync"
 
 	"github.com/cherts/pgscv/internal/filter"
@@ -153,8 +155,16 @@ type PgscvCollector struct {
 // NewPgscvCollector accepts Factories and creates per-service instance of Collector.
 func NewPgscvCollector(serviceID string, factories Factories, config Config) (*PgscvCollector, error) {
 	collectors := make(map[string]Collector)
-	constLabels := labels{"service_id": serviceID}
-
+	pgConfig, err := pgx.ParseConfig(config.ConnString)
+	if err != nil {
+		return nil, err
+	}
+	constLabels := labels{"service_id": serviceID, "host": pgConfig.Host, "port": strconv.FormatUint(uint64(pgConfig.Port), 10)}
+	if config.ConstLabels != nil {
+		for k, v := range *config.ConstLabels {
+			constLabels[k] = v
+		}
+	}
 	for key := range factories {
 		settings := config.Settings[key]
 
@@ -184,15 +194,12 @@ func (n PgscvCollector) Describe(ch chan<- *prometheus.Desc) {
 
 // Collect implements the prometheus.Collector interface.
 func (n PgscvCollector) Collect(out chan<- prometheus.Metric) {
-	// Update settings of Postgres collectors
-	if n.Config.ServiceType == "postgres" {
-		cfg, err := newPostgresServiceConfig(n.Config.ConnString)
+	// Update settings of Postgres collectors if service was unavailabled when register
+	if n.Config.ServiceType == "postgres" && n.Config.postgresServiceConfig.blockSize == 0 {
+		err := n.Config.FillPostgresServiceConfig(n.Config.ConnTimeout)
 		if err != nil {
-			log.Errorf("update service config failed: %s, skip collect", err.Error())
-			return
+			log.Errorf("update service config failed: %s", err.Error())
 		}
-
-		n.Config.postgresServiceConfig = cfg
 	}
 
 	wgCollector := sync.WaitGroup{}

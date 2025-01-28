@@ -2,12 +2,12 @@
 package collector
 
 import (
+	"github.com/jackc/pgx/v4"
 	"strings"
 
 	"github.com/cherts/pgscv/internal/log"
 	"github.com/cherts/pgscv/internal/model"
 	"github.com/cherts/pgscv/internal/store"
-	"github.com/jackc/pgx/v4"
 	"github.com/prometheus/client_golang/prometheus"
 	"golang.org/x/net/context"
 )
@@ -74,36 +74,12 @@ func NewPostgresSchemasCollector(constLabels labels, settings model.CollectorSet
 
 // Update method collects statistics, parse it and produces metrics that are sent to Prometheus.
 func (c *postgresSchemaCollector) Update(config Config, ch chan<- prometheus.Metric) error {
-	conn, err := store.New(config.ConnString)
+	conn, err := store.New(config.ConnString, config.ConnTimeout)
 	if err != nil {
 		return err
 	}
 
-	databases, err := listDatabases(conn)
-	if err != nil {
-		return err
-	}
-
-	conn.Close()
-
-	pgconfig, err := pgx.ParseConfig(config.ConnString)
-	if err != nil {
-		return err
-	}
-
-	// walk through all databases, connect to it and collect schema-specific stats
-	for _, d := range databases {
-		// Skip database if not matched to allowed.
-		if config.DatabasesRE != nil && !config.DatabasesRE.MatchString(d) {
-			continue
-		}
-
-		pgconfig.Database = d
-		conn, err := store.NewWithConfig(pgconfig)
-		if err != nil {
-			return err
-		}
-
+	collect := func(conn *store.DB) {
 		// 1. get system catalog size in bytes.
 		collectSystemCatalogSize(conn, ch, c.syscatalog)
 
@@ -113,8 +89,7 @@ func (c *postgresSchemaCollector) Update(config Config, ch chan<- prometheus.Met
 		// Functions below uses queries with casting to regnamespace data type, which is introduced in Postgres 9.5.
 		if config.serverVersionNum < PostgresV95 {
 			log.Debugln("[postgres schema collector]: some system data types are not available, required Postgres 9.5 or newer")
-			conn.Close()
-			continue
+			return
 		}
 
 		// 3. collect metrics related to invalid indexes.
@@ -132,13 +107,42 @@ func (c *postgresSchemaCollector) Update(config Config, ch chan<- prometheus.Met
 		// Function below uses queries pg_sequences which is introduced in Postgres 10.
 		if config.serverVersionNum < PostgresV10 {
 			log.Debugln("[postgres schema collector]: some system views are not available, required Postgres 10 or newer")
-			conn.Close()
+		} else {
+			// 7. collect metrics related to sequences (available since Postgres 10).
+			collectSchemaSequences(conn, ch, c.sequences)
+		}
+	}
+
+	if config.DatabasesRE == nil {
+		// service discovery case
+		collect(conn)
+		conn.Close()
+		return nil
+	}
+
+	databases, err := listDatabases(conn)
+	if err != nil {
+		return err
+	}
+	conn.Close()
+
+	pgconfig, err := pgx.ParseConfig(config.ConnString)
+	if err != nil {
+		return err
+	}
+
+	// walk through all databases, connect to it and collect schema-specific stats
+	for _, d := range databases {
+		// Skip database if not matched to allowed.
+		if !config.DatabasesRE.MatchString(d) {
 			continue
 		}
-
-		// 7. collect metrics related to sequences (available since Postgres 10).
-		collectSchemaSequences(conn, ch, c.sequences)
-
+		pgconfig.Database = d
+		conn, err := store.NewWithConfig(pgconfig)
+		if err != nil {
+			return err
+		}
+		collect(conn)
 		conn.Close()
 	}
 

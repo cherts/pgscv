@@ -3,9 +3,9 @@ package store
 import (
 	"database/sql"
 	"fmt"
+	"github.com/cherts/pgscv/internal/model"
 	"github.com/jackc/pgproto3/v2"
 	"github.com/jackc/pgx/v4"
-	"github.com/cherts/pgscv/internal/model"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
@@ -22,7 +22,7 @@ func TestNew(t *testing.T) {
 	}
 
 	for _, tc := range testcases {
-		db, err := New(tc.dsn)
+		db, err := New(tc.dsn, 0)
 		if tc.valid {
 			assert.NoError(t, err)
 			assert.NotNil(t, db)

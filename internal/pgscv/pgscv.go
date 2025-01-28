@@ -3,13 +3,23 @@ package pgscv
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
-	"sync"
-
+	"fmt"
+	sd "github.com/cherts/pgscv/internal/discovery/service"
 	"github.com/cherts/pgscv/internal/http"
 	"github.com/cherts/pgscv/internal/log"
+	"github.com/cherts/pgscv/internal/model"
 	"github.com/cherts/pgscv/internal/service"
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
+	net_http "net/http"
+	"strings"
+	"sync"
+	"time"
 )
+
+const pgSCVSubscriber = "pgscv_subscriber"
 
 // Start is the application's starting point.
 func Start(ctx context.Context, config *Config) error {
@@ -28,9 +38,11 @@ func Start(ctx context.Context, config *Config) error {
 		CollectTopIndex:    config.CollectTopIndex,
 		CollectTopQuery:    config.CollectTopQuery,
 		SkipConnErrorMode:  config.SkipConnErrorMode,
+		ConnTimeout:        config.ConnTimeout,
+		ThrottlingInterval: config.ThrottlingInterval,
 	}
 
-	if len(config.ServicesConnsSettings) == 0 {
+	if len(config.ServicesConnsSettings) == 0 && config.DiscoveryServices == nil {
 		return errors.New("no services defined")
 	}
 
@@ -46,13 +58,36 @@ func Start(ctx context.Context, config *Config) error {
 	ctx, cancel := context.WithCancel(ctx)
 	var wg sync.WaitGroup
 
-	errCh := make(chan error)
+	errCh := make(chan error, 2)
 	defer close(errCh)
+	if config.DiscoveryServices != nil {
+		for _, ds := range *config.DiscoveryServices {
+			wg.Add(1)
+			go func() {
+				err := ds.Start(ctx, errCh)
+				if err != nil {
+					errCh <- err
+				}
+				wg.Done()
+			}()
+			switch dt := ds.(type) {
+			case *sd.YandexDiscovery:
+				err := subscribeYandex(&ds, config, serviceRepo)
+				if err != nil {
+					cancel()
+					return err
+				}
+			default:
+				log.Infof("unknown discovery type %T", dt)
+			}
+
+		}
+	}
 
 	// Start HTTP metrics listener.
 	wg.Add(1)
 	go func() {
-		if err := runMetricsListener(ctx, config); err != nil {
+		if err := runMetricsListener(ctx, config, serviceRepo); err != nil {
 			errCh <- err
 		}
 		wg.Done()
@@ -74,12 +109,140 @@ func Start(ctx context.Context, config *Config) error {
 	}
 }
 
+func subscribeYandex(ds *sd.Discovery, config *Config, serviceRepo *service.Repository) error {
+	err := (*ds).Subscribe(pgSCVSubscriber,
+		// addService
+		func(services map[string]sd.Service) error {
+			constLabels := make(map[string]*map[string]string)
+			serviceDiscoveryConfig := service.Config{
+				NoTrackMode:        config.NoTrackMode,
+				ConnDefaults:       config.Defaults,
+				DisabledCollectors: config.DisableCollectors,
+				CollectorsSettings: config.CollectorsSettings,
+				CollectTopTable:    config.CollectTopTable,
+				CollectTopIndex:    config.CollectTopIndex,
+				CollectTopQuery:    config.CollectTopQuery,
+				SkipConnErrorMode:  config.SkipConnErrorMode,
+				ConstLabels:        &constLabels,
+				ConnTimeout:        config.ConnTimeout,
+			}
+			var cs = make(service.ConnsSettings, len(services))
+			for serviceID, svc := range services {
+				cs[serviceID] = service.ConnSetting{
+					ServiceType: model.ServiceTypePostgresql,
+					Conninfo:    svc.DSN,
+				}
+				constLabels[serviceID] = &svc.ConstLabels
+			}
+			serviceDiscoveryConfig.ConnsSettings = cs
+			serviceRepo.AddServicesFromConfig(serviceDiscoveryConfig)
+			err := serviceRepo.SetupServices(serviceDiscoveryConfig)
+			if err != nil {
+				return err
+			}
+			return nil
+		},
+		// removeService
+		func(serviceIds []string) error {
+			for _, serviceID := range serviceIds {
+				log.Infof("unregister service [%s]", serviceID)
+				serviceRepo.RemoveService(serviceID)
+			}
+			return nil
+		},
+	)
+	return err
+}
+
+// getMetricsHandler return http handler function to /metrics endpoint
+func getMetricsHandler(repository *service.Repository, throttlingInterval *int) func(w net_http.ResponseWriter, r *net_http.Request) {
+	throttle := struct {
+		sync.RWMutex
+		lastScrapeTime map[string]time.Time
+	}{
+		lastScrapeTime: make(map[string]time.Time),
+	}
+
+	return func(w net_http.ResponseWriter, r *net_http.Request) {
+		target := r.URL.Query().Get("target")
+		if throttlingInterval != nil && *throttlingInterval > 0 {
+			throttle.RLock()
+			t, ok := throttle.lastScrapeTime[target]
+			throttle.RUnlock()
+			if ok {
+				if time.Now().Sub(t) < time.Duration(*throttlingInterval)*time.Second {
+					w.WriteHeader(http.StatusOK)
+					log.Warn("Skip scraping")
+					return
+				}
+			}
+			throttle.Lock()
+			throttle.lastScrapeTime[target] = time.Now()
+			throttle.Unlock()
+		}
+		if target == "" {
+			h := promhttp.InstrumentMetricHandler(
+				prometheus.DefaultRegisterer, promhttp.HandlerFor(prometheus.DefaultGatherer, promhttp.HandlerOpts{}),
+			)
+			h.ServeHTTP(w, r)
+		} else {
+			registry := repository.GetRegistry(target)
+			if registry == nil {
+				net_http.Error(w, fmt.Sprintf("Target %s not registered", target), http.StatusNotFound)
+				return
+			}
+			h := promhttp.InstrumentMetricHandler(
+				registry, promhttp.HandlerFor(registry, promhttp.HandlerOpts{}),
+			)
+			h.ServeHTTP(w, r)
+		}
+	}
+}
+
+// getTargetsHandler return http handler function to /targets endpoint
+func getTargetsHandler(repository *service.Repository, urlPrefix string, enableTLS bool) func(w net_http.ResponseWriter, r *net_http.Request) {
+	return func(w net_http.ResponseWriter, r *net_http.Request) {
+		svcIDs := repository.GetServiceIDs()
+		targets := make([]string, len(svcIDs))
+		var url string
+		if urlPrefix != "" {
+			url = strings.Trim(urlPrefix, "/")
+		} else {
+			if enableTLS {
+				url = fmt.Sprintf("https://%s", r.Host)
+			} else {
+				url = r.Host
+			}
+		}
+		for i, svcID := range svcIDs {
+			targets[i] = fmt.Sprintf("%s/metrics?target=%s", url, svcID)
+		}
+		data := []struct {
+			Targets []string `json:"targets"`
+		}{
+			0: {Targets: targets},
+		}
+
+		jsonData, err := json.Marshal(data)
+		if err != nil {
+			net_http.Error(w, err.Error(), net_http.StatusInternalServerError)
+			return
+		}
+		w.Header().Set("Content-Type", "application/json")
+		_, err = w.Write(jsonData)
+		if err != nil {
+			log.Error(err.Error())
+		}
+	}
+}
+
 // runMetricsListener start HTTP listener accordingly to passed configuration.
-func runMetricsListener(ctx context.Context, config *Config) error {
-	srv := http.NewServer(http.ServerConfig{
+func runMetricsListener(ctx context.Context, config *Config, repository *service.Repository) error {
+	sCfg := http.ServerConfig{
 		Addr:       config.ListenAddress,
 		AuthConfig: config.AuthConfig,
-	})
+	}
+	srv := http.NewServer(sCfg, getMetricsHandler(repository, config.ThrottlingInterval), getTargetsHandler(repository, config.URLPrefix, config.AuthConfig.EnableTLS))
 
 	errCh := make(chan error)
 	defer close(errCh)

@@ -63,7 +63,13 @@ func NewPgbouncerSettingsCollector(constLabels labels, settings model.CollectorS
 
 // Update method collects statistics, parse it and produces metrics that are sent to Prometheus.
 func (c *pgbouncerSettingsCollector) Update(config Config, ch chan<- prometheus.Metric) error {
-	conn, err := store.New(config.ConnString)
+	// Parse ConnString
+	pgbconfig, err := pgx.ParseConfig(config.ConnString)
+	if err != nil {
+		return err
+	}
+
+	conn, err := store.NewWithConfig(pgbconfig)
 	if err != nil {
 		return err
 	}
@@ -95,8 +101,15 @@ func (c *pgbouncerSettingsCollector) Update(config Config, ch chan<- prometheus.
 		// If value could be converted to numeric, send it as value. For string values use "1".
 		if err != nil {
 			ch <- c.settings.newConstMetric(1, k, v)
+			continue
 		}
 		ch <- c.settings.newConstMetric(f, k, v)
+	}
+
+	// Determine is service running locally.
+	if !isAddressLocal(pgbconfig.Host) {
+		log.Debugln("[pgbouncer collector]: skip collecting per database settings metrics from remote services")
+		return nil
 	}
 
 	if conffile, ok := settings["conffile"]; ok {

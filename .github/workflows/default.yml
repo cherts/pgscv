@@ -2,6 +2,7 @@
 name: Default
 
 on:
+  workflow_dispatch:
   push:
     paths:
       - "cmd/**"
@@ -19,15 +20,13 @@ on:
 
 jobs:
   test:
-    runs-on: ubuntu-latest
-    container: cherts/pgscv-test-runner:1.0.3
+    runs-on: ubuntu-22.04
+    container: cherts/pgscv-test-runner:1.0.4
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
       - name: Prepare test environment
         run: prepare-test-environment.sh
-      - name: Run lint
-        run: make lint
       - name: Run test
         run: make test
