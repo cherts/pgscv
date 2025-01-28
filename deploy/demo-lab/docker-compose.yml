@@ -183,6 +183,22 @@ services:
        - ${PWD}/postgres/init.sql:/docker-entrypoint-initdb.d/01-init.sql
     ports:
       - 5437:5432
+  postgres17replica1:
+    <<: *postgres_base
+    container_name: postgres17replica1
+    image: postgres:17-alpine
+    hostname: postgres17replica1
+    command: |
+      bash -c "
+      if [ ! -f /data/postgres/backup_label.old ]; then rm -rf /data/postgres/* && su - postgres -c 'PGPASSWORD=repluser pg_basebackup -P -R -X stream -c fast -h postgres17 -p 5432 -U repluser -D /data/postgres --slot=replica_slot1'; fi;
+      su - postgres -c 'PGDATA=/data/postgres postgres -c listen_addresses=* -c shared_buffers=128MB -c shared_preload_libraries=pg_stat_statements -c pg_stat_statements.max=10000 -c pg_stat_statements.track=all -c jit=off';
+      "
+    volumes:
+       - pg17_replica1data:/data/postgres
+    ports:
+      - 7437:5432
+    depends_on:
+      - postgres17
   etcd1: &etcd
     image: cherts/patroni:latest
     networks: [ monitoring ]
@@ -537,6 +553,12 @@ volumes:
       o: bind
       type: rw
       device: ${PWD}/postgres/pg17data
+  pg17_replica1data:
+    driver: local
+    driver_opts:
+      o: bind
+      type: rw
+      device: ${PWD}/postgres/pg17replica1data
   patroni_data1:
     driver: local
     driver_opts:
