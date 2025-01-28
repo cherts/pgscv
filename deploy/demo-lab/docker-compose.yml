@@ -445,6 +445,15 @@ services:
       patroni3:
         condition: service_healthy
         restart: true
+      postgres9:
+        condition: service_healthy
+        restart: true
+      postgres10:
+        condition: service_healthy
+        restart: true
+      postgres11:
+        condition: service_healthy
+        restart: true
       postgres12:
         condition: service_healthy
         restart: true
