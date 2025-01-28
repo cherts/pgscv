@@ -487,6 +487,12 @@ services:
       postgres16:
         condition: service_healthy
         restart: true
+      postgres17:
+        condition: service_healthy
+        restart: true
+      postgres17replica1:
+        condition: service_healthy
+        restart: true
 
 volumes:
   vmetrics_data:
