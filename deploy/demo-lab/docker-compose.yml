@@ -193,6 +193,7 @@ services:
     command: |
       bash -c "
       if [ ! -f /data/postgres/backup_label.old ]; then rm -rf /data/postgres/* && su - postgres -c 'PGPASSWORD=repluser pg_basebackup -P -R -X stream -c fast -h postgres16 -p 5432 -U repluser -D /data/postgres --slot=replica_slot1'; fi;
+      chown -R postgres:postgres /data/postgres && chmod 0700 /data/postgres;
       su - postgres -c 'PGDATA=/data/postgres postgres -c listen_addresses=* -c shared_buffers=128MB -c shared_preload_libraries=pg_stat_statements -c pg_stat_statements.max=10000 -c pg_stat_statements.track=all -c jit=off';
       "
     volumes:
@@ -209,6 +210,7 @@ services:
     command: |
       bash -c "
       if [ ! -f /data/postgres/backup_label.old ]; then rm -rf /data/postgres/* && su - postgres -c 'PGPASSWORD=repluser pg_basebackup -P -R -X stream -c fast -h postgres17 -p 5432 -U repluser -D /data/postgres --slot=replica_slot1'; fi;
+      chown -R postgres:postgres /data/postgres && chmod 0700 /data/postgres;
       su - postgres -c 'PGDATA=/data/postgres postgres -c listen_addresses=* -c shared_buffers=128MB -c shared_preload_libraries=pg_stat_statements -c pg_stat_statements.max=10000 -c pg_stat_statements.track=all -c jit=off';
       "
     volumes:
