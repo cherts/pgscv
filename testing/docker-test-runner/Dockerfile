@@ -5,7 +5,7 @@
 # __release_tag__ gosec v2.22.0 was released 2025-01-09
 FROM postgres:14.15
 
-LABEL version="1.0.4"
+LABEL version="1.0.5"
 
 # install dependencies
 RUN apt-get update && \
@@ -23,4 +23,4 @@ ENV PATH="${PATH}:/usr/local/bin:/usr/local/go/bin"
 COPY prepare-test-environment.sh /usr/bin/
 COPY fixtures.sql /opt/testing/
 
-CMD ["echo", "I'm pgscv test runner 1.0.4"]
+CMD ["echo", "I'm pgscv test runner 1.0.5"]
