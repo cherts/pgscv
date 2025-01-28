@@ -14,7 +14,7 @@ import (
 const (
 	// Query for Postgres version 9.6 and older.
 	postgresReplicationSlotQuery96 = "SELECT database, slot_name, slot_type, active, " +
-		"CASE WHEN pg_is_in_recovery() THEN pg_xlog_location_diff(pg_current_xlog_location(), restart_lsn) " +
+		"CASE WHEN pg_is_in_recovery() THEN pg_xlog_location_diff(pg_last_xlog_receive_location(), restart_lsn) " +
 		"ELSE pg_xlog_location_diff(pg_current_xlog_location(), restart_lsn) END AS since_restart_bytes " +
 		"FROM pg_replication_slots"
 
