@@ -19,6 +19,8 @@
 - postgres15 (listen port: 5435)
 - postgres16 (listen port: 5436)
 - postgres17 (listen port: 5437)
+- postgres16replica1 (listen port: 7436)
+- postgres17replica1 (listen port: 7437)
 - pgbouncer9 (listen port: 6429)
 - pgbouncer10 (listen port: 6430)
 - pgbouncer11 (listen port: 6431)
