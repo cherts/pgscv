@@ -205,7 +205,7 @@ services:
        - pg9_replica1data:/data/postgres
        - ${PWD}/postgres/init_replica.sh:/usr/local/bin/init_replica.sh
     ports:
-      - 7429:5432
+      - 4429:5432
     depends_on:
       - postgres9
   postgres10replica1:
@@ -218,7 +218,7 @@ services:
        - pg10_replica1data:/data/postgres
        - ${PWD}/postgres/init_replica.sh:/usr/local/bin/init_replica.sh
     ports:
-      - 7430:5432
+      - 4430:5432
     depends_on:
       - postgres10
   postgres11replica1:
@@ -231,7 +231,7 @@ services:
        - pg11_replica1data:/data/postgres
        - ${PWD}/postgres/init_replica.sh:/usr/local/bin/init_replica.sh
     ports:
-      - 7431:5432
+      - 4431:5432
     depends_on:
       - postgres11
   postgres12replica1:
@@ -244,7 +244,7 @@ services:
        - pg12_replica1data:/data/postgres
        - ${PWD}/postgres/init_replica.sh:/usr/local/bin/init_replica.sh
     ports:
-      - 7432:5432
+      - 4432:5432
     depends_on:
       - postgres12
   postgres13replica1:
@@ -257,7 +257,7 @@ services:
        - pg13_replica1data:/data/postgres
        - ${PWD}/postgres/init_replica.sh:/usr/local/bin/init_replica.sh
     ports:
-      - 7433:5432
+      - 4433:5432
     depends_on:
       - postgres13
   postgres14replica1:
@@ -270,7 +270,7 @@ services:
        - pg14_replica1data:/data/postgres
        - ${PWD}/postgres/init_replica.sh:/usr/local/bin/init_replica.sh
     ports:
-      - 7434:5432
+      - 4434:5432
     depends_on:
       - postgres14
   postgres15replica1:
@@ -283,7 +283,7 @@ services:
        - pg15_replica1data:/data/postgres
        - ${PWD}/postgres/init_replica.sh:/usr/local/bin/init_replica.sh
     ports:
-      - 7435:5432
+      - 4435:5432
     depends_on:
       - postgres15
   postgres16replica1:
@@ -296,7 +296,7 @@ services:
        - pg16_replica1data:/data/postgres
        - ${PWD}/postgres/init_replica.sh:/usr/local/bin/init_replica.sh
     ports:
-      - 7436:5432
+      - 4436:5432
     depends_on:
       - postgres16
   postgres17replica1:
@@ -309,7 +309,7 @@ services:
        - pg17_replica1data:/data/postgres
        - ${PWD}/postgres/init_replica.sh:/usr/local/bin/init_replica.sh
     ports:
-      - 7437:5432
+      - 4437:5432
     depends_on:
       - postgres17
   etcd1: &etcd
