@@ -69,6 +69,12 @@ if [ ! -f "${PG_DATADIR}/backup_label.old" ]; then
     _logging "Remove old data..."
     shopt -s dotglob
     rm -rf ${PG_DATADIR}/* >/dev/null 2>&1
+    _logging "Waiting for PostgreSQL to start on server ${PG_HOST}:${PG_PORT}..."
+    #while ! ping -c 1 -n -w 1 ${PG_HOST} &> /dev/null
+    while ! nc -z ${PG_HOST} ${PG_PORT} &> /dev/null; do 
+    do
+        sleep 0.5
+    done
     _logging "Run pg_basebackup with options: ${PG_BASEBACKUP_OPTS}..."
     PGPASSWORD=${PG_REPLUSER_PASSWORD} pg_basebackup ${PG_BASEBACKUP_OPTS} --host=${PG_HOST} --port=${PG_PORT} --username=${PG_REPLUSER} --pgdata=${PG_DATADIR} --slot=${PG_REPL_SLOT}
     if [ $? -eq 0 ]; then
@@ -85,6 +91,17 @@ if [ -d "${PG_DATADIR}" ]; then
     chown -R postgres:postgres "${PG_DATADIR}" >/dev/null 2>&1
     _logging "Set permitions..."
     chmod 0700 "${PG_DATADIR}" >/dev/null 2>&1
+fi
+
+if [ ! -f "${PG_DATADIR}/backup_label.old" ]; then
+    PG_OPTS=${6:-"-c listen_addresses=* -c shared_buffers=128MB -c shared_preload_libraries=pg_stat_statements -c pg_stat_statements.max=10000 -c pg_stat_statements.track=all"}
+    if [ "${PG_MAJOR_VER}" -gt 10 ]; then
+        PG_EXTRA_OPTS="${PG_EXTRA_OPTS} -c jit=off"
+    fi
+    _logging "Starting PostgreSQL v${PG_MAJOR_VER} with options: ${PG_OPTS} ${PG_EXTRA_OPTS}"
+    PGDATA=${PG_DATADIR} postgres ${PG_OPTS} ${PG_EXTRA_OPTS}
+    _logging "Shutting down PostgreSQL v${PG_MAJOR_VER}..."
+    pg_ctl stop -D ${PG_DATADIR} -m fast
 fi
 
 _logging "End script ${SCRIPT_DIR}/${SCRIPT_NAME}"
