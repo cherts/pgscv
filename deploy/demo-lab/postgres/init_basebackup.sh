@@ -64,6 +64,8 @@ else
 fi
 
 if [ ! -f "${PG_DATADIR}/backup_label.old" ]; then
+    _logging "Shutting down PostgreSQL v${PG_MAJOR_VER}..."
+    pg_ctl stop -D ${PG_DATADIR} -m fast
     _logging "Remove old data..."
     shopt -s dotglob
     rm -rf ${PG_DATADIR}/* >/dev/null 2>&1
