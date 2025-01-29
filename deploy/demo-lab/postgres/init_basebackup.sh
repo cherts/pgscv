@@ -91,6 +91,8 @@ if [ ! -f "${PG_DATADIR}/backup_label.old" ]; then
         _logging "pg_basebackup done."
         _duration "${DATE_START}"
     else
+        _logging "Remove replication slot..."
+        PGPASSWORD=${PG_REPLUSER_PASSWORD} psql --host=${PG_HOST} --port=${PG_PORT} --username=${PG_REPLUSER} --dbname=postgres --command="SELECT pg_drop_replication_slot('${PG_REPL_SLOT}');"
         _logging "Failed to create backup, remove old data and exit..."
         shopt -s dotglob
         rm -rf ${PG_DATADIR}/* >/dev/null 2>&1
