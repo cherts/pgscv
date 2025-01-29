@@ -72,7 +72,6 @@ if [ ! -f "${PG_DATADIR}/backup_label.old" ]; then
     _logging "Waiting for PostgreSQL to start on server ${PG_HOST}:${PG_PORT}..."
     #while ! ping -c 1 -n -w 1 ${PG_HOST} &> /dev/null
     while ! nc -z ${PG_HOST} ${PG_PORT} &> /dev/null; do 
-    do
         sleep 0.5
     done
     _logging "Run pg_basebackup with options: ${PG_BASEBACKUP_OPTS}..."
