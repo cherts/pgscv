@@ -200,7 +200,7 @@ services:
     container_name: postgres9replica1
     image: postgres:9-alpine
     hostname: postgres9replica1
-    command: init_replica.sh "" "postgres9"
+    command: init_replica.sh "" "postgres9" "" "" "" "" "-c max_replication_slots=5 -c hot_standby=on -c max_wal_senders=5 -c wal_level=replica"
     volumes:
        - pg9_replica1data:/data/postgres
        - ${PWD}/postgres/init_replica.sh:/usr/local/bin/init_replica.sh
