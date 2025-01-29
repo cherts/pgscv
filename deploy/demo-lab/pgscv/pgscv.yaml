@@ -43,6 +43,9 @@ services:
   "postgres9replica1":
     service_type: "postgres"
     conninfo: "postgres://pgscv:pgscv@postgres9replica1:5432/postgres"
+  "postgres9replica2":
+    service_type: "postgres"
+    conninfo: "postgres://pgscv:pgscv@postgres9replica2:5432/postgres"
   "postgres10replica1":
     service_type: "postgres"
     conninfo: "postgres://pgscv:pgscv@postgres10replica1:5432/postgres"
