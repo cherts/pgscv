@@ -49,10 +49,20 @@ services:
       - "pg_stat_statements.max=10000"
       - "-c"
       - "pg_stat_statements.track=all"
+      - "-c"
+      - "max_replication_slots=5"
+      - "-c"
+      - "hot_standby=on"
+      - "-c"
+      - "max_wal_senders=5"
+      - "-c"
+      - "wal_level=replica"
     environment:
       POSTGRES_DB: ${POSTGRES_DB:-postgres}
       POSTGRES_USER: ${POSTGRES_USER:-postgres}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      #POSTGRES_HOST_AUTH_METHOD: ${POSTGRES_HOST_AUTH_METHOD:-trust}
+      POSTGRES_HOST_AUTH_METHOD: "md5\nhost replication all 0.0.0.0/0 md5"
       PGDATA: /data/postgres
     ports:
       - 5429:5432
@@ -185,19 +195,106 @@ services:
        - ${PWD}/postgres/init.sql:/docker-entrypoint-initdb.d/01-init.sql
     ports:
       - 5437:5432
+  postgres9replica1:
+    <<: *postgres_old_base
+    container_name: postgres9replica1
+    image: postgres:9-alpine
+    hostname: postgres9replica1
+    command: init_replica.sh "" "postgres9"
+    volumes:
+       - pg9_replica1data:/data/postgres
+       - ${PWD}/postgres/init_replica.sh:/usr/local/bin/init_replica.sh
+    ports:
+      - 7429:5432
+    depends_on:
+      - postgres9
+  postgres10replica1:
+    <<: *postgres_old_base
+    container_name: postgres10replica1
+    image: postgres:10-alpine
+    hostname: postgres10replica1
+    command: init_replica.sh "" "postgres10"
+    volumes:
+       - pg10_replica1data:/data/postgres
+       - ${PWD}/postgres/init_replica.sh:/usr/local/bin/init_replica.sh
+    ports:
+      - 7430:5432
+    depends_on:
+      - postgres10
+  postgres11replica1:
+    <<: *postgres_old_base
+    container_name: postgres11replica1
+    image: postgres:11-alpine
+    hostname: postgres11replica1
+    command: init_replica.sh "" "postgres11"
+    volumes:
+       - pg11_replica1data:/data/postgres
+       - ${PWD}/postgres/init_replica.sh:/usr/local/bin/init_replica.sh
+    ports:
+      - 7431:5432
+    depends_on:
+      - postgres11
+  postgres12replica1:
+    <<: *postgres_base
+    container_name: postgres12replica1
+    image: postgres:12-alpine
+    hostname: postgres12replica1
+    command: init_replica.sh "" "postgres12"
+    volumes:
+       - pg12_replica1data:/data/postgres
+       - ${PWD}/postgres/init_replica.sh:/usr/local/bin/init_replica.sh
+    ports:
+      - 7432:5432
+    depends_on:
+      - postgres12
+  postgres13replica1:
+    <<: *postgres_base
+    container_name: postgres13replica1
+    image: postgres:13-alpine
+    hostname: postgres13replica1
+    command: init_replica.sh "" "postgres13"
+    volumes:
+       - pg13_replica1data:/data/postgres
+       - ${PWD}/postgres/init_replica.sh:/usr/local/bin/init_replica.sh
+    ports:
+      - 7433:5432
+    depends_on:
+      - postgres13
+  postgres14replica1:
+    <<: *postgres_base
+    container_name: postgres14replica1
+    image: postgres:14-alpine
+    hostname: postgres14replica1
+    command: init_replica.sh "" "postgres14"
+    volumes:
+       - pg14_replica1data:/data/postgres
+       - ${PWD}/postgres/init_replica.sh:/usr/local/bin/init_replica.sh
+    ports:
+      - 7434:5432
+    depends_on:
+      - postgres14
+  postgres15replica1:
+    <<: *postgres_base
+    container_name: postgres15replica1
+    image: postgres:15-alpine
+    hostname: postgres15replica1
+    command: init_replica.sh "" "postgres15"
+    volumes:
+       - pg15_replica1data:/data/postgres
+       - ${PWD}/postgres/init_replica.sh:/usr/local/bin/init_replica.sh
+    ports:
+      - 7435:5432
+    depends_on:
+      - postgres15
   postgres16replica1:
     <<: *postgres_base
     container_name: postgres16replica1
     image: postgres:16-alpine
     hostname: postgres16replica1
-    command: |
-      bash -c "
-      if [ ! -f /data/postgres/backup_label.old ]; then rm -rf /data/postgres/* && su - postgres -c 'PGPASSWORD=repluser pg_basebackup -P -R -X stream -c fast -h postgres16 -p 5432 -U repluser -D /data/postgres --slot=replica_slot1'; fi;
-      chown -R postgres:postgres /data/postgres && chmod 0700 /data/postgres;
-      su - postgres -c 'PGDATA=/data/postgres postgres -c listen_addresses=* -c shared_buffers=128MB -c shared_preload_libraries=pg_stat_statements -c pg_stat_statements.max=10000 -c pg_stat_statements.track=all -c jit=off';
-      "
+    command: init_replica.sh "" "postgres16"
     volumes:
        - pg16_replica1data:/data/postgres
+       - ${PWD}/postgres/init_replica.sh:/usr/local/bin/init_replica.sh
     ports:
       - 7436:5432
     depends_on:
@@ -207,14 +304,10 @@ services:
     container_name: postgres17replica1
     image: postgres:17-alpine
     hostname: postgres17replica1
-    command: |
-      bash -c "
-      if [ ! -f /data/postgres/backup_label.old ]; then rm -rf /data/postgres/* && su - postgres -c 'PGPASSWORD=repluser pg_basebackup -P -R -X stream -c fast -h postgres17 -p 5432 -U repluser -D /data/postgres --slot=replica_slot1'; fi;
-      chown -R postgres:postgres /data/postgres && chmod 0700 /data/postgres;
-      su - postgres -c 'PGDATA=/data/postgres postgres -c listen_addresses=* -c shared_buffers=128MB -c shared_preload_libraries=pg_stat_statements -c pg_stat_statements.max=10000 -c pg_stat_statements.track=all -c jit=off';
-      "
+    command: init_replica.sh "" "postgres17"
     volumes:
        - pg17_replica1data:/data/postgres
+       - ${PWD}/postgres/init_replica.sh:/usr/local/bin/init_replica.sh
     ports:
       - 7437:5432
     depends_on:
@@ -582,6 +675,48 @@ volumes:
       o: bind
       type: rw
       device: ${PWD}/postgres/pg17data
+  pg9_replica1data:
+    driver: local
+    driver_opts:
+      o: bind
+      type: rw
+      device: ${PWD}/postgres/pg9replica1data
+  pg10_replica1data:
+    driver: local
+    driver_opts:
+      o: bind
+      type: rw
+      device: ${PWD}/postgres/pg10replica1data
+  pg11_replica1data:
+    driver: local
+    driver_opts:
+      o: bind
+      type: rw
+      device: ${PWD}/postgres/pg11replica1data
+  pg12_replica1data:
+    driver: local
+    driver_opts:
+      o: bind
+      type: rw
+      device: ${PWD}/postgres/pg12replica1data
+  pg13_replica1data:
+    driver: local
+    driver_opts:
+      o: bind
+      type: rw
+      device: ${PWD}/postgres/pg13replica1data
+  pg14_replica1data:
+    driver: local
+    driver_opts:
+      o: bind
+      type: rw
+      device: ${PWD}/postgres/pg14replica1data
+  pg15_replica1data:
+    driver: local
+    driver_opts:
+      o: bind
+      type: rw
+      device: ${PWD}/postgres/pg15replica1data
   pg16_replica1data:
     driver: local
     driver_opts:
