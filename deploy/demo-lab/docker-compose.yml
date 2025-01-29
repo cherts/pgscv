@@ -601,6 +601,27 @@ services:
       postgres17:
         condition: service_healthy
         restart: true
+      postgres9replica1:
+        condition: service_healthy
+        restart: true
+      postgres10replica1:
+        condition: service_healthy
+        restart: true
+      postgres11replica1:
+        condition: service_healthy
+        restart: true
+      postgres12replica1:
+        condition: service_healthy
+        restart: true
+      postgres13replica1:
+        condition: service_healthy
+        restart: true
+      postgres14replica1:
+        condition: service_healthy
+        restart: true
+      postgres15replica1:
+        condition: service_healthy
+        restart: true
       postgres16replica1:
         condition: service_healthy
         restart: true
