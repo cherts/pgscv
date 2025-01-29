@@ -57,10 +57,12 @@ PG_MAJOR_VER=$(pg_config --version 2>/dev/null | awk -F' ' '{print $2}' | awk -F
 
 _logging "PostgreSQL major version: ${PG_MAJOR_VER}"
 
-if [ "${PG_MAJOR_VER}" -eq 9 ]; then
+if [ "${PG_MAJOR_VER}" -le 9 ]; then
     PG_BASEBACKUP_OPTS="--verbose --progress --write-recovery-conf --xlog-method=stream --checkpoint=fast"
-else
+else if [ "${PG_MAJOR_VER}" -eq 10 ]; then
     PG_BASEBACKUP_OPTS="--verbose --progress --write-recovery-conf --wal-method=stream --checkpoint=fast"
+else
+    PG_BASEBACKUP_OPTS="--verbose --progress --write-recovery-conf --wal-method=stream --checkpoint=fast --create-slot"
 fi
 
 if [ ! -f "${PG_DATADIR}/backup_label.old" ]; then
@@ -70,12 +72,19 @@ if [ ! -f "${PG_DATADIR}/backup_label.old" ]; then
     shopt -s dotglob
     rm -rf ${PG_DATADIR}/* >/dev/null 2>&1
     _logging "Waiting for PostgreSQL to start on server ${PG_HOST}:${PG_PORT}..."
-    #while ! ping -c 1 -n -w 1 ${PG_HOST} &> /dev/null
     while ! nc -z ${PG_HOST} ${PG_PORT} &> /dev/null; do 
         sleep 0.5
     done
+    if [ "${PG_MAJOR_VER}" -le 10 ]; then
+        _logging "Creating replication slot..."
+        PGPASSWORD=${PG_REPLUSER_PASSWORD} psql --host=${PG_HOST} --port=${PG_PORT} --username=${PG_REPLUSER} --command="SELECT pg_create_physical_replication_slot('${PG_REPL_SLOT}');"
+        if [ $? -ne 0 ]; then
+            _logging "Failed to create replication slot, exit."
+            exit 1
+        fi
+    fi
     _logging "Run pg_basebackup with options: ${PG_BASEBACKUP_OPTS}..."
-    PGPASSWORD=${PG_REPLUSER_PASSWORD} pg_basebackup ${PG_BASEBACKUP_OPTS} --host=${PG_HOST} --port=${PG_PORT} --username=${PG_REPLUSER} --pgdata=${PG_DATADIR} --slot=${PG_REPL_SLOT} --create-slot
+    PGPASSWORD=${PG_REPLUSER_PASSWORD} pg_basebackup ${PG_BASEBACKUP_OPTS} --host=${PG_HOST} --port=${PG_PORT} --username=${PG_REPLUSER} --pgdata=${PG_DATADIR} --slot=${PG_REPL_SLOT}
     if [ $? -eq 0 ]; then
         _logging "pg_basebackup done."
         _duration "${DATE_START}"
