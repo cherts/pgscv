@@ -79,7 +79,9 @@ if [ ! -f "${PG_DATADIR}/backup_label.old" ]; then
         _logging "Creating replication slot..."
         PGPASSWORD=${PG_REPLUSER_PASSWORD} psql --host=${PG_HOST} --port=${PG_PORT} --username=${PG_REPLUSER} --dbname=postgres --command="SELECT pg_create_physical_replication_slot('${PG_REPL_SLOT}');"
         if [ $? -ne 0 ]; then
-            _logging "Failed to create replication slot, exit."
+            _logging "Failed to create replication slot, remove old data and exit..."
+            shopt -s dotglob
+            rm -rf ${PG_DATADIR}/* >/dev/null 2>&1
             exit 1
         fi
     fi
@@ -89,7 +91,9 @@ if [ ! -f "${PG_DATADIR}/backup_label.old" ]; then
         _logging "pg_basebackup done."
         _duration "${DATE_START}"
     else
-        _logging "Failed to create backup, exit."
+        _logging "Failed to create backup, remove old data and exit..."
+        shopt -s dotglob
+        rm -rf ${PG_DATADIR}/* >/dev/null 2>&1
         exit 1
     fi
 fi
