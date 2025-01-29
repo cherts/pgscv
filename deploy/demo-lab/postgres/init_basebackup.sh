@@ -75,7 +75,7 @@ if [ ! -f "${PG_DATADIR}/backup_label.old" ]; then
         sleep 0.5
     done
     _logging "Run pg_basebackup with options: ${PG_BASEBACKUP_OPTS}..."
-    PGPASSWORD=${PG_REPLUSER_PASSWORD} pg_basebackup ${PG_BASEBACKUP_OPTS} --host=${PG_HOST} --port=${PG_PORT} --username=${PG_REPLUSER} --pgdata=${PG_DATADIR} --slot=${PG_REPL_SLOT}
+    PGPASSWORD=${PG_REPLUSER_PASSWORD} pg_basebackup ${PG_BASEBACKUP_OPTS} --host=${PG_HOST} --port=${PG_PORT} --username=${PG_REPLUSER} --pgdata=${PG_DATADIR} --slot=${PG_REPL_SLOT} --create-slot
     if [ $? -eq 0 ]; then
         _logging "pg_basebackup done."
         _duration "${DATE_START}"

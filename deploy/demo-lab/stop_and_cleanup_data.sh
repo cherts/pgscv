@@ -53,6 +53,7 @@ if [ $? -eq 0 ]; then
 		echo "Remove postgres v${PG_VER} data..."
 		rm -rf ${SCRIPT_DIR}/postgres/pg${PG_VER}data/* >/dev/null 2>&1
 		rm -rf ${SCRIPT_DIR}/postgres/pg${PG_VER}replica1data/* >/dev/null 2>&1
+		rm -rf ${SCRIPT_DIR}/postgres/pg${PG_VER}replica2data/* >/dev/null 2>&1
 	done
 	echo "Remove victoriametrics data..."
 	rm -rf ${SCRIPT_DIR}/victoriametrics/data/* >/dev/null 2>&1

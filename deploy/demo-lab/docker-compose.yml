@@ -311,7 +311,6 @@ services:
     volumes:
        - pg17_replica1data:/data/postgres
        - ${PWD}/postgres/init_basebackup.sh:/docker-entrypoint-initdb.d/01-basebackup.sh
-       - ${PWD}/postgres/init_cascade.sql:/docker-entrypoint-initdb.d/02-cascade.sql
     ports:
       - 4437:5432
     depends_on:
