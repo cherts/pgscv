@@ -764,6 +764,12 @@ volumes:
       o: bind
       type: rw
       device: ${PWD}/postgres/pg9replica1data
+  pg9_replica2data:
+    driver: local
+    driver_opts:
+      o: bind
+      type: rw
+      device: ${PWD}/postgres/pg9replica2data
   pg10_replica1data:
     driver: local
     driver_opts:
