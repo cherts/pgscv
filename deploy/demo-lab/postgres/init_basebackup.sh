@@ -59,7 +59,7 @@ _logging "PostgreSQL major version: ${PG_MAJOR_VER}"
 
 if [ "${PG_MAJOR_VER}" -le 9 ]; then
     PG_BASEBACKUP_OPTS="--verbose --progress --write-recovery-conf --xlog-method=stream --checkpoint=fast"
-else if [ "${PG_MAJOR_VER}" -eq 10 ]; then
+elif [ "${PG_MAJOR_VER}" -eq 10 ]; then
     PG_BASEBACKUP_OPTS="--verbose --progress --write-recovery-conf --wal-method=stream --checkpoint=fast"
 else
     PG_BASEBACKUP_OPTS="--verbose --progress --write-recovery-conf --wal-method=stream --checkpoint=fast --create-slot"
