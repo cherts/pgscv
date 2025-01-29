@@ -40,6 +40,39 @@ services:
   "postgres17":
     service_type: "postgres"
     conninfo: "postgres://pgscv:pgscv@postgres17:5432/postgres"
+  "postgres9replica1":
+    service_type: "postgres"
+    conninfo: "postgres://pgscv:pgscv@postgres9replica1:5432/postgres"
+  "postgres9replica2":
+    service_type: "postgres"
+    conninfo: "postgres://pgscv:pgscv@postgres9replica2:5432/postgres"
+  "postgres10replica1":
+    service_type: "postgres"
+    conninfo: "postgres://pgscv:pgscv@postgres10replica1:5432/postgres"
+  "postgres11replica1":
+    service_type: "postgres"
+    conninfo: "postgres://pgscv:pgscv@postgres11replica1:5432/postgres"
+  "postgres12replica1":
+    service_type: "postgres"
+    conninfo: "postgres://pgscv:pgscv@postgres12replica1:5432/postgres"
+  "postgres13replica1":
+    service_type: "postgres"
+    conninfo: "postgres://pgscv:pgscv@postgres13replica1:5432/postgres"
+  "postgres14replica1":
+    service_type: "postgres"
+    conninfo: "postgres://pgscv:pgscv@postgres14replica1:5432/postgres"
+  "postgres15replica1":
+    service_type: "postgres"
+    conninfo: "postgres://pgscv:pgscv@postgres15replica1:5432/postgres"
+  "postgres16replica1":
+    service_type: "postgres"
+    conninfo: "postgres://pgscv:pgscv@postgres16replica1:5432/postgres"
+  "postgres17replica1":
+    service_type: "postgres"
+    conninfo: "postgres://pgscv:pgscv@postgres17replica1:5432/postgres"
+  "postgres17replica2":
+    service_type: "postgres"
+    conninfo: "postgres://pgscv:pgscv@postgres17replica2:5432/postgres"
   "patroni_pg_1":
     service_type: "postgres"
     conninfo: "postgres://postgres:postgres@patroni1:5432/postgres"

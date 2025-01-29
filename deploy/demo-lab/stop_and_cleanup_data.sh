@@ -23,29 +23,38 @@ else
 	exit 1
 fi
 
+PG_VERSIONS=(
+	"9,1.4.5"
+	"10,1.4.5"
+	"11,1.4.5"
+	"12,1.4.5"
+	"13,1.4.6"
+	"14,1.4.7"
+	"15,1.4.8"
+	"16,1.5.0"
+	"17,1.5.0"
+)
+
 echo "Stopping all container via docker-compose, please waiting..."
 ${DC_BIN} down --volumes >/dev/null 2>&1
 if [ $? -eq 0 ]; then
+	shopt -s dotglob
 	echo "Remove grafana data..."
 	rm -rf ${SCRIPT_DIR}/grafana/data/* >/dev/null 2>&1
 	echo "Remove patroni data..."
-	shopt -s dotglob
 	rm -rf ${SCRIPT_DIR}/patroni/etc_data1/* >/dev/null 2>&1
 	rm -rf ${SCRIPT_DIR}/patroni/etc_data2/* >/dev/null 2>&1
 	rm -rf ${SCRIPT_DIR}/patroni/etc_data3/* >/dev/null 2>&1
 	rm -rf ${SCRIPT_DIR}/patroni/pg_data1/* >/dev/null 2>&1
 	rm -rf ${SCRIPT_DIR}/patroni/pg_data2/* >/dev/null 2>&1
 	rm -rf ${SCRIPT_DIR}/patroni/pg_data3/* >/dev/null 2>&1
-	echo "Remove postgres data..."
-	rm -rf ${SCRIPT_DIR}/postgres/pg9data/* >/dev/null 2>&1
-	rm -rf ${SCRIPT_DIR}/postgres/pg10data/* >/dev/null 2>&1
-	rm -rf ${SCRIPT_DIR}/postgres/pg11data/* >/dev/null 2>&1
-	rm -rf ${SCRIPT_DIR}/postgres/pg12data/* >/dev/null 2>&1
-	rm -rf ${SCRIPT_DIR}/postgres/pg13data/* >/dev/null 2>&1
-	rm -rf ${SCRIPT_DIR}/postgres/pg14data/* >/dev/null 2>&1
-	rm -rf ${SCRIPT_DIR}/postgres/pg15data/* >/dev/null 2>&1
-	rm -rf ${SCRIPT_DIR}/postgres/pg16data/* >/dev/null 2>&1
-	rm -rf ${SCRIPT_DIR}/postgres/pg17data/* >/dev/null 2>&1
+	for DATA in ${PG_VERSIONS[@]}; do
+		PG_VER=$(echo "${DATA}" | awk -F',' '{print $1}')
+		echo "Remove postgres v${PG_VER} data..."
+		rm -rf ${SCRIPT_DIR}/postgres/pg${PG_VER}data/* >/dev/null 2>&1
+		rm -rf ${SCRIPT_DIR}/postgres/pg${PG_VER}replica1data/* >/dev/null 2>&1
+		rm -rf ${SCRIPT_DIR}/postgres/pg${PG_VER}replica2data/* >/dev/null 2>&1
+	done
 	echo "Remove victoriametrics data..."
 	rm -rf ${SCRIPT_DIR}/victoriametrics/data/* >/dev/null 2>&1
 	echo "All done."

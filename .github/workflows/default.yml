@@ -21,7 +21,7 @@ on:
 jobs:
   test:
     runs-on: ubuntu-22.04
-    container: cherts/pgscv-test-runner:1.0.4
+    container: cherts/pgscv-test-runner:1.0.5
 
     steps:
       - name: Checkout code

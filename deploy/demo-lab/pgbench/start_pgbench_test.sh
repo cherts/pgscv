@@ -61,7 +61,7 @@ fi
 ITERATION=1
 while true; do
 	if [[ ${ONLY_SELECT} -eq 0 ]]; then
-		CL_NUM=$((1 + $RANDOM % 10))
+		CL_NUM=$((1 + $RANDOM % 7))
 		TEST_DUR=30
 		_logging "Run pgbench tests, iteration '${ITERATION}', duration of benchmark test = '${TEST_DUR}s', client number = '${CL_NUM}'..."
 		pgbench -h ${PG_HOST} -p ${PG_PORT} -U pgbench pgbench -T ${TEST_DUR} -j 4 -P 10 -c ${CL_NUM}
@@ -72,7 +72,7 @@ while true; do
 		fi
 	fi
 	_logging "Run pgbench tests (select only), iteration '${ITERATION}', duration of benchmark test = '${TEST_DUR}s', client number = '${CL_NUM}'..."
-	CL_NUM=$((1 + $RANDOM % 10))
+	CL_NUM=$((1 + $RANDOM % 7))
 	TEST_DUR=30
 	pgbench -h ${PG_HOST} -p ${PG_PORT} -U pgbench pgbench -T ${TEST_DUR} -j 4 -P 10 -c ${CL_NUM} -S -n
 	if [ -f "${STOP_FLAG}" ]; then
