@@ -16,7 +16,6 @@ PG_PORT=${PG_REPLICA_PORT:-"5432"}
 PG_REPLUSER=${PG_REPL_USER:-"repluser"}
 PG_REPLUSER_PASSWORD=${PG_REPL_PASSWORD:-"repluser"}
 PG_REPL_SLOT=${PG_REPL_SLOT:-"replica_slot1"}
-PG_OPTS=${PG_OPTS:-"-c listen_addresses=* -c shared_buffers=128MB -c shared_preload_libraries=pg_stat_statements -c pg_stat_statements.max=10000 -c pg_stat_statements.track=all"}
 
 DATE_START=$(date +"%s")
 
@@ -94,13 +93,9 @@ if [ -d "${PG_DATADIR}" ]; then
 fi
 
 if [ ! -f "${PG_DATADIR}/backup_label.old" ]; then
-    if [ "${PG_MAJOR_VER}" -gt 10 ]; then
-        PG_EXTRA_OPTS="${PG_EXTRA_OPTS} -c jit=off"
-    fi
-    #_logging "Starting PostgreSQL v${PG_MAJOR_VER} with options: ${PG_OPTS} ${PG_EXTRA_OPTS}"
-    #PGDATA=${PG_DATADIR} postgres ${PG_OPTS} ${PG_EXTRA_OPTS}
     _logging "Starting PostgreSQL v${PG_MAJOR_VER}..."
     pg_ctl start -D ${PG_DATADIR}
+    sleep 2
     _logging "Shutting down PostgreSQL v${PG_MAJOR_VER}..."
     pg_ctl stop -D ${PG_DATADIR} -m fast
 fi
