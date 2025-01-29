@@ -663,6 +663,9 @@ services:
       postgres9replica1:
         condition: service_healthy
         restart: true
+      postgres9replica2:
+        condition: service_healthy
+        restart: true
       postgres10replica1:
         condition: service_healthy
         restart: true
