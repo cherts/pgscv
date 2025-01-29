@@ -200,10 +200,14 @@ services:
     container_name: postgres9replica1
     image: postgres:9-alpine
     hostname: postgres9replica1
-    command: init_replica.sh "" "postgres9" "" "" "" "" "-c max_replication_slots=5 -c hot_standby=on -c max_wal_senders=5 -c wal_level=replica"
+    #command: init_replica.sh "" "postgres9" "" "" "" "" "-c max_replication_slots=5 -c hot_standby=on -c max_wal_senders=5 -c wal_level=replica"
+    environment:
+      <<: *postgres_base_env
+      PG_REPLICA_HOST: "postgres9"
+      PG_REPL_SLOT: "replica_slot1"
     volumes:
        - pg9_replica1data:/data/postgres
-       - ${PWD}/postgres/init_replica.sh:/usr/local/bin/init_replica.sh
+       - ${PWD}/postgres/init_basebackup.sh:/docker-entrypoint-initdb.d/01-basebackup.sh
     ports:
       - 4429:5432
     depends_on:
@@ -213,10 +217,13 @@ services:
     container_name: postgres10replica1
     image: postgres:10-alpine
     hostname: postgres10replica1
-    command: init_replica.sh "" "postgres10"
+    environment:
+      <<: *postgres_base_env
+      PG_REPLICA_HOST: "postgres10"
+      PG_REPL_SLOT: "replica_slot1"
     volumes:
        - pg10_replica1data:/data/postgres
-       - ${PWD}/postgres/init_replica.sh:/usr/local/bin/init_replica.sh
+       - ${PWD}/postgres/init_basebackup.sh:/docker-entrypoint-initdb.d/01-basebackup.sh
     ports:
       - 4430:5432
     depends_on:
@@ -226,10 +233,13 @@ services:
     container_name: postgres11replica1
     image: postgres:11-alpine
     hostname: postgres11replica1
-    command: init_replica.sh "" "postgres11"
+    environment:
+      <<: *postgres_base_env
+      PG_REPLICA_HOST: "postgres11"
+      PG_REPL_SLOT: "replica_slot1"
     volumes:
        - pg11_replica1data:/data/postgres
-       - ${PWD}/postgres/init_replica.sh:/usr/local/bin/init_replica.sh
+       - ${PWD}/postgres/init_basebackup.sh:/docker-entrypoint-initdb.d/01-basebackup.sh
     ports:
       - 4431:5432
     depends_on:
@@ -239,10 +249,13 @@ services:
     container_name: postgres12replica1
     image: postgres:12-alpine
     hostname: postgres12replica1
-    command: init_replica.sh "" "postgres12"
+    environment:
+      <<: *postgres_base_env
+      PG_REPLICA_HOST: "postgres12"
+      PG_REPL_SLOT: "replica_slot1"
     volumes:
        - pg12_replica1data:/data/postgres
-       - ${PWD}/postgres/init_replica.sh:/usr/local/bin/init_replica.sh
+       - ${PWD}/postgres/init_basebackup.sh:/docker-entrypoint-initdb.d/01-basebackup.sh
     ports:
       - 4432:5432
     depends_on:
@@ -252,10 +265,13 @@ services:
     container_name: postgres13replica1
     image: postgres:13-alpine
     hostname: postgres13replica1
-    command: init_replica.sh "" "postgres13"
+    environment:
+      <<: *postgres_base_env
+      PG_REPLICA_HOST: "postgres13"
+      PG_REPL_SLOT: "replica_slot1"
     volumes:
        - pg13_replica1data:/data/postgres
-       - ${PWD}/postgres/init_replica.sh:/usr/local/bin/init_replica.sh
+       - ${PWD}/postgres/init_basebackup.sh:/docker-entrypoint-initdb.d/01-basebackup.sh
     ports:
       - 4433:5432
     depends_on:
@@ -265,10 +281,13 @@ services:
     container_name: postgres14replica1
     image: postgres:14-alpine
     hostname: postgres14replica1
-    command: init_replica.sh "" "postgres14"
+    environment:
+      <<: *postgres_base_env
+      PG_REPLICA_HOST: "postgres14"
+      PG_REPL_SLOT: "replica_slot1"
     volumes:
        - pg14_replica1data:/data/postgres
-       - ${PWD}/postgres/init_replica.sh:/usr/local/bin/init_replica.sh
+       - ${PWD}/postgres/init_basebackup.sh:/docker-entrypoint-initdb.d/01-basebackup.sh
     ports:
       - 4434:5432
     depends_on:
@@ -278,10 +297,13 @@ services:
     container_name: postgres15replica1
     image: postgres:15-alpine
     hostname: postgres15replica1
-    command: init_replica.sh "" "postgres15"
+    environment:
+      <<: *postgres_base_env
+      PG_REPLICA_HOST: "postgres15"
+      PG_REPL_SLOT: "replica_slot1"
     volumes:
        - pg15_replica1data:/data/postgres
-       - ${PWD}/postgres/init_replica.sh:/usr/local/bin/init_replica.sh
+       - ${PWD}/postgres/init_basebackup.sh:/docker-entrypoint-initdb.d/01-basebackup.sh
     ports:
       - 4435:5432
     depends_on:
@@ -291,10 +313,13 @@ services:
     container_name: postgres16replica1
     image: postgres:16-alpine
     hostname: postgres16replica1
-    command: init_replica.sh "" "postgres16"
+    environment:
+      <<: *postgres_base_env
+      PG_REPLICA_HOST: "postgres16"
+      PG_REPL_SLOT: "replica_slot1"
     volumes:
        - pg16_replica1data:/data/postgres
-       - ${PWD}/postgres/init_replica.sh:/usr/local/bin/init_replica.sh
+       - ${PWD}/postgres/init_basebackup.sh:/docker-entrypoint-initdb.d/01-basebackup.sh
     ports:
       - 4436:5432
     depends_on:
