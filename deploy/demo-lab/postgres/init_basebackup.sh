@@ -70,7 +70,7 @@ if [ ! -f "${PG_DATADIR}/backup_label.old" ]; then
     shopt -s dotglob
     rm -rf ${PG_DATADIR}/* >/dev/null 2>&1
     _logging "Run pg_basebackup with options: ${PG_BASEBACKUP_OPTS}..."
-    su - postgres -c "PGPASSWORD=${PG_REPLUSER_PASSWORD} pg_basebackup ${PG_BASEBACKUP_OPTS} --host=${PG_HOST} --port=${PG_PORT} --username=${PG_REPLUSER} --pgdata=${PG_DATADIR} --slot=${PG_REPL_SLOT}"
+    PGPASSWORD=${PG_REPLUSER_PASSWORD} pg_basebackup ${PG_BASEBACKUP_OPTS} --host=${PG_HOST} --port=${PG_PORT} --username=${PG_REPLUSER} --pgdata=${PG_DATADIR} --slot=${PG_REPL_SLOT}
     if [ $? -eq 0 ]; then
         _logging "pg_basebackup done."
         _duration "${DATE_START}"
