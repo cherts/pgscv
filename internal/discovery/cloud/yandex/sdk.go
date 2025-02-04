@@ -5,7 +5,7 @@ import (
 	"context"
 	"sync"
 
-	"github.com/cherts/pgscv/internal/log"
+	"github.com/cherts/pgscv/discovery/log"
 	ycsdk "github.com/yandex-cloud/go-sdk"
 )
 

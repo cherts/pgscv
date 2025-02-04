@@ -5,6 +5,7 @@ import (
 	"context"
 )
 
+// Config abstract configuration SdConfig.config
 type Config interface{}
 
 // Service abstract service definition
@@ -32,9 +33,11 @@ type Discovery interface {
 }
 
 const (
+	// YandexMDB constant SdConfig.type
 	YandexMDB = "yandex-mdb"
 )
 
+// SdConfig top level of configuration tree
 type SdConfig struct {
 	Type   string `yaml:"type"`
 	Config Config `yaml:"config"`

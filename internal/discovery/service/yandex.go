@@ -1,3 +1,4 @@
+// Package service is package of service discovery module
 package service
 
 import (
@@ -8,9 +9,9 @@ import (
 	"sync"
 	"time"
 
+	"github.com/cherts/pgscv/discovery/log"
 	"github.com/cherts/pgscv/internal/discovery/cloud/yandex"
 	"github.com/cherts/pgscv/internal/discovery/mapops"
-	"github.com/cherts/pgscv/internal/log"
 	"gopkg.in/yaml.v2"
 )
 

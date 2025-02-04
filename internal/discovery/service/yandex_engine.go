@@ -8,8 +8,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/cherts/pgscv/discovery/log"
 	"github.com/cherts/pgscv/internal/discovery/cloud/yandex"
-	"github.com/cherts/pgscv/internal/log"
 )
 
 type clusterDSN struct {

@@ -1,10 +1,11 @@
+// Package instantiate create service discovery from config
 package instantiate
 
 import (
 	"fmt"
 	"github.com/cherts/pgscv/discovery"
+	"github.com/cherts/pgscv/discovery/log"
 	"github.com/cherts/pgscv/internal/discovery/service"
-	"github.com/cherts/pgscv/internal/log"
 	"gopkg.in/yaml.v2"
 )
 
