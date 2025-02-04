@@ -4,7 +4,7 @@ package main
 import (
 	"context"
 	"fmt"
-	"github.com/cherts/pgscv/internal/discovery/service"
+	"github.com/cherts/pgscv/discovery/instantiate"
 	"os"
 	"os/signal"
 	"syscall"
@@ -42,7 +42,7 @@ func main() {
 	}
 
 	if config.DiscoveryConfig != nil {
-		config.DiscoveryServices, err = service.Instantiate(*config.DiscoveryConfig)
+		config.DiscoveryServices, err = instantiate.Instantiate(*config.DiscoveryConfig)
 		if err != nil {
 			log.Errorln("instantiate discovery failed: ", err)
 			os.Exit(1)
