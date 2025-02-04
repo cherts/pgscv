@@ -63,7 +63,7 @@ func Test_parsePostgresStatIO(t *testing.T) {
 			},
 			want: map[string]postgresStatIO{
 				"autovacuum launcher/relation/bulkread": {
-					BackendType: "autovacuum launcher", IoObject: "testsrelationchema", IoContext: "bulkread",
+					BackendType: "autovacuum launcher", IoObject: "relation", IoContext: "bulkread",
 					Reads: 0, ReadTime: 0, Writes: 0, WriteTime: 0,
 					Writebacks: 0, WritebackTime: 0, Extends: 0, ExtendTime: 0,
 					OpBytes: 8192, Hits: 0, Evictions: 0, Reuses: 0,

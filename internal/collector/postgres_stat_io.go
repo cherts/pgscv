@@ -19,20 +19,20 @@ const (
 
 // postgresStatIOCollector defines metric descriptors and stats store.
 type postgresStatIOCollector struct {
-	reads          typedDesc
-	read_time      typedDesc
-	writes         typedDesc
-	write_time     typedDesc
-	writebacks     typedDesc
-	writeback_time typedDesc
-	extends        typedDesc
-	extend_time    typedDesc
-	hits           typedDesc
-	evictions      typedDesc
-	reuses         typedDesc
-	fsyncs         typedDesc
-	fsync_time     typedDesc
-	labelNames     []string
+	reads         typedDesc
+	readTime      typedDesc
+	writes        typedDesc
+	writeTime     typedDesc
+	writebacks    typedDesc
+	writebackTime typedDesc
+	extends       typedDesc
+	extendTime    typedDesc
+	hits          typedDesc
+	evictions     typedDesc
+	reuses        typedDesc
+	fsyncs        typedDesc
+	fsyncTime     typedDesc
+	labelNames    []string
 }
 
 // NewPostgresStatIOCollector returns a new Collector exposing postgres pg_stat_io stats.
@@ -46,7 +46,7 @@ func NewPostgresStatIOCollector(constLabels labels, settings model.CollectorSett
 			labels, constLabels,
 			settings.Filters,
 		),
-		read_time: newBuiltinTypedDesc(
+		readTime: newBuiltinTypedDesc(
 			descOpts{"postgres", "stat_io", "read_time", "Labeled info about read_time.", 0},
 			prometheus.GaugeValue,
 			labels, constLabels,
@@ -58,7 +58,7 @@ func NewPostgresStatIOCollector(constLabels labels, settings model.CollectorSett
 			labels, constLabels,
 			settings.Filters,
 		),
-		write_time: newBuiltinTypedDesc(
+		writeTime: newBuiltinTypedDesc(
 			descOpts{"postgres", "stat_io", "write_time", "Labeled info about write_time.", 0},
 			prometheus.GaugeValue,
 			labels, constLabels,
@@ -70,7 +70,7 @@ func NewPostgresStatIOCollector(constLabels labels, settings model.CollectorSett
 			labels, constLabels,
 			settings.Filters,
 		),
-		writeback_time: newBuiltinTypedDesc(
+		writebackTime: newBuiltinTypedDesc(
 			descOpts{"postgres", "stat_io", "writeback_time", "Labeled info about writeback_time.", 0},
 			prometheus.GaugeValue,
 			labels, constLabels,
@@ -82,7 +82,7 @@ func NewPostgresStatIOCollector(constLabels labels, settings model.CollectorSett
 			labels, constLabels,
 			settings.Filters,
 		),
-		extend_time: newBuiltinTypedDesc(
+		extendTime: newBuiltinTypedDesc(
 			descOpts{"postgres", "stat_io", "extend_time", "Labeled info about extend_time.", 0},
 			prometheus.GaugeValue,
 			labels, constLabels,
@@ -112,7 +112,7 @@ func NewPostgresStatIOCollector(constLabels labels, settings model.CollectorSett
 			labels, constLabels,
 			settings.Filters,
 		),
-		fsync_time: newBuiltinTypedDesc(
+		fsyncTime: newBuiltinTypedDesc(
 			descOpts{"postgres", "stat_io", "fsync_time", "Labeled info about fsync_time.", 0},
 			prometheus.GaugeValue,
 			labels, constLabels,
@@ -144,17 +144,17 @@ func (c *postgresStatIOCollector) Update(config Config, ch chan<- prometheus.Met
 
 			for _, stat := range stats {
 				ch <- c.reads.newConstMetric(stat.Reads, stat.BackendType, stat.IoContext, stat.IoObject)
-				ch <- c.read_time.newConstMetric(stat.ReadTime, stat.BackendType, stat.IoContext, stat.IoObject)
+				ch <- c.readTime.newConstMetric(stat.ReadTime, stat.BackendType, stat.IoContext, stat.IoObject)
 				ch <- c.writes.newConstMetric(stat.Writes, stat.BackendType, stat.IoContext, stat.IoObject)
 				ch <- c.writebacks.newConstMetric(stat.Writebacks, stat.BackendType, stat.IoContext, stat.IoObject)
-				ch <- c.writeback_time.newConstMetric(stat.WritebackTime, stat.BackendType, stat.IoContext, stat.IoObject)
+				ch <- c.writebackTime.newConstMetric(stat.WritebackTime, stat.BackendType, stat.IoContext, stat.IoObject)
 				ch <- c.extends.newConstMetric(stat.Extends, stat.BackendType, stat.IoContext, stat.IoObject)
-				ch <- c.extend_time.newConstMetric(stat.ExtendTime, stat.BackendType, stat.IoContext, stat.IoObject)
+				ch <- c.extendTime.newConstMetric(stat.ExtendTime, stat.BackendType, stat.IoContext, stat.IoObject)
 				ch <- c.hits.newConstMetric(stat.Hits, stat.BackendType, stat.IoContext, stat.IoObject)
 				ch <- c.evictions.newConstMetric(stat.Evictions, stat.BackendType, stat.IoContext, stat.IoObject)
 				ch <- c.reuses.newConstMetric(stat.Reuses, stat.BackendType, stat.IoContext, stat.IoObject)
 				ch <- c.fsyncs.newConstMetric(stat.Fsyncs, stat.BackendType, stat.IoContext, stat.IoObject)
-				ch <- c.fsync_time.newConstMetric(stat.FsyncTime, stat.BackendType, stat.IoContext, stat.IoObject)
+				ch <- c.fsyncTime.newConstMetric(stat.FsyncTime, stat.BackendType, stat.IoContext, stat.IoObject)
 			}
 		}
 	}
@@ -187,7 +187,7 @@ type postgresStatIO struct {
 func parsePostgresStatIO(r *model.PGResult, labelNames []string) map[string]postgresStatIO {
 	log.Debug("parse postgres stat_io stats")
 
-	var stat_io = make(map[string]postgresStatIO)
+	var stats = make(map[string]postgresStatIO)
 
 	for _, row := range r.Rows {
 		var BackendType, IoObject, IoContext string
@@ -204,11 +204,11 @@ func parsePostgresStatIO(r *model.PGResult, labelNames []string) map[string]post
 		}
 
 		// create a stat_io name consisting of trio BackendType/IoObject/IoContext
-		stats := strings.Join([]string{BackendType, IoObject, IoContext}, "/")
+		statIo := strings.Join([]string{BackendType, IoObject, IoContext}, "/")
 
 		// Put stats with labels (but with no data values yet) into stats store.
-		if _, ok := stat_io[stats]; !ok {
-			stat_io[stats] = postgresStatIO{BackendType: BackendType, IoObject: IoObject, IoContext: IoContext}
+		if _, ok := stats[statIo]; !ok {
+			stats[statIo] = postgresStatIO{BackendType: BackendType, IoObject: IoObject, IoContext: IoContext}
 		}
 
 		for i, colname := range r.Colnames {
@@ -229,7 +229,7 @@ func parsePostgresStatIO(r *model.PGResult, labelNames []string) map[string]post
 				continue
 			}
 
-			s := stat_io[stats]
+			s := stats[statIo]
 
 			switch string(colname.Name) {
 			case "reads":
@@ -262,9 +262,9 @@ func parsePostgresStatIO(r *model.PGResult, labelNames []string) map[string]post
 				continue
 			}
 
-			stat_io[stats] = s
+			stats[statIo] = s
 		}
 	}
 
-	return stat_io
+	return stats
 }
