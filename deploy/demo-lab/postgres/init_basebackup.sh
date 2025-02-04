@@ -72,8 +72,9 @@ if [ ! -f "${PG_DATADIR}/backup_label.old" ]; then
     shopt -s dotglob
     rm -rf ${PG_DATADIR}/* >/dev/null 2>&1
     _logging "Waiting for PostgreSQL to start on server ${PG_HOST}:${PG_PORT}..."
-    while ! nc -z ${PG_HOST} ${PG_PORT} &> /dev/null; do 
+    while ! PGPASSWORD=${PG_REPLUSER_PASSWORD} pg_isready -h ${PG_HOST} -p ${PG_PORT} -d postgres -U ${PG_REPLUSER} -t 5 &> /dev/null; do 
         sleep 0.5
+        _logging "Waiting for PostgreSQL to start..."
     done
     if [ "${PG_MAJOR_VER}" -le 10 ]; then
         _logging "Creating replication slot..."
