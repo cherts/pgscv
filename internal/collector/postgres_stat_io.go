@@ -145,19 +145,19 @@ func (c *postgresStatIOCollector) Update(config Config, ch chan<- prometheus.Met
 			stats := parsePostgresStatIO(res, []string{"backend_type", "object", "context"})
 
 			for _, stat := range stats {
-				ch <- c.reads.newConstMetric(stat.Reads, stat.BackendType, stat.IoContext, stat.IoObject)
-				ch <- c.readTime.newConstMetric(stat.ReadTime, stat.BackendType, stat.IoContext, stat.IoObject)
-				ch <- c.writes.newConstMetric(stat.Writes, stat.BackendType, stat.IoContext, stat.IoObject)
-				ch <- c.writeTime.newConstMetric(stat.WriteTime, stat.BackendType, stat.IoContext, stat.IoObject)
-				ch <- c.writebacks.newConstMetric(stat.Writebacks, stat.BackendType, stat.IoContext, stat.IoObject)
-				ch <- c.writebackTime.newConstMetric(stat.WritebackTime, stat.BackendType, stat.IoContext, stat.IoObject)
-				ch <- c.extends.newConstMetric(stat.Extends, stat.BackendType, stat.IoContext, stat.IoObject)
-				ch <- c.extendTime.newConstMetric(stat.ExtendTime, stat.BackendType, stat.IoContext, stat.IoObject)
-				ch <- c.hits.newConstMetric(stat.Hits, stat.BackendType, stat.IoContext, stat.IoObject)
-				ch <- c.evictions.newConstMetric(stat.Evictions, stat.BackendType, stat.IoContext, stat.IoObject)
-				ch <- c.reuses.newConstMetric(stat.Reuses, stat.BackendType, stat.IoContext, stat.IoObject)
-				ch <- c.fsyncs.newConstMetric(stat.Fsyncs, stat.BackendType, stat.IoContext, stat.IoObject)
-				ch <- c.fsyncTime.newConstMetric(stat.FsyncTime, stat.BackendType, stat.IoContext, stat.IoObject)
+				ch <- c.reads.newConstMetric(stat.Reads, stat.BackendType, stat.IoObject, stat.IoContext)
+				ch <- c.readTime.newConstMetric(stat.ReadTime, stat.BackendType, stat.IoObject, stat.IoContext)
+				ch <- c.writes.newConstMetric(stat.Writes, stat.BackendType, stat.IoObject, stat.IoContext)
+				ch <- c.writeTime.newConstMetric(stat.WriteTime, stat.BackendType, stat.IoObject, stat.IoContext)
+				ch <- c.writebacks.newConstMetric(stat.Writebacks, stat.BackendType, stat.IoObject, stat.IoContext)
+				ch <- c.writebackTime.newConstMetric(stat.WritebackTime, stat.BackendType, stat.IoObject, stat.IoContext)
+				ch <- c.extends.newConstMetric(stat.Extends, stat.BackendType, stat.IoObject, stat.IoContext)
+				ch <- c.extendTime.newConstMetric(stat.ExtendTime, stat.BackendType, stat.IoObject, stat.IoContext)
+				ch <- c.hits.newConstMetric(stat.Hits, stat.BackendType, stat.IoObject, stat.IoContext)
+				ch <- c.evictions.newConstMetric(stat.Evictions, stat.BackendType, stat.IoObject, stat.IoContext)
+				ch <- c.reuses.newConstMetric(stat.Reuses, stat.BackendType, stat.IoObject, stat.IoContext)
+				ch <- c.fsyncs.newConstMetric(stat.Fsyncs, stat.BackendType, stat.IoObject, stat.IoContext)
+				ch <- c.fsyncTime.newConstMetric(stat.FsyncTime, stat.BackendType, stat.IoObject, stat.IoContext)
 			}
 		}
 	}
