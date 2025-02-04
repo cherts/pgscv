@@ -43,79 +43,79 @@ func NewPostgresStatIOCollector(constLabels labels, settings model.CollectorSett
 
 	return &postgresStatIOCollector{
 		reads: newBuiltinTypedDesc(
-			descOpts{"postgres", "stat_io", "reads", "Labeled info about reads.", 0},
+			descOpts{"postgres", "stat_io", "reads", "Number of read operations, each of the size specified in op_bytes.", 0},
 			prometheus.GaugeValue,
 			labels, constLabels,
 			settings.Filters,
 		),
 		readTime: newBuiltinTypedDesc(
-			descOpts{"postgres", "stat_io", "read_time", "Labeled info about read_time.", 0},
+			descOpts{"postgres", "stat_io", "read_time", "Time spent in read operations in milliseconds (if track_io_timing is enabled, otherwise zero)", 0},
 			prometheus.GaugeValue,
 			labels, constLabels,
 			settings.Filters,
 		),
 		writes: newBuiltinTypedDesc(
-			descOpts{"postgres", "stat_io", "writes", "Labeled info about writes.", 0},
+			descOpts{"postgres", "stat_io", "writes", "Number of write operations, each of the size specified in op_bytes.", 0},
 			prometheus.GaugeValue,
 			labels, constLabels,
 			settings.Filters,
 		),
 		writeTime: newBuiltinTypedDesc(
-			descOpts{"postgres", "stat_io", "write_time", "Labeled info about write_time.", 0},
+			descOpts{"postgres", "stat_io", "write_time", "Time spent in write operations in milliseconds (if track_io_timing is enabled, otherwise zero)", 0},
 			prometheus.GaugeValue,
 			labels, constLabels,
 			settings.Filters,
 		),
 		writebacks: newBuiltinTypedDesc(
-			descOpts{"postgres", "stat_io", "writebacks", "Labeled info about writebacks.", 0},
+			descOpts{"postgres", "stat_io", "writebacks", "Number of units of size op_bytes which the process requested the kernel write out to permanent storage.", 0},
 			prometheus.GaugeValue,
 			labels, constLabels,
 			settings.Filters,
 		),
 		writebackTime: newBuiltinTypedDesc(
-			descOpts{"postgres", "stat_io", "writeback_time", "Labeled info about writeback_time.", 0},
+			descOpts{"postgres", "stat_io", "writeback_time", "Time spent in writeback operations in milliseconds (if track_io_timing is enabled, otherwise zero). ", 0},
 			prometheus.GaugeValue,
 			labels, constLabels,
 			settings.Filters,
 		),
 		extends: newBuiltinTypedDesc(
-			descOpts{"postgres", "stat_io", "extends", "Labeled info about extends.", 0},
+			descOpts{"postgres", "stat_io", "extends", "Number of relation extend operations, each of the size specified in op_bytes.", 0},
 			prometheus.GaugeValue,
 			labels, constLabels,
 			settings.Filters,
 		),
 		extendTime: newBuiltinTypedDesc(
-			descOpts{"postgres", "stat_io", "extend_time", "Labeled info about extend_time.", 0},
+			descOpts{"postgres", "stat_io", "extend_time", "Time spent in extend operations in milliseconds (if track_io_timing is enabled, otherwise zero)", 0},
 			prometheus.GaugeValue,
 			labels, constLabels,
 			settings.Filters,
 		),
 		hits: newBuiltinTypedDesc(
-			descOpts{"postgres", "stat_io", "hits", "Labeled info about hits.", 0},
+			descOpts{"postgres", "stat_io", "hits", "The number of times a desired block was found in a shared buffer.", 0},
 			prometheus.GaugeValue,
 			labels, constLabels,
 			settings.Filters,
 		),
 		evictions: newBuiltinTypedDesc(
-			descOpts{"postgres", "stat_io", "evictions", "Labeled info about evictions.", 0},
+			descOpts{"postgres", "stat_io", "evictions", "Number of times a block has been written out from a shared or local buffer in order to make it available for another use.", 0},
 			prometheus.GaugeValue,
 			labels, constLabels,
 			settings.Filters,
 		),
 		reuses: newBuiltinTypedDesc(
-			descOpts{"postgres", "stat_io", "reuses", "Labeled info about reuses.", 0},
+			descOpts{"postgres", "stat_io", "reuses", "The number of times an existing buffer in a size-limited ring buffer outside of shared buffers was reused as part of an I/O operation in the bulkread, bulkwrite, or vacuum contexts.", 0},
 			prometheus.GaugeValue,
 			labels, constLabels,
 			settings.Filters,
 		),
 		fsyncs: newBuiltinTypedDesc(
-			descOpts{"postgres", "stat_io", "fsyncs", "Labeled info about fsyncs.", 0},
+			descOpts{"postgres", "stat_io", "fsyncs", "Number of fsync calls. These are only tracked in context normal.", 0},
 			prometheus.GaugeValue,
 			labels, constLabels,
 			settings.Filters,
 		),
 		fsyncTime: newBuiltinTypedDesc(
-			descOpts{"postgres", "stat_io", "fsync_time", "Labeled info about fsync_time.", 0},
+			descOpts{"postgres", "stat_io", "fsync_time", "Time spent in fsync operations in milliseconds (if track_io_timing is enabled, otherwise zero)", 0},
 			prometheus.GaugeValue,
 			labels, constLabels,
 			settings.Filters,
@@ -126,7 +126,7 @@ func NewPostgresStatIOCollector(constLabels labels, settings model.CollectorSett
 // Update method collects statistics, parse it and produces metrics that are sent to Prometheus.
 func (c *postgresStatIOCollector) Update(config Config, ch chan<- prometheus.Metric) error {
 	if config.serverVersionNum < PostgresV16 {
-		log.Debugln("[postgres stat_io collector]: some server-side functions are not available, required Postgres 16 or newer")
+		log.Debugln("[postgres stat_io collector]: pg_stat_io view are not available, required Postgres 16 or newer")
 		return nil
 	}
 
