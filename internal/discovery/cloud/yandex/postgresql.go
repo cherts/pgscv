@@ -88,27 +88,34 @@ func (sdk *SDK) GetPostgreSQLClusters(ctx context.Context, folderID string, filt
 				})
 			}
 			log.Debugf("[Yandex.Cloud SD] In cluster '%s' found '%d' hosts.", cluster.Name, len(hosts))
-
-			dbResp, err := yandexSdk.MDB().PostgreSQL().Database().List(ctx,
-				&postgresql.ListDatabasesRequest{ClusterId: cluster.Id})
-			if err != nil {
-				return nil, err
-			}
-			for _, database := range dbResp.Databases {
-				skip := true
-				for _, f := range matched {
-					if !filter[f].MatchDb(database.Name) {
-						continue
+			var dbReq postgresql.ListDatabasesRequest
+			dbReq.ClusterId = cluster.Id
+			for {
+				dbResp, err := yandexSdk.MDB().PostgreSQL().Database().List(ctx,
+					&dbReq)
+				if err != nil {
+					return nil, err
+				}
+				for _, database := range dbResp.Databases {
+					skip := true
+					for _, f := range matched {
+						if !filter[f].MatchDb(database.Name) {
+							continue
+						}
+						skip = false
+						break
 					}
-					skip = false
+					if !skip {
+						databases = append(databases, Database{
+							Name:  database.Name,
+							Owner: database.Owner,
+						})
+					}
+				}
+				if dbResp.NextPageToken == "" {
 					break
 				}
-				if !skip {
-					databases = append(databases, Database{
-						Name:  database.Name,
-						Owner: database.Owner,
-					})
-				}
+				dbReq.PageToken = dbResp.NextPageToken
 			}
 			if len(databases) == 0 {
 				log.Debugf("[Yandex.Cloud SD] No databases found in cluster '%s'.", cluster.Name)
