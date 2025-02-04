@@ -146,6 +146,7 @@ func (c *postgresStatIOCollector) Update(config Config, ch chan<- prometheus.Met
 				ch <- c.reads.newConstMetric(stat.Reads, stat.BackendType, stat.IoContext, stat.IoObject)
 				ch <- c.readTime.newConstMetric(stat.ReadTime, stat.BackendType, stat.IoContext, stat.IoObject)
 				ch <- c.writes.newConstMetric(stat.Writes, stat.BackendType, stat.IoContext, stat.IoObject)
+				ch <- c.writeTime.newConstMetric(stat.WriteTime, stat.BackendType, stat.IoContext, stat.IoObject)
 				ch <- c.writebacks.newConstMetric(stat.Writebacks, stat.BackendType, stat.IoContext, stat.IoObject)
 				ch <- c.writebackTime.newConstMetric(stat.WritebackTime, stat.BackendType, stat.IoContext, stat.IoObject)
 				ch <- c.extends.newConstMetric(stat.Extends, stat.BackendType, stat.IoContext, stat.IoObject)
