@@ -1,12 +1,13 @@
 ﻿#!/usr/bin/bash
 
+PG_VER=16
 MAIN_DATADIR=/var/lib/postgresql/data/main
 STDB1_DATADIR=/var/lib/postgresql/data/standby1
 STDB2_DATADIR=/var/lib/postgresql/data/standby2
 
 # init postgres
 echo "InitDB..."
-su - postgres -c "/usr/lib/postgresql/14/bin/initdb -k -E UTF8 --locale=en_US.UTF-8 -D ${MAIN_DATADIR}"
+su - postgres -c "/usr/lib/postgresql/${PG_VER}/bin/initdb -k -E UTF8 --locale=en_US.UTF-8 -D ${MAIN_DATADIR}"
 
 # add extra config parameters
 echo "Creating main postgresql.auto.conf..."
@@ -25,8 +26,8 @@ echo "Creating pg_hba.conf..."
 echo "host all pgscv 127.0.0.1/32 trust" >> ${MAIN_DATADIR}/pg_hba.conf
 
 # run main postgres
-echo "Run main PostgreSQL v14 via pg_ctl..."
-su - postgres -c "/usr/lib/postgresql/14/bin/pg_ctl -w -t 30 -l /var/run/postgresql/startup-main.log -D ${MAIN_DATADIR} start"
+echo "Run main PostgreSQL v${PG_VER} via pg_ctl..."
+su - postgres -c "/usr/lib/postgresql/${PG_VER}/bin/pg_ctl -w -t 30 -l /var/run/postgresql/startup-main.log -D ${MAIN_DATADIR} start"
 su - postgres -c "psql -c \"SELECT pg_create_physical_replication_slot('standby_test_slot')\""
 
 # run standby 1 postgres
@@ -38,8 +39,8 @@ port = 5433
 primary_slot_name = 'standby_test_slot'
 log_filename = 'postgresql-standby.log'
 EOF
-echo "Run standby PostgreSQL v14 via pg_ctl..."
-su - postgres -c "/usr/lib/postgresql/14/bin/pg_ctl -w -t 30 -l /var/run/postgresql/startup-standby.log -D ${STDB1_DATADIR} start"
+echo "Run standby PostgreSQL v${PG_VER} via pg_ctl..."
+su - postgres -c "/usr/lib/postgresql/${PG_VER}/bin/pg_ctl -w -t 30 -l /var/run/postgresql/startup-standby.log -D ${STDB1_DATADIR} start"
 su - postgres -c "psql -h 127.0.0.1 -p 5433 -c \"SELECT pg_create_physical_replication_slot('standby_test_slot_cascade')\""
 
 # run cascade standby 2 postgres
@@ -51,8 +52,8 @@ port = 5434
 primary_slot_name = 'standby_test_slot_cascade'
 log_filename = 'postgresql-standby-2.log'
 EOF
-echo "Run standby PostgreSQL v14 via pg_ctl..."
-su - postgres -c "/usr/lib/postgresql/14/bin/pg_ctl -w -t 30 -l /var/run/postgresql/startup-standby-2.log -D ${STDB2_DATADIR} start"
+echo "Run standby PostgreSQL v${PG_VER} via pg_ctl..."
+su - postgres -c "/usr/lib/postgresql/${PG_VER}/bin/pg_ctl -w -t 30 -l /var/run/postgresql/startup-standby-2.log -D ${STDB2_DATADIR} start"
 
 # add fixtures, tiny workload
 echo "Add fixtures, tiny workload..."
