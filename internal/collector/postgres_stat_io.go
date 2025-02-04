@@ -15,7 +15,7 @@ const (
 		"coalesce(writes, 0) AS writes, coalesce(write_time, 0) AS write_time, coalesce(writebacks, 0) AS writebacks, " +
 		"coalesce(writeback_time, 0) AS writeback_time, coalesce(extends, 0) AS extends, coalesce(extend_time, 0) AS extend_time, " +
 		"coalesce(op_bytes, 0) AS op_bytes, coalesce(hits, 0) AS hits, coalesce(evictions, 0) AS evictions, coalesce(reuses, 0) AS reuses, " +
-		"coalesce(fsyncs, 0) AS fsyncs, coalesce(fsync_time, 0) AS fsyncs" +
+		"coalesce(fsyncs, 0) AS fsyncs, coalesce(fsync_time, 0) AS fsync_time" +
 		"FROM pg_stat_io"
 )
 
