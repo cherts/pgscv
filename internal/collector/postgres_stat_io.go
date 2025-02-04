@@ -11,9 +11,11 @@ import (
 )
 
 const (
-	postgresStatIoQuery = "SELECT backend_type, object, context, coalesce(reads, 0), coalesce(read_time, 0), coalesce(writes, 0), " +
-		"coalesce(write_time, 0), coalesce(writebacks, 0), coalesce(writeback_time, 0), coalesce(extends, 0), coalesce(extend_time, 0), " +
-		"coalesce(op_bytes, 0), coalesce(hits, 0), coalesce(evictions, 0), coalesce(reuses, 0), coalesce(fsyncs, 0), coalesce(fsync_time, 0) " +
+	postgresStatIoQuery = "SELECT backend_type, object, context, coalesce(reads, 0) AS reads, coalesce(read_time, 0) AS read_time, " +
+		"coalesce(writes, 0) AS writes, coalesce(write_time, 0) AS write_time, coalesce(writebacks, 0) AS writebacks, " +
+		"coalesce(writeback_time, 0) AS writeback_time, coalesce(extends, 0) AS extends, coalesce(extend_time, 0) AS extend_time, " +
+		"coalesce(op_bytes, 0) AS op_bytes, coalesce(hits, 0) AS hits, coalesce(evictions, 0) AS evictions, coalesce(reuses, 0) AS reuses, " +
+		"coalesce(fsyncs, 0) AS fsyncs, coalesce(fsync_time, 0) AS fsyncs" +
 		"FROM pg_stat_io"
 )
 
