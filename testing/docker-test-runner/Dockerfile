@@ -1,11 +1,11 @@
 ﻿# cherts/pgscv-test-runner
-# __release_tag__ postrges v14.15 was released 2024-11-21
+# __release_tag__ postrges v16.6 was released 2024-11-21
 # __release_tag__ golang v1.23.5 was released 2025-01-16
 # __release_tag__ revive v1.5.1 was released 2024-11-16
 # __release_tag__ gosec v2.22.0 was released 2025-01-09
-FROM postgres:14.15
+FROM postgres:16.6
 
-LABEL version="1.0.5"
+LABEL version="1.0.6"
 
 # install dependencies
 RUN apt-get update && \
@@ -23,4 +23,4 @@ ENV PATH="${PATH}:/usr/local/bin:/usr/local/go/bin"
 COPY prepare-test-environment.sh /usr/bin/
 COPY fixtures.sql /opt/testing/
 
-CMD ["echo", "I'm pgscv test runner 1.0.5"]
+CMD ["echo", "I'm pgscv test runner 1.0.6"]

@@ -2,9 +2,10 @@
 package collector
 
 import (
-	"github.com/jackc/pgx/v4"
 	"strconv"
 	"sync"
+
+	"github.com/jackc/pgx/v4"
 
 	"github.com/cherts/pgscv/internal/filter"
 	"github.com/cherts/pgscv/internal/log"
@@ -70,6 +71,7 @@ func (f Factories) RegisterPostgresCollectors(disabled []string) {
 		"postgres/schemas":           NewPostgresSchemasCollector,
 		"postgres/settings":          NewPostgresSettingsCollector,
 		"postgres/storage":           NewPostgresStorageCollector,
+		"postgres/stat_io":           NewPostgresStatIOCollector,
 		"postgres/tables":            NewPostgresTablesCollector,
 		"postgres/wal":               NewPostgresWalCollector,
 		"postgres/custom":            NewPostgresCustomCollector,
