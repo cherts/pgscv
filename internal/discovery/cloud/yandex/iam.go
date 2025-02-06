@@ -10,7 +10,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/cherts/pgscv/internal/log"
+	"github.com/cherts/pgscv/discovery/log"
 	"github.com/golang-jwt/jwt/v4"
 )
 
