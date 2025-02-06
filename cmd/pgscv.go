@@ -48,7 +48,7 @@ func main() {
 	if config.DiscoveryConfig != nil {
 		config.DiscoveryServices, err = factory.Instantiate(*config.DiscoveryConfig)
 		if err != nil {
-			log.Errorln("factory discovery failed: ", err)
+			log.Errorln("instantiate service discovery failed: ", err)
 			os.Exit(1)
 		}
 	}
