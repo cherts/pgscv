@@ -6,6 +6,11 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	net_http "net/http"
+	"strings"
+	"sync"
+	"time"
+
 	sd "github.com/cherts/pgscv/internal/discovery/service"
 	"github.com/cherts/pgscv/internal/http"
 	"github.com/cherts/pgscv/internal/log"
@@ -13,10 +18,6 @@ import (
 	"github.com/cherts/pgscv/internal/service"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
-	net_http "net/http"
-	"strings"
-	"sync"
-	"time"
 )
 
 const pgSCVSubscriber = "pgscv_subscriber"
@@ -172,7 +173,7 @@ func getMetricsHandler(repository *service.Repository, throttlingInterval *int) 
 			if ok {
 				if time.Now().Sub(t) < time.Duration(*throttlingInterval)*time.Second {
 					w.WriteHeader(http.StatusOK)
-					log.Warn("Skip scraping")
+					log.Warnf("Skip scraping, method: %s, proto: %s, request_uri: %s, user_agent: %s, remote_addr: %s", r.Method, r.Proto, r.RequestURI, r.UserAgent(), r.RemoteAddr)
 					return
 				}
 			}
