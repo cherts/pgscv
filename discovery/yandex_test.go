@@ -1,8 +1,9 @@
-package service
+package discovery_test
 
 import (
 	"github.com/cherts/pgscv/discovery"
 	"github.com/cherts/pgscv/discovery/instantiate"
+	"github.com/cherts/pgscv/internal/discovery/service"
 	"testing"
 )
 
@@ -18,13 +19,13 @@ func TestInstantiate(t *testing.T) {
 			cfg: map[string]discovery.SdConfig{
 				"yandex1": {
 					Type: discovery.YandexMDB,
-					Config: []YandexConfig{
+					Config: []service.YandexConfig{
 						{
 							AuthorizedKey: "/tmp/authorized_key.json",
 							FolderID:      "asd234234234",
 							User:          "postgres_exporter",
 							Password:      "132",
-							Clusters: []cluster{
+							Clusters: []service.Cluster{
 								{
 									Db:        stringPtr(".*"),
 									ExcludeDb: stringPtr("(postgres|template)"),

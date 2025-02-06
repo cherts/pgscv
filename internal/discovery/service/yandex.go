@@ -15,7 +15,8 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-type cluster struct {
+// Cluster config filters
+type Cluster struct {
 	Name string `yaml:"name" json:"name,required"`
 	// when Db is nil, iterate over all db's
 	Db          *string `yaml:"db" json:"db"`
@@ -32,7 +33,7 @@ type YandexConfig struct {
 	Password        string    `json:"password" yaml:"password"`
 	PasswordFromEnv string    `json:"password_from_env" yaml:"password_from_env"`
 	RefreshInterval int       `json:"refresh_interval" yaml:"refresh_interval"`
-	Clusters        []cluster `json:"clusters" yaml:"clusters"`
+	Clusters        []Cluster `json:"clusters" yaml:"clusters"`
 }
 
 type engineIdx int
