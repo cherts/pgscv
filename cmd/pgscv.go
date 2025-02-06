@@ -4,7 +4,8 @@ package main
 import (
 	"context"
 	"fmt"
-	"github.com/cherts/pgscv/internal/discovery/service"
+	"github.com/cherts/pgscv/discovery/factory"
+	sdlog "github.com/cherts/pgscv/discovery/log"
 	"os"
 	"os/signal"
 	"syscall"
@@ -27,7 +28,10 @@ func main() {
 	kingpin.Parse()
 	log.SetLevel(*logLevel)
 	log.SetApplication(appName)
-
+	sdlog.Logger.Debug = log.Debug
+	sdlog.Logger.Errorf = log.Errorf
+	sdlog.Logger.Infof = log.Infof
+	sdlog.Logger.Debugf = log.Debugf
 	if *showVersion {
 		fmt.Printf("%s %s %s-%s\n", appName, gitTag, gitCommit, gitBranch)
 		os.Exit(0)
@@ -42,9 +46,9 @@ func main() {
 	}
 
 	if config.DiscoveryConfig != nil {
-		config.DiscoveryServices, err = service.Instantiate(*config.DiscoveryConfig)
+		config.DiscoveryServices, err = factory.Instantiate(*config.DiscoveryConfig)
 		if err != nil {
-			log.Errorln("instantiate discovery failed: ", err)
+			log.Errorln("instantiate service discovery failed: ", err)
 			os.Exit(1)
 		}
 	}

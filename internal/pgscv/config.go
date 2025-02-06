@@ -3,7 +3,7 @@ package pgscv
 
 import (
 	"fmt"
-	sd "github.com/cherts/pgscv/internal/discovery/service"
+	sd "github.com/cherts/pgscv/discovery"
 	"github.com/cherts/pgscv/internal/http"
 	"github.com/cherts/pgscv/internal/log"
 	"github.com/cherts/pgscv/internal/model"

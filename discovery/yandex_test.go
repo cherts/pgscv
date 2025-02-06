@@ -1,26 +1,31 @@
-package service
+package discovery_test
 
-import "testing"
+import (
+	"github.com/cherts/pgscv/discovery"
+	"github.com/cherts/pgscv/discovery/factory"
+	"github.com/cherts/pgscv/internal/discovery/service"
+	"testing"
+)
 
 func TestInstantiate(t *testing.T) {
 
 	testCases := []struct {
 		name    string
-		cfg     map[string]sdConfig
+		cfg     map[string]discovery.SdConfig
 		wantErr bool
 	}{
 		{
 			name: "succeed single service",
-			cfg: map[string]sdConfig{
+			cfg: map[string]discovery.SdConfig{
 				"yandex1": {
-					Type: yandexMDB,
-					Config: []YandexConfig{
+					Type: discovery.YandexMDB,
+					Config: []service.YandexConfig{
 						{
 							AuthorizedKey: "/tmp/authorized_key.json",
 							FolderID:      "asd234234234",
 							User:          "postgres_exporter",
 							Password:      "132",
-							Clusters: []cluster{
+							Clusters: []service.Cluster{
 								{
 									Db:        stringPtr(".*"),
 									ExcludeDb: stringPtr("(postgres|template)"),
@@ -34,7 +39,7 @@ func TestInstantiate(t *testing.T) {
 		},
 		{
 			name: "wrong single service",
-			cfg: map[string]sdConfig{
+			cfg: map[string]discovery.SdConfig{
 				"yandex1": {
 					Type:   "abcdefg",
 					Config: []string{},
@@ -45,7 +50,7 @@ func TestInstantiate(t *testing.T) {
 	}
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			s, err := Instantiate(tc.cfg)
+			s, err := factory.Instantiate(tc.cfg)
 			if (err != nil) != tc.wantErr {
 				t.Errorf("Instantiate() error = %v, wantErr %v", err, tc.wantErr)
 			}
@@ -54,7 +59,7 @@ func TestInstantiate(t *testing.T) {
 			}
 			for _, v := range *s {
 				err := v.Subscribe("svc",
-					func(_ map[string]Service) error {
+					func(_ map[string]discovery.Service) error {
 						return nil
 					},
 					func(_ []string) error {

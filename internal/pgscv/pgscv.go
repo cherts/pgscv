@@ -11,6 +11,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/cherts/pgscv/discovery"
 	sd "github.com/cherts/pgscv/internal/discovery/service"
 	"github.com/cherts/pgscv/internal/http"
 	"github.com/cherts/pgscv/internal/log"
@@ -110,10 +111,10 @@ func Start(ctx context.Context, config *Config) error {
 	}
 }
 
-func subscribeYandex(ds *sd.Discovery, config *Config, serviceRepo *service.Repository) error {
+func subscribeYandex(ds *discovery.Discovery, config *Config, serviceRepo *service.Repository) error {
 	err := (*ds).Subscribe(pgSCVSubscriber,
 		// addService
-		func(services map[string]sd.Service) error {
+		func(services map[string]discovery.Service) error {
 			constLabels := make(map[string]*map[string]string)
 			serviceDiscoveryConfig := service.Config{
 				NoTrackMode:        config.NoTrackMode,

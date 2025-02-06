@@ -1,19 +1,22 @@
+// Package service is package of service discovery module
 package service
 
 import (
 	"context"
+	"github.com/cherts/pgscv/discovery"
 	"maps"
 	"os"
 	"sync"
 	"time"
 
+	"github.com/cherts/pgscv/discovery/log"
 	"github.com/cherts/pgscv/internal/discovery/cloud/yandex"
 	"github.com/cherts/pgscv/internal/discovery/mapops"
-	"github.com/cherts/pgscv/internal/log"
 	"gopkg.in/yaml.v2"
 )
 
-type cluster struct {
+// Cluster config filters
+type Cluster struct {
 	Name string `yaml:"name" json:"name,required"`
 	// when Db is nil, iterate over all db's
 	Db          *string `yaml:"db" json:"db"`
@@ -30,17 +33,17 @@ type YandexConfig struct {
 	Password        string    `json:"password" yaml:"password"`
 	PasswordFromEnv string    `json:"password_from_env" yaml:"password_from_env"`
 	RefreshInterval int       `json:"refresh_interval" yaml:"refresh_interval"`
-	Clusters        []cluster `json:"clusters" yaml:"clusters"`
+	Clusters        []Cluster `json:"clusters" yaml:"clusters"`
 }
 
 type engineIdx int
 type version uint64
 
 type subscriber struct {
-	AddService     AddServiceFunc
-	RemoveService  RemoveServiceFunc
+	AddService     discovery.AddServiceFunc
+	RemoveService  discovery.RemoveServiceFunc
 	SyncedVersion  map[engineIdx]version
-	syncedServices map[string]Service
+	syncedServices map[string]discovery.Service
 }
 
 // YandexDiscovery is main struct for Yandex Managed Databases discoverer
@@ -49,6 +52,11 @@ type YandexDiscovery struct {
 	config      []YandexConfig
 	engines     []*yandexEngine
 	subscribers map[string]subscriber
+}
+
+// NewYandexDiscovery return pointer initialized YandexDiscovery structure
+func NewYandexDiscovery() *YandexDiscovery {
+	return &YandexDiscovery{subscribers: make(map[string]subscriber)}
 }
 
 // Unsubscribe implementation Unsubscribe method of Discovery interface
@@ -68,17 +76,17 @@ func (yd *YandexDiscovery) Unsubscribe(subscriberID string) error {
 }
 
 // Subscribe implementation Subscribe method of Discovery interface
-func (yd *YandexDiscovery) Subscribe(subscriberID string, addService AddServiceFunc, removeService RemoveServiceFunc) error {
+func (yd *YandexDiscovery) Subscribe(subscriberID string, addService discovery.AddServiceFunc, removeService discovery.RemoveServiceFunc) error {
 	yd.Lock()
 	defer yd.Unlock()
 	log.Debugf("[Yandex.Cloud SD] Init subscribe '%s'", subscriberID)
-	yd.subscribers[subscriberID] = subscriber{AddService: addService, RemoveService: removeService, syncedServices: make(map[string]Service), SyncedVersion: make(map[engineIdx]version)}
+	yd.subscribers[subscriberID] = subscriber{AddService: addService, RemoveService: removeService, syncedServices: make(map[string]discovery.Service), SyncedVersion: make(map[engineIdx]version)}
 	for engineID, e := range yd.engines {
 		e.RLock()
 		for serviceID, svc := range e.dsn {
 			labels := make(map[string]string)
 			labels["mdb_cluster"] = svc.name
-			yd.subscribers[subscriberID].syncedServices[string(serviceID)] = Service{DSN: svc.dsn, ConstLabels: labels}
+			yd.subscribers[subscriberID].syncedServices[string(serviceID)] = discovery.Service{DSN: svc.dsn, ConstLabels: labels}
 		}
 		e.RUnlock()
 		yd.subscribers[subscriberID].SyncedVersion[engineIdx(engineID)] = e.version
@@ -117,7 +125,7 @@ func (yd *YandexDiscovery) Sync() error {
 		}
 
 		removeSvc := make([]string, 0)
-		appendSvc := make(map[string]Service)
+		appendSvc := make(map[string]discovery.Service)
 		for _, v := range mapops.FullJoin(engineServices, subscriber.syncedServices) {
 			if v.Left == nil {
 				removeSvc = append(removeSvc, *v.Right)
@@ -126,8 +134,8 @@ func (yd *YandexDiscovery) Sync() error {
 			if v.Right == nil {
 				labels := make(map[string]string)
 				labels["mdb_cluster"] = engineServices[*v.Left].name
-				labels["provider"] = yandexMDB
-				appendSvc[*v.Left] = Service{DSN: engineServices[*v.Left].dsn, ConstLabels: labels}
+				labels["provider"] = discovery.YandexMDB
+				appendSvc[*v.Left] = discovery.Service{DSN: engineServices[*v.Left].dsn, ConstLabels: labels}
 				subscriber.syncedServices[*v.Left] = appendSvc[*v.Left]
 			}
 		}
@@ -150,7 +158,7 @@ func (yd *YandexDiscovery) Sync() error {
 }
 
 // Init implementation Init method of Discovery interface
-func (yd *YandexDiscovery) Init(cfg config) error {
+func (yd *YandexDiscovery) Init(cfg discovery.Config) error {
 	log.Debug("[Yandex.Cloud SD] Init discovery config...")
 	c, err := ensureConfigYandexMDB(cfg)
 	if err != nil {
@@ -196,7 +204,7 @@ func (yd *YandexDiscovery) Start(ctx context.Context, errCh chan<- error) error 
 	}
 }
 
-func ensureConfigYandexMDB(config config) ([]YandexConfig, error) {
+func ensureConfigYandexMDB(config discovery.Config) ([]YandexConfig, error) {
 	c := &[]YandexConfig{}
 	o, err := yaml.Marshal(config)
 	if err != nil {

@@ -3,7 +3,7 @@ package yandex
 import (
 	"context"
 
-	"github.com/cherts/pgscv/internal/log"
+	"github.com/cherts/pgscv/discovery/log"
 	"github.com/yandex-cloud/go-genproto/yandex/cloud/mdb/postgresql/v1"
 )
 
