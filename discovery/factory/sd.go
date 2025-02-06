@@ -1,5 +1,5 @@
-// Package instantiate create service discovery from config
-package instantiate
+// Package factory create service discovery from config
+package factory
 
 import (
 	"fmt"

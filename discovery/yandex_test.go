@@ -2,7 +2,7 @@ package discovery_test
 
 import (
 	"github.com/cherts/pgscv/discovery"
-	"github.com/cherts/pgscv/discovery/instantiate"
+	"github.com/cherts/pgscv/discovery/factory"
 	"github.com/cherts/pgscv/internal/discovery/service"
 	"testing"
 )
@@ -50,7 +50,7 @@ func TestInstantiate(t *testing.T) {
 	}
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			s, err := instantiate.Instantiate(tc.cfg)
+			s, err := factory.Instantiate(tc.cfg)
 			if (err != nil) != tc.wantErr {
 				t.Errorf("Instantiate() error = %v, wantErr %v", err, tc.wantErr)
 			}
