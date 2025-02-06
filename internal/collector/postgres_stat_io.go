@@ -136,7 +136,7 @@ func (c *postgresStatIOCollector) Update(config Config, ch chan<- prometheus.Met
 	}
 	defer conn.Close()
 
-	// Collecting pg_stst_io since Postgres 16.
+	// Collecting pg_stat_io since Postgres 16.
 	if config.serverVersionNum >= PostgresV16 {
 		res, err := conn.Query(postgresStatIoQuery)
 		if err != nil {
