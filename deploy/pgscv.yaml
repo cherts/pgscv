@@ -73,6 +73,7 @@ services:
 #  - postgres/settings
 #  - postgres/storage
 #  - postgres/stat_io
+#  - postgres/stat_slru
 #  - postgres/tables
 #  - postgres/wal
 #  - postgres/custom
