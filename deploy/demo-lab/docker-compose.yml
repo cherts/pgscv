@@ -96,7 +96,7 @@ services:
     container_name: postgres11
     image: postgres:11-alpine
     hostname: postgres11
-    command:
+    command: &postgres_base_command
       - "postgres"
       - "-c"
       - "listen_addresses=*"
@@ -110,6 +110,8 @@ services:
       - "pg_stat_statements.track=all"
       - "-c"
       - "jit=off"
+      - "-c"
+      - "track_io_timing=on"
     environment: &postgres_base_env
       POSTGRES_DB: ${POSTGRES_DB:-postgres}
       POSTGRES_USER: ${POSTGRES_USER:-postgres}
