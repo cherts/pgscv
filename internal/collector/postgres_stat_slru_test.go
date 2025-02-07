@@ -37,7 +37,7 @@ func Test_parsePostgresStatSlru(t *testing.T) {
 			name: "normal output, Postgres 13",
 			res: &model.PGResult{
 				Nrows: 1,
-				Ncols: 17,
+				Ncols: 8,
 				Colnames: []pgproto3.FieldDescription{
 					{Name: []byte("name")}, {Name: []byte("blks_zeroed")}, {Name: []byte("blks_hit")}, {Name: []byte("blks_read")},
 					{Name: []byte("blks_written")}, {Name: []byte("blks_exists")}, {Name: []byte("flushes")}, {Name: []byte("truncates")},
