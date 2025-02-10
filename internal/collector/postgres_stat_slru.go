@@ -93,7 +93,7 @@ func (c *postgresStatSlruCollector) Update(config Config, ch chan<- prometheus.M
 
 	// Collecting pg_stat_slru since Postgres 13.
 	if config.serverVersionNum >= PostgresV13 {
-		res, err := conn.Query(postgresStatIoQuery)
+		res, err := conn.Query(postgresStatSlruQuery)
 		if err != nil {
 			log.Warnf("get pg_stat_slru failed: %s; skip", err)
 		} else {
