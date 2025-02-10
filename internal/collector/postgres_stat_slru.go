@@ -40,7 +40,7 @@ func NewPostgresStatSlruCollector(constLabels labels, settings model.CollectorSe
 			settings.Filters,
 		),
 		blksHit: newBuiltinTypedDesc(
-			descOpts{"postgres", "stat_slru", "blks_hit", "TNumber of times disk blocks were found already in the SLRU, so that a read was not necessary (this only includes hits in the SLRU, not the operating system's file system cache).", 0},
+			descOpts{"postgres", "stat_slru", "blks_hit", "Number of times disk blocks were found already in the SLRU, so that a read was not necessary (this only includes hits in the SLRU, not the operating system's file system cache).", 0},
 			prometheus.GaugeValue,
 			labels, constLabels,
 			settings.Filters,
