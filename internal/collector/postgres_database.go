@@ -28,12 +28,24 @@ const (
 		"FROM pg_stat_database WHERE datname IN (SELECT datname FROM pg_database WHERE datallowconn AND NOT datistemplate) " +
 		"OR datname IS NULL"
 
+	databasesQuery17 = "SELECT " +
+		"coalesce(datname, 'global') AS database, " +
+		"xact_commit, xact_rollback, blks_read, blks_hit, tup_returned, tup_fetched, tup_inserted, tup_updated, tup_deleted, " +
+		"conflicts, temp_files, temp_bytes, deadlocks, checksum_failures, coalesce(extract(epoch from checksum_last_failure), 0) AS last_checksum_failure_unixtime, " +
+		"blk_read_time, blk_write_time, " +
+		"session_time, active_time, idle_in_transaction_time, sessions, sessions_abandoned, sessions_fatal, sessions_killed, " +
+		"pg_database_size(datname) as size_bytes, " +
+		"coalesce(extract('epoch' from age(now(), stats_reset)), 0) as stats_age_seconds " +
+		"FROM pg_stat_database WHERE datname IN (SELECT datname FROM pg_database WHERE datallowconn AND NOT datistemplate) " +
+		"OR datname IS NULL"
+
 	databasesQueryLatest = "SELECT " +
 		"coalesce(datname, 'global') AS database, " +
 		"xact_commit, xact_rollback, blks_read, blks_hit, tup_returned, tup_fetched, tup_inserted, tup_updated, tup_deleted, " +
 		"conflicts, temp_files, temp_bytes, deadlocks, checksum_failures, coalesce(extract(epoch from checksum_last_failure), 0) AS last_checksum_failure_unixtime, " +
 		"blk_read_time, blk_write_time, " +
 		"session_time, active_time, idle_in_transaction_time, sessions, sessions_abandoned, sessions_fatal, sessions_killed, " +
+		"parallel_workers_to_launch, parallel_workers_launched " +
 		"pg_database_size(datname) as size_bytes, " +
 		"coalesce(extract('epoch' from age(now(), stats_reset)), 0) as stats_age_seconds " +
 		"FROM pg_stat_database WHERE datname IN (SELECT datname FROM pg_database WHERE datallowconn AND NOT datistemplate) " +
@@ -64,6 +76,7 @@ type postgresDatabasesCollector struct {
 	sessiontime        typedDesc
 	sessionsall        typedDesc
 	sessions           typedDesc
+	parallelWorkers    typedDesc
 	sizes              typedDesc
 	statsage           typedDesc
 	xidlimit           typedDesc
@@ -191,6 +204,12 @@ func NewPostgresDatabasesCollector(constLabels labels, settings model.CollectorS
 			[]string{"database", "reason"}, constLabels,
 			settings.Filters,
 		),
+		parallelWorkers: newBuiltinTypedDesc(
+			descOpts{"postgres", "database", "parallel_workers", "Total number of parallel workers to launch and launched in this database.", 0},
+			prometheus.CounterValue,
+			[]string{"database", "state"}, constLabels,
+			settings.Filters,
+		),
 		sizes: newBuiltinTypedDesc(
 			descOpts{"postgres", "database", "size_bytes", "Total size of the database, in bytes.", 0},
 			prometheus.GaugeValue,
@@ -271,6 +290,11 @@ func (c *postgresDatabasesCollector) Update(config Config, ch chan<- prometheus.
 			ch <- c.sessions.newConstMetric(stat.sesskilled, stat.database, "killed")
 			ch <- c.sessions.newConstMetric(stat.sessions-(stat.sessabandoned+stat.sessfatal+stat.sesskilled), stat.database, "normal")
 		}
+
+		if config.serverVersionNum >= PostgresV18 {
+			ch <- c.parallelWorkers.newConstMetric(stat.prlworkplan, stat.database, "planned")
+			ch <- c.parallelWorkers.newConstMetric(stat.prlworkfact, stat.database, "fact")
+		}
 	}
 
 	ch <- c.xidlimit.newConstMetric(xidStats.database, "pg_database")
@@ -307,6 +331,8 @@ type postgresDatabaseStat struct {
 	sessabandoned      float64
 	sessfatal          float64
 	sesskilled         float64
+	prlworkplan        float64
+	prlworkfact        float64
 	sizebytes          float64
 	statsage           float64
 }
@@ -405,6 +431,10 @@ func parsePostgresDatabasesStats(r *model.PGResult, labelNames []string) map[str
 				s.sessfatal = v
 			case "sessions_killed":
 				s.sesskilled = v
+			case "parallel_workers_to_launch":
+				s.prlworkplan = v
+			case "parallel_workers_launched":
+				s.prlworkfact = v
 			case "size_bytes":
 				s.sizebytes = v
 			case "stats_age_seconds":
@@ -463,6 +493,8 @@ func selectDatabasesQuery(version int) string {
 		return databasesQuery11
 	case version < PostgresV14:
 		return databasesQuery12
+	case version < PostgresV18:
+		return databasesQuery17
 	default:
 		return databasesQueryLatest
 	}
