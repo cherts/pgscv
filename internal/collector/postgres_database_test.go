@@ -2,10 +2,11 @@ package collector
 
 import (
 	"database/sql"
-	"github.com/jackc/pgproto3/v2"
-	"github.com/cherts/pgscv/internal/model"
-	"github.com/stretchr/testify/assert"
 	"testing"
+
+	"github.com/cherts/pgscv/internal/model"
+	"github.com/jackc/pgproto3/v2"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestPostgresDatabasesCollector_Update(t *testing.T) {
@@ -159,7 +160,9 @@ func Test_selectDatabasesQuery(t *testing.T) {
 	}{
 		{version: PostgresV10, want: databasesQuery11},
 		{version: PostgresV12, want: databasesQuery12},
-		{version: PostgresV14, want: databasesQueryLatest},
+		{version: PostgresV14, want: databasesQuery17},
+		{version: PostgresV17, want: databasesQuery17},
+		{version: PostgresV18, want: databasesQueryLatest},
 	}
 
 	for _, tc := range testcases {
