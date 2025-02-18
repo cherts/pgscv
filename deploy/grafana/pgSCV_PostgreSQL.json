@@ -15,7 +15,7 @@
       "type": "grafana",
       "id": "grafana",
       "name": "Grafana",
-      "version": "11.5.0-217209"
+      "version": "11.6.0-223626"
     },
     {
       "type": "datasource",
@@ -58,7 +58,7 @@
       }
     ]
   },
-  "description": "PostgreSQL dashboard for pgSCV metrics (Prometheus version, pgSCV 0.11.0 edition)",
+  "description": "PostgreSQL dashboard for pgSCV metrics (Prometheus version, pgSCV 0.12.0 edition)",
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 1,
@@ -185,7 +185,7 @@
         "textMode": "auto",
         "wideLayout": true
       },
-      "pluginVersion": "11.5.0-217209",
+      "pluginVersion": "11.6.0-223626",
       "targets": [
         {
           "datasource": {
@@ -272,7 +272,7 @@
         "textMode": "auto",
         "wideLayout": true
       },
-      "pluginVersion": "11.5.0-217209",
+      "pluginVersion": "11.6.0-223626",
       "targets": [
         {
           "datasource": {
@@ -353,7 +353,7 @@
         "textMode": "auto",
         "wideLayout": true
       },
-      "pluginVersion": "11.5.0-217209",
+      "pluginVersion": "11.6.0-223626",
       "targets": [
         {
           "datasource": {
@@ -430,7 +430,7 @@
         "textMode": "auto",
         "wideLayout": true
       },
-      "pluginVersion": "11.5.0-217209",
+      "pluginVersion": "11.6.0-223626",
       "targets": [
         {
           "datasource": {
@@ -507,7 +507,7 @@
         "textMode": "auto",
         "wideLayout": true
       },
-      "pluginVersion": "11.5.0-217209",
+      "pluginVersion": "11.6.0-223626",
       "targets": [
         {
           "datasource": {
@@ -584,7 +584,7 @@
         "textMode": "auto",
         "wideLayout": true
       },
-      "pluginVersion": "11.5.0-217209",
+      "pluginVersion": "11.6.0-223626",
       "targets": [
         {
           "datasource": {
@@ -665,7 +665,7 @@
         "textMode": "auto",
         "wideLayout": true
       },
-      "pluginVersion": "11.5.0-217209",
+      "pluginVersion": "11.6.0-223626",
       "targets": [
         {
           "datasource": {
@@ -738,7 +738,7 @@
         "textMode": "auto",
         "wideLayout": true
       },
-      "pluginVersion": "11.5.0-217209",
+      "pluginVersion": "11.6.0-223626",
       "targets": [
         {
           "datasource": {
@@ -811,7 +811,7 @@
         "textMode": "auto",
         "wideLayout": true
       },
-      "pluginVersion": "11.5.0-217209",
+      "pluginVersion": "11.6.0-223626",
       "targets": [
         {
           "datasource": {
@@ -892,7 +892,7 @@
         "textMode": "auto",
         "wideLayout": true
       },
-      "pluginVersion": "11.5.0-217209",
+      "pluginVersion": "11.6.0-223626",
       "targets": [
         {
           "datasource": {
@@ -965,7 +965,7 @@
         "textMode": "auto",
         "wideLayout": true
       },
-      "pluginVersion": "11.5.0-217209",
+      "pluginVersion": "11.6.0-223626",
       "targets": [
         {
           "datasource": {
@@ -1038,7 +1038,7 @@
         "textMode": "auto",
         "wideLayout": true
       },
-      "pluginVersion": "11.5.0-217209",
+      "pluginVersion": "11.6.0-223626",
       "targets": [
         {
           "datasource": {
@@ -1111,7 +1111,7 @@
         "textMode": "auto",
         "wideLayout": true
       },
-      "pluginVersion": "11.5.0-217209",
+      "pluginVersion": "11.6.0-223626",
       "targets": [
         {
           "datasource": {
@@ -1192,7 +1192,7 @@
         "textMode": "auto",
         "wideLayout": true
       },
-      "pluginVersion": "11.5.0-217209",
+      "pluginVersion": "11.6.0-223626",
       "targets": [
         {
           "datasource": {
@@ -1270,8 +1270,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   }
                 ]
               },
@@ -1412,8 +1411,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   }
                 ]
               },
@@ -1510,8 +1508,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   }
                 ]
               },
@@ -1614,7 +1611,7 @@
             "h": 8,
             "w": 12,
             "x": 0,
-            "y": 89
+            "y": 377
           },
           "id": 11,
           "options": {
@@ -1699,8 +1696,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   }
                 ]
               },
@@ -1803,7 +1799,7 @@
             "h": 8,
             "w": 12,
             "x": 12,
-            "y": 89
+            "y": 377
           },
           "id": 92,
           "options": {
@@ -1888,8 +1884,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   }
                 ]
               },
@@ -1991,7 +1986,7 @@
             "h": 8,
             "w": 12,
             "x": 0,
-            "y": 97
+            "y": 385
           },
           "id": 95,
           "options": {
@@ -2190,7 +2185,7 @@
             "h": 8,
             "w": 9,
             "x": 0,
-            "y": 1141
+            "y": 1429
           },
           "id": 78,
           "options": {
@@ -2301,7 +2296,7 @@
             "h": 8,
             "w": 9,
             "x": 9,
-            "y": 1141
+            "y": 1429
           },
           "id": 80,
           "options": {
@@ -2371,7 +2366,7 @@
             "h": 5,
             "w": 6,
             "x": 18,
-            "y": 1141
+            "y": 1429
           },
           "id": 83,
           "options": {
@@ -2493,7 +2488,7 @@
             "h": 8,
             "w": 12,
             "x": 0,
-            "y": 179
+            "y": 467
           },
           "id": 19,
           "options": {
@@ -2590,7 +2585,7 @@
             "h": 8,
             "w": 12,
             "x": 12,
-            "y": 179
+            "y": 467
           },
           "id": 20,
           "options": {
@@ -2688,7 +2683,7 @@
             "h": 8,
             "w": 12,
             "x": 0,
-            "y": 707
+            "y": 995
           },
           "id": 21,
           "options": {
@@ -2786,7 +2781,7 @@
             "h": 8,
             "w": 12,
             "x": 12,
-            "y": 707
+            "y": 995
           },
           "id": 22,
           "options": {
@@ -2885,8 +2880,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   }
                 ]
               },
@@ -2898,7 +2892,7 @@
             "h": 8,
             "w": 12,
             "x": 0,
-            "y": 108
+            "y": 396
           },
           "id": 27,
           "options": {
@@ -2981,8 +2975,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   }
                 ]
               },
@@ -2994,7 +2987,7 @@
             "h": 8,
             "w": 12,
             "x": 12,
-            "y": 108
+            "y": 396
           },
           "id": 28,
           "options": {
@@ -3077,8 +3070,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   }
                 ]
               },
@@ -3090,7 +3082,7 @@
             "h": 8,
             "w": 12,
             "x": 0,
-            "y": 116
+            "y": 404
           },
           "id": 26,
           "options": {
@@ -3174,8 +3166,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   }
                 ]
               },
@@ -3203,7 +3194,7 @@
             "h": 8,
             "w": 12,
             "x": 12,
-            "y": 116
+            "y": 404
           },
           "id": 29,
           "options": {
@@ -3314,7 +3305,7 @@
             "h": 8,
             "w": 12,
             "x": 0,
-            "y": 800
+            "y": 1088
           },
           "id": 41,
           "options": {
@@ -3408,7 +3399,7 @@
             "h": 8,
             "w": 12,
             "x": 12,
-            "y": 800
+            "y": 1088
           },
           "id": 38,
           "options": {
@@ -3531,7 +3522,7 @@
             "h": 8,
             "w": 9,
             "x": 0,
-            "y": 1129
+            "y": 1417
           },
           "id": 33,
           "options": {
@@ -3641,7 +3632,7 @@
             "h": 8,
             "w": 9,
             "x": 9,
-            "y": 1129
+            "y": 1417
           },
           "id": 35,
           "options": {
@@ -3710,7 +3701,7 @@
             "h": 8,
             "w": 6,
             "x": 18,
-            "y": 1129
+            "y": 1417
           },
           "id": 87,
           "options": {
@@ -3890,7 +3881,7 @@
             "h": 8,
             "w": 9,
             "x": 0,
-            "y": 1130
+            "y": 1418
           },
           "id": 46,
           "options": {
@@ -3984,7 +3975,7 @@
             "h": 8,
             "w": 9,
             "x": 9,
-            "y": 1130
+            "y": 1418
           },
           "id": 47,
           "options": {
@@ -4053,7 +4044,7 @@
             "h": 8,
             "w": 6,
             "x": 18,
-            "y": 1130
+            "y": 1418
           },
           "id": 86,
           "options": {
@@ -4219,7 +4210,7 @@
             "h": 8,
             "w": 24,
             "x": 0,
-            "y": 1138
+            "y": 1426
           },
           "id": 48,
           "options": {
@@ -4361,7 +4352,7 @@
             "h": 8,
             "w": 24,
             "x": 0,
-            "y": 1146
+            "y": 1434
           },
           "id": 88,
           "options": {
@@ -4502,7 +4493,7 @@
             "h": 8,
             "w": 12,
             "x": 0,
-            "y": 184
+            "y": 472
           },
           "id": 52,
           "options": {
@@ -4673,7 +4664,7 @@
             "h": 8,
             "w": 12,
             "x": 12,
-            "y": 184
+            "y": 472
           },
           "id": 53,
           "options": {
@@ -4826,7 +4817,7 @@
               "sort": "desc"
             }
           },
-          "pluginVersion": "11.5.0-217209",
+          "pluginVersion": "11.6.0-223626",
           "targets": [
             {
               "datasource": {
@@ -4980,7 +4971,7 @@
               "sort": "desc"
             }
           },
-          "pluginVersion": "11.5.0-217209",
+          "pluginVersion": "11.6.0-223626",
           "targets": [
             {
               "datasource": {
@@ -5117,7 +5108,7 @@
             "h": 8,
             "w": 12,
             "x": 0,
-            "y": 33
+            "y": 65
           },
           "id": 107,
           "options": {
@@ -5134,7 +5125,7 @@
               "sort": "desc"
             }
           },
-          "pluginVersion": "11.5.0-217209",
+          "pluginVersion": "11.6.0-223626",
           "targets": [
             {
               "datasource": {
@@ -5272,7 +5263,7 @@
             "h": 8,
             "w": 12,
             "x": 12,
-            "y": 33
+            "y": 65
           },
           "id": 108,
           "options": {
@@ -5289,7 +5280,7 @@
               "sort": "desc"
             }
           },
-          "pluginVersion": "11.5.0-217209",
+          "pluginVersion": "11.6.0-223626",
           "targets": [
             {
               "datasource": {
@@ -5427,7 +5418,7 @@
             "h": 8,
             "w": 12,
             "x": 0,
-            "y": 41
+            "y": 73
           },
           "id": 105,
           "options": {
@@ -5444,7 +5435,7 @@
               "sort": "desc"
             }
           },
-          "pluginVersion": "11.5.0-217209",
+          "pluginVersion": "11.6.0-223626",
           "targets": [
             {
               "datasource": {
@@ -5581,7 +5572,7 @@
             "h": 8,
             "w": 12,
             "x": 12,
-            "y": 41
+            "y": 73
           },
           "id": 106,
           "options": {
@@ -5598,7 +5589,7 @@
               "sort": "desc"
             }
           },
-          "pluginVersion": "11.5.0-217209",
+          "pluginVersion": "11.6.0-223626",
           "targets": [
             {
               "datasource": {
@@ -5735,7 +5726,7 @@
             "h": 8,
             "w": 12,
             "x": 0,
-            "y": 49
+            "y": 81
           },
           "id": 109,
           "options": {
@@ -5752,7 +5743,7 @@
               "sort": "desc"
             }
           },
-          "pluginVersion": "11.5.0-217209",
+          "pluginVersion": "11.6.0-223626",
           "targets": [
             {
               "datasource": {
@@ -5889,7 +5880,7 @@
             "h": 8,
             "w": 12,
             "x": 12,
-            "y": 49
+            "y": 81
           },
           "id": 110,
           "options": {
@@ -5906,7 +5897,7 @@
               "sort": "desc"
             }
           },
-          "pluginVersion": "11.5.0-217209",
+          "pluginVersion": "11.6.0-223626",
           "targets": [
             {
               "datasource": {
@@ -5993,6 +5984,706 @@
         "x": 0,
         "y": 25
       },
+      "id": 111,
+      "panels": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${ds}"
+          },
+          "description": "Number of flushes of dirty data for this SLRU.",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisBorderShow": false,
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "barWidthFactor": 0.6,
+                "drawStyle": "line",
+                "fillOpacity": 80,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "insertNulls": false,
+                "lineInterpolation": "linear",
+                "lineWidth": 0,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "never",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "normal"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  }
+                ]
+              },
+              "unit": "short"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 0,
+            "y": 26
+          },
+          "id": 117,
+          "options": {
+            "legend": {
+              "calcs": [],
+              "displayMode": "list",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "tooltip": {
+              "hideZeros": false,
+              "maxHeight": 600,
+              "mode": "multi",
+              "sort": "desc"
+            }
+          },
+          "pluginVersion": "11.6.0-223626",
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "${DS_VICTORIAMETRICS}"
+              },
+              "editorMode": "code",
+              "exemplar": true,
+              "expr": "sum by (name) (rate(postgres_stat_slru_flushes{instance=\"$instance\",service_id=\"$postgres\"})[1m])>0",
+              "interval": "",
+              "legendFormat": "{{name}}",
+              "range": true,
+              "refId": "A"
+            }
+          ],
+          "title": "Stat SLRU (flushes rate)",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${ds}"
+          },
+          "description": "Number of truncates for this SLRU.",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisBorderShow": false,
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "barWidthFactor": 0.6,
+                "drawStyle": "line",
+                "fillOpacity": 80,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "insertNulls": false,
+                "lineInterpolation": "linear",
+                "lineWidth": 0,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "never",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "normal"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  }
+                ]
+              },
+              "unit": "short"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 12,
+            "y": 26
+          },
+          "id": 118,
+          "options": {
+            "legend": {
+              "calcs": [],
+              "displayMode": "list",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "tooltip": {
+              "hideZeros": false,
+              "maxHeight": 600,
+              "mode": "multi",
+              "sort": "desc"
+            }
+          },
+          "pluginVersion": "11.6.0-223626",
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "${DS_VICTORIAMETRICS}"
+              },
+              "editorMode": "code",
+              "exemplar": true,
+              "expr": "sum by (name) (rate(postgres_stat_slru_truncates{instance=\"$instance\",service_id=\"$postgres\"})[1m])>0",
+              "interval": "",
+              "legendFormat": "{{name}}",
+              "range": true,
+              "refId": "A"
+            }
+          ],
+          "title": "Stat SLRU (truncates rate)",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${ds}"
+          },
+          "description": "Number of times disk blocks were found already in the SLRU, so that a read was not necessary (this only includes hits in the SLRU, not the operating system's file system cache).",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisBorderShow": false,
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "barWidthFactor": 0.6,
+                "drawStyle": "line",
+                "fillOpacity": 80,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "insertNulls": false,
+                "lineInterpolation": "linear",
+                "lineWidth": 0,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "never",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "normal"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  }
+                ]
+              },
+              "unit": "short"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 0,
+            "y": 34
+          },
+          "id": 112,
+          "options": {
+            "legend": {
+              "calcs": [],
+              "displayMode": "list",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "tooltip": {
+              "hideZeros": false,
+              "maxHeight": 600,
+              "mode": "multi",
+              "sort": "desc"
+            }
+          },
+          "pluginVersion": "11.6.0-223626",
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "${DS_VICTORIAMETRICS}"
+              },
+              "editorMode": "code",
+              "exemplar": true,
+              "expr": "sum by (name) (rate(postgres_stat_slru_blks_hit{instance=\"$instance\",service_id=\"$postgres\"})[1m])>0",
+              "interval": "",
+              "legendFormat": "{{name}}",
+              "range": true,
+              "refId": "A"
+            }
+          ],
+          "title": "Stat SLRU (blks_hit rate)",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${ds}"
+          },
+          "description": "Number of blocks checked for existence for this SLRU.",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisBorderShow": false,
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "barWidthFactor": 0.6,
+                "drawStyle": "line",
+                "fillOpacity": 80,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "insertNulls": false,
+                "lineInterpolation": "linear",
+                "lineWidth": 0,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "never",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "normal"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  }
+                ]
+              },
+              "unit": "short"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 12,
+            "y": 34
+          },
+          "id": 113,
+          "options": {
+            "legend": {
+              "calcs": [],
+              "displayMode": "list",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "tooltip": {
+              "hideZeros": false,
+              "maxHeight": 600,
+              "mode": "multi",
+              "sort": "desc"
+            }
+          },
+          "pluginVersion": "11.6.0-223626",
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "${DS_VICTORIAMETRICS}"
+              },
+              "editorMode": "code",
+              "exemplar": true,
+              "expr": "sum by (name) (rate(postgres_stat_slru_blks_exists{instance=\"$instance\",service_id=\"$postgres\"})[1m])>0",
+              "interval": "",
+              "legendFormat": "{{name}}",
+              "range": true,
+              "refId": "A"
+            }
+          ],
+          "title": "Stat SLRU (blks_exists rate)",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${ds}"
+          },
+          "description": "Number of disk blocks read for this SLRU.",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisBorderShow": false,
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "barWidthFactor": 0.6,
+                "drawStyle": "line",
+                "fillOpacity": 80,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "insertNulls": false,
+                "lineInterpolation": "linear",
+                "lineWidth": 0,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "never",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "normal"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  }
+                ]
+              },
+              "unit": "short"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 0,
+            "y": 42
+          },
+          "id": 114,
+          "options": {
+            "legend": {
+              "calcs": [],
+              "displayMode": "list",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "tooltip": {
+              "hideZeros": false,
+              "maxHeight": 600,
+              "mode": "multi",
+              "sort": "desc"
+            }
+          },
+          "pluginVersion": "11.6.0-223626",
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "${DS_VICTORIAMETRICS}"
+              },
+              "editorMode": "code",
+              "exemplar": true,
+              "expr": "sum by (name) (rate(postgres_stat_slru_blks_read{instance=\"$instance\",service_id=\"$postgres\"})[1m])>0",
+              "interval": "",
+              "legendFormat": "{{name}}",
+              "range": true,
+              "refId": "A"
+            }
+          ],
+          "title": "Stat SLRU (blks_read rate)",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${ds}"
+          },
+          "description": "Number of disk blocks written for this SLRU.",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisBorderShow": false,
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "barWidthFactor": 0.6,
+                "drawStyle": "line",
+                "fillOpacity": 80,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "insertNulls": false,
+                "lineInterpolation": "linear",
+                "lineWidth": 0,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "never",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "normal"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  }
+                ]
+              },
+              "unit": "short"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 12,
+            "y": 42
+          },
+          "id": 115,
+          "options": {
+            "legend": {
+              "calcs": [],
+              "displayMode": "list",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "tooltip": {
+              "hideZeros": false,
+              "maxHeight": 600,
+              "mode": "multi",
+              "sort": "desc"
+            }
+          },
+          "pluginVersion": "11.6.0-223626",
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "${DS_VICTORIAMETRICS}"
+              },
+              "editorMode": "code",
+              "exemplar": true,
+              "expr": "sum by (name) (rate(postgres_stat_slru_blks_written{instance=\"$instance\",service_id=\"$postgres\"})[1m])>0",
+              "interval": "",
+              "legendFormat": "{{name}}",
+              "range": true,
+              "refId": "A"
+            }
+          ],
+          "title": "Stat SLRU (blks_written rate)",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${ds}"
+          },
+          "description": "Number of blocks zeroed during initializations.",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisBorderShow": false,
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "barWidthFactor": 0.6,
+                "drawStyle": "line",
+                "fillOpacity": 80,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "insertNulls": false,
+                "lineInterpolation": "linear",
+                "lineWidth": 0,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "never",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "normal"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  }
+                ]
+              },
+              "unit": "short"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 0,
+            "y": 50
+          },
+          "id": 116,
+          "options": {
+            "legend": {
+              "calcs": [],
+              "displayMode": "list",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "tooltip": {
+              "hideZeros": false,
+              "maxHeight": 600,
+              "mode": "multi",
+              "sort": "desc"
+            }
+          },
+          "pluginVersion": "11.6.0-223626",
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "${DS_VICTORIAMETRICS}"
+              },
+              "editorMode": "code",
+              "exemplar": true,
+              "expr": "sum by (name) (rate(postgres_stat_slru_blks_zeroed{instance=\"$instance\",service_id=\"$postgres\"})[1m])>0",
+              "interval": "",
+              "legendFormat": "{{name}}",
+              "range": true,
+              "refId": "A"
+            }
+          ],
+          "title": "Stat SLRU (blks_zeroed rate)",
+          "type": "timeseries"
+        }
+      ],
+      "title": "Stat SLRU (PostgreSQL 13+ required)",
+      "type": "row"
+    },
+    {
+      "collapsed": true,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 26
+      },
       "id": 72,
       "panels": [
         {
@@ -6057,7 +6748,7 @@
             "h": 8,
             "w": 12,
             "x": 0,
-            "y": 314
+            "y": 602
           },
           "id": 65,
           "options": {
@@ -6177,7 +6868,7 @@
             "h": 8,
             "w": 12,
             "x": 12,
-            "y": 314
+            "y": 602
           },
           "id": 66,
           "options": {
@@ -6275,7 +6966,7 @@
             "h": 8,
             "w": 12,
             "x": 0,
-            "y": 338
+            "y": 626
           },
           "id": 69,
           "options": {
@@ -6373,7 +7064,7 @@
             "h": 8,
             "w": 12,
             "x": 12,
-            "y": 338
+            "y": 626
           },
           "id": 70,
           "options": {
@@ -6471,7 +7162,7 @@
             "h": 8,
             "w": 12,
             "x": 0,
-            "y": 346
+            "y": 634
           },
           "id": 67,
           "options": {
@@ -6569,7 +7260,7 @@
             "h": 8,
             "w": 12,
             "x": 12,
-            "y": 346
+            "y": 634
           },
           "id": 68,
           "options": {
@@ -6615,7 +7306,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 26
+        "y": 27
       },
       "id": 63,
       "panels": [
@@ -6681,7 +7372,7 @@
             "h": 8,
             "w": 12,
             "x": 0,
-            "y": 962
+            "y": 1250
           },
           "id": 57,
           "options": {
@@ -6779,7 +7470,7 @@
             "h": 8,
             "w": 12,
             "x": 12,
-            "y": 962
+            "y": 1250
           },
           "id": 60,
           "options": {
@@ -6877,7 +7568,7 @@
             "h": 8,
             "w": 12,
             "x": 0,
-            "y": 970
+            "y": 1258
           },
           "id": 89,
           "options": {
@@ -6975,7 +7666,7 @@
             "h": 8,
             "w": 12,
             "x": 12,
-            "y": 970
+            "y": 1258
           },
           "id": 59,
           "options": {
@@ -7072,7 +7763,7 @@
             "h": 8,
             "w": 12,
             "x": 0,
-            "y": 978
+            "y": 1266
           },
           "id": 58,
           "options": {
@@ -7168,7 +7859,7 @@
             "h": 8,
             "w": 12,
             "x": 12,
-            "y": 978
+            "y": 1266
           },
           "id": 61,
           "options": {
@@ -7264,7 +7955,7 @@
             "h": 8,
             "w": 12,
             "x": 0,
-            "y": 986
+            "y": 1274
           },
           "id": 94,
           "options": {
@@ -7352,7 +8043,7 @@
             "h": 8,
             "w": 12,
             "x": 12,
-            "y": 986
+            "y": 1274
           },
           "id": 93,
           "options": {
@@ -7437,7 +8128,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 27
+        "y": 28
       },
       "id": 44,
       "panels": [
@@ -7503,7 +8194,7 @@
             "h": 8,
             "w": 12,
             "x": 0,
-            "y": 316
+            "y": 604
           },
           "id": 34,
           "options": {
@@ -7599,7 +8290,7 @@
             "h": 8,
             "w": 12,
             "x": 12,
-            "y": 316
+            "y": 604
           },
           "id": 42,
           "options": {
@@ -7694,7 +8385,7 @@
             "h": 8,
             "w": 24,
             "x": 0,
-            "y": 324
+            "y": 612
           },
           "id": 85,
           "options": {
@@ -7879,6 +8570,6 @@
   "timezone": "",
   "title": "pgSCV: PostgreSQL",
   "uid": "N6PwjKeGz",
-  "version": 32,
+  "version": 33,
   "weekStart": ""
 }
