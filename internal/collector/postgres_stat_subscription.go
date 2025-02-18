@@ -17,9 +17,16 @@ const (
 		"NULL::numeric AS apply_error_count, NULL::numeric AS sync_error_count " +
 		"FROM pg_stat_subscription"
 
+	postgresStatSubscriptionQuery17 = "SELECT s1.subname, s1.pid, COALESCE(s1.relid::regclass, 'main') AS relname, " +
+		"pg_wal_lsn_diff(pg_current_wal_lsn(), s1.received_lsn) AS received, " +
+		"pg_wal_lsn_diff(pg_current_wal_lsn(), s1.latest_end_lsn) AS latest, " +
+		"s2.apply_error_count, s2.sync_error_count " +
+		"FROM pg_stat_subscription s1 JOIN pg_stat_subscription_stats s2 ON s1.subid = s2.subid"
+
 	postgresStatSubscriptionQueryLatest = "SELECT s1.subname, s1.pid, COALESCE(s1.relid::regclass, 'main') AS relname, " +
 		"pg_wal_lsn_diff(pg_current_wal_lsn(), s1.received_lsn) AS received, " +
 		"pg_wal_lsn_diff(pg_current_wal_lsn(), s1.latest_end_lsn) AS latest, " +
+		"s1.worker_type AS worker_type " +
 		"s2.apply_error_count, s2.sync_error_count " +
 		"FROM pg_stat_subscription s1 JOIN pg_stat_subscription_stats s2 ON s1.subid = s2.subid"
 )
@@ -187,6 +194,8 @@ func selectSubscriptionQuery(version int) string {
 	switch {
 	case version < PostgresV15:
 		return postgresStatSubscriptionQuery14
+	case version <= PostgresV17:
+		return postgresStatSubscriptionQuery17
 	default:
 		return postgresStatSubscriptionQueryLatest
 	}
