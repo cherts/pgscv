@@ -3,4 +3,4 @@ include:
   - path: compose.patroni.yml
   - path: compose.pgbouncer.yml
   - path: compose.victoriametrics.cluster.yml
-  - path: compose.pgscv.clustered.yml
+  - path: compose.pgscv.yml
