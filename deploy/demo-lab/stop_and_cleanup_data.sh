@@ -36,11 +36,16 @@ PG_VERSIONS=(
 )
 
 echo "Stopping all container via docker-compose, please waiting..."
-${DC_BIN} down --volumes >/dev/null 2>&1
+if [ -d "${SCRIPT_DIR}/victoriametrics/data/data" ]; then
+	${DC_BIN} -f docker-compose.yml down --volumes >/dev/null 2>&1
+else
+	${DC_BIN} -f docker-compose.vm-cluster.yml down --volumes >/dev/null 2>&1
+fi
 if [ $? -eq 0 ]; then
 	shopt -s dotglob
 	echo "Remove grafana data..."
 	rm -rf ${SCRIPT_DIR}/grafana/data/* >/dev/null 2>&1
+	rm -rf ${SCRIPT_DIR}/grafana/cluster_data/* >/dev/null 2>&1
 	echo "Remove patroni data..."
 	rm -rf ${SCRIPT_DIR}/patroni/etc_data1/* >/dev/null 2>&1
 	rm -rf ${SCRIPT_DIR}/patroni/etc_data2/* >/dev/null 2>&1
@@ -57,6 +62,11 @@ if [ $? -eq 0 ]; then
 	done
 	echo "Remove victoriametrics data..."
 	rm -rf ${SCRIPT_DIR}/victoriametrics/data/* >/dev/null 2>&1
+	rm -rf ${SCRIPT_DIR}/victoriametrics/vmstorage1data/* >/dev/null 2>&1
+	rm -rf ${SCRIPT_DIR}/victoriametrics/vmstorage2data/* >/dev/null 2>&1
+	rm -rf ${SCRIPT_DIR}/vmagent/data/* >/dev/null 2>&1
+	rm -rf ${SCRIPT_DIR}/vmagent/data1/* >/dev/null 2>&1
+	rm -rf ${SCRIPT_DIR}/vmagent/data2/* >/dev/null 2>&1
 	echo "All done."
 else
 	echo "ERROR: Container not stopped. Run 'docker-compose down' and see log."

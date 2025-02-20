@@ -1,0 +1,70 @@
+services:
+  victoriametrics:
+    container_name: victoriametrics
+    image: victoriametrics/victoria-metrics:stable
+    volumes:
+      - vmsingle_data:/data
+    command:
+      - "-storageDataPath=/data"
+      - "-retentionPeriod=2d"
+    ports:
+      - 8428:8428
+    networks: [ monitoring ]
+  vmagent:
+    container_name: vmagent
+    image: victoriametrics/vmagent:stable
+    volumes:
+      - vmagent_data:/vmagentdata
+      - ${PWD}/vmagent/vmagent.yaml:/etc/vmagent.yaml
+    command:
+      - "-promscrape.config=/etc/vmagent.yaml"
+      - "-remoteWrite.url=http://victoriametrics:8428/api/v1/write"
+      - "-remoteWrite.tmpDataPath=/vmagentdata"
+    depends_on:
+      - victoriametrics
+      - pgscv
+    ports:
+      - 8429:8429
+    networks: [ monitoring ]
+  grafana:
+    container_name: grafana
+    image: grafana/grafana:main
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ${PWD}/grafana/provisioning/datasources/single.yml:/etc/grafana/provisioning/datasources/single.yml
+      - ${PWD}/grafana/provisioning/dashboards:/etc/grafana/provisioning/dashboards
+      - ${PWD}/grafana/dashboards/vmetrics_single.json:/var/lib/grafana/dashboards/vmetrics_single.json
+      - ${PWD}/grafana/dashboards/vmagent.json:/var/lib/grafana/dashboards/vmagent.json
+      - ${PWD}/grafana/dashboards/pgSCV_System.json:/var/lib/grafana/dashboards/pgSCV_System.json
+      - ${PWD}/grafana/dashboards/pgSCV_PostgreSQL.json:/var/lib/grafana/dashboards/pgSCV_PostgreSQL.json
+      - ${PWD}/grafana/dashboards/pgSCV_Pgbouncer.json:/var/lib/grafana/dashboards/pgSCV_Pgbouncer.json
+      - ${PWD}/grafana/dashboards/pgSCV_Patroni.json:/var/lib/grafana/dashboards/pgSCV_Patroni.json
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: "admin"
+    depends_on: [ victoriametrics ]
+    ports:
+      - 3000:3000
+    networks: [ monitoring ]
+
+volumes:
+  vmagent_data:
+    driver: local
+    driver_opts:
+      o: bind
+      type: rw
+      device: ${PWD}/vmagent/data
+  vmsingle_data:
+    driver: local
+    driver_opts:
+      o: bind
+      type: rw
+      device: ${PWD}/victoriametrics/data
+  grafana_data:
+    driver: local
+    driver_opts:
+      o: bind
+      type: rw
+      device: ${PWD}/grafana/data
+
+networks:
+  monitoring:

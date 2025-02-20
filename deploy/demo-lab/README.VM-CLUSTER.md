@@ -1,4 +1,4 @@
-# pgSCV demo laboratory
+# pgSCV demo laboratory (use VictoriaMetrics cluster)
 
 ### Requirements
 
@@ -9,8 +9,17 @@
 
 - pgscv (listen port: 9890)
 - grafana (listen port: 3000)
-- vmagent (listen port: 8429)
-- victoriametrics (listen port: 8428)
+- vmagent-1 (listen port: 8429)
+- vmagent-2 (listen port: 9429)
+- vmauth (listen port: 8427)
+- vmalert (listen port: 8880)
+- alertmanager (listen port: 9093)
+- vminsert-1 (listen port: 8480)
+- vminsert-2 (listen port: 9480)
+- vmselect-1
+- vmselect-2
+- vmstorage-1
+- vmstorage-1
 - postgres9 (listen port: 5429)
 - postgres10 (listen port: 5430)
 - postgres11 (listen port: 5431)
@@ -59,7 +68,7 @@
 - pgbench_patroni
 - pgbench_patroni_s
 
-A total of 40 containers are launched!
+A total of 50 containers are launched!
 
 ### Quick start
 
@@ -73,7 +82,7 @@ cat docker-compose.yml docker-compose.vm-cluster.yml compose.*.yml | grep device
 Start demo laboratory:
 
 ```bash
-docker-compose -f docker-compose.yml up --detach
+docker-compose -f docker-compose.vm-cluster.yml up --detach
 ```
 
 Start pgbench tests:
@@ -107,6 +116,6 @@ Stop pgbench tests:
 Stop pgSCV demo laboratory and cleanup demo data:
 
 ```bash
-docker-compose -f docker-compose.yml down --volumes
+docker-compose -f docker-compose.vm-cluster.yml down --volumes
 ./stop_and_cleanup_data.sh
 ```

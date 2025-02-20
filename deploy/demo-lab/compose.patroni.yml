@@ -1,0 +1,164 @@
+services:
+  etcd1: &etcd
+    image: cherts/patroni:latest
+    networks: [ monitoring ]
+    environment:
+      ETCD_LISTEN_PEER_URLS: http://0.0.0.0:2380
+      ETCD_LISTEN_CLIENT_URLS: http://0.0.0.0:2379
+      ETCD_INITIAL_CLUSTER: etcd1=http://etcd1:2380,etcd2=http://etcd2:2380,etcd3=http://etcd3:2380
+      ETCD_INITIAL_CLUSTER_STATE: new
+      ETCD_INITIAL_CLUSTER_TOKEN: tutorial
+      ETCD_UNSUPPORTED_ARCH: arm64
+      ETCD_DATA_DIR: "/var/lib/etcd"
+    container_name: etcd1
+    volumes:
+      - etc_data1:/var/lib/etcd
+    hostname: etcd1
+    command: etcd --name etcd1 --initial-advertise-peer-urls http://etcd1:2380
+    healthcheck:
+      test: ["CMD-SHELL", "etcdctl endpoint health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+  etcd2:
+    <<: *etcd
+    container_name: etcd2
+    volumes:
+      - etc_data2:/var/lib/etcd
+    hostname: etcd2
+    command: etcd --name etcd2 --initial-advertise-peer-urls http://etcd2:2380
+  etcd3:
+    <<: *etcd
+    container_name: etcd3
+    volumes:
+      - etc_data3:/var/lib/etcd
+    hostname: etcd3
+    command: etcd --name etcd3 --initial-advertise-peer-urls http://etcd3:2380
+  haproxy:
+    container_name: haproxy
+    image: cherts/patroni:latest
+    networks: [ monitoring ]
+    env_file: ${PWD}/.env
+    hostname: haproxy
+    ports:
+      - "5000:5000"
+      - "5001:5001"
+    command: haproxy
+    environment: &haproxy_env
+      ETCDCTL_ENDPOINTS: http://etcd1:2379,http://etcd2:2379,http://etcd3:2379
+      PATRONI_ETCD3_HOSTS: "'etcd1:2379','etcd2:2379','etcd3:2379'"
+      PATRONI_SCOPE: cluster01
+  patroni1:
+    container_name: patroni1
+    image: cherts/patroni:latest
+    networks: [ monitoring ]
+    env_file: ${PWD}/.env
+    hostname: patroni1
+    ports:
+      - "8008:8008"
+      - "7432:5432"
+    volumes:
+      - patroni_data1:/home/postgres
+    environment:
+      <<: *haproxy_env
+      PATRONI_NAME: patroni1
+    depends_on:
+      - etcd1
+      - etcd2
+      - etcd3
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d postgres"]
+      interval: 30s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+  patroni2:
+    container_name: patroni2
+    image: cherts/patroni:latest
+    networks: [ monitoring ]
+    env_file: ${PWD}/.env
+    hostname: patroni2
+    ports:
+      - "8009:8008"
+      - "7433:5432"
+    volumes:
+      - patroni_data2:/home/postgres
+    environment:
+      <<: *haproxy_env
+      PATRONI_NAME: patroni2
+    depends_on:
+      - etcd1
+      - etcd2
+      - etcd3
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d postgres"]
+      interval: 30s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+  patroni3:
+    container_name: patroni3
+    image: cherts/patroni:latest
+    networks: [ monitoring ]
+    env_file: ${PWD}/.env
+    hostname: patroni3
+    ports:
+      - "8010:8008"
+      - "7434:5432"
+    volumes:
+      - patroni_data3:/home/postgres
+    environment:
+      <<: *haproxy_env
+      PATRONI_NAME: patroni3
+    depends_on:
+      - etcd1
+      - etcd2
+      - etcd3
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d postgres"]
+      interval: 30s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+volumes:
+  patroni_data1:
+    driver: local
+    driver_opts:
+      o: bind
+      type: rw
+      device: ${PWD}/patroni/pg_data1
+  patroni_data2:
+    driver: local
+    driver_opts:
+      o: bind
+      type: rw
+      device: ${PWD}/patroni/pg_data2
+  patroni_data3:
+    driver: local
+    driver_opts:
+      o: bind
+      type: rw
+      device: ${PWD}/patroni/pg_data3
+  etc_data1:
+    driver: local
+    driver_opts:
+      o: bind
+      type: rw
+      device: ${PWD}/patroni/etc_data1
+  etc_data2:
+    driver: local
+    driver_opts:
+      o: bind
+      type: rw
+      device: ${PWD}/patroni/etc_data2
+  etc_data3:
+    driver: local
+    driver_opts:
+      o: bind
+      type: rw
+      device: ${PWD}/patroni/etc_data3
+
+networks:
+  monitoring:
