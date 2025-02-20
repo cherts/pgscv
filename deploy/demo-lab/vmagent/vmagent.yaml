@@ -8,7 +8,7 @@ scrape_configs:
 #        - pgscv:9890
     http_sd_configs:
       - url: http://pgscv:9890/targets
-    metric_relabel_configs:
+#    metric_relabel_configs:
       # truncate query label of postgres_statements_query_info to 72 characters
 #      - action: replace
 #        source_labels: [ query ]

@@ -1,0 +1,12 @@
+apiVersion: 1
+
+datasources:
+  - name: victoriametrics
+    type: prometheus
+    access: proxy
+    orgId: 1
+    uid: DS_VM_01
+    url: http://vmauth:8427/select/0/prometheus
+    basicAuth: false
+    isDefault: true
+    editable: true
