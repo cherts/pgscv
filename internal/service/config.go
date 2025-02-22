@@ -8,6 +8,12 @@ import (
 	"github.com/cherts/pgscv/internal/model"
 )
 
+// Label struct describe targets labels
+type Label struct {
+	Name  string `yaml:"name" json:"name"`
+	Value string `yaml:"value" json:"value"`
+}
+
 // ConnSetting describes connection settings required for connecting to particular service.
 // This is primarily used for describing services defined by user in the config file (or env vars).
 type ConnSetting struct {
@@ -17,6 +23,8 @@ type ConnSetting struct {
 	Conninfo string `yaml:"conninfo"`
 	// BaseURL is the base URL for connecting to HTTP services.
 	BaseURL string `yaml:"baseurl"`
+	//TargetLabels array of labels for /targets endpoint
+	TargetLabels *[]Label `yaml:"target_labels"`
 }
 
 // ConnsSettings defines a set of all connection settings of exact services.

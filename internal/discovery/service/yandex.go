@@ -24,6 +24,12 @@ type Cluster struct {
 	ExcludeDb   *string `yaml:"exclude_db" json:"exclude_db"`
 }
 
+// Label struct describe targets labels
+type Label struct {
+	Name  string `yaml:"name" json:"name"`
+	Value string `yaml:"value" json:"value"`
+}
+
 // YandexConfig AuthorizedKey - path to json file, Password - password for
 // databases, Clusters - array of structures with matching rules
 type YandexConfig struct {
@@ -34,6 +40,7 @@ type YandexConfig struct {
 	PasswordFromEnv string    `json:"password_from_env" yaml:"password_from_env"`
 	RefreshInterval int       `json:"refresh_interval" yaml:"refresh_interval"`
 	Clusters        []Cluster `json:"clusters" yaml:"clusters"`
+	TargetLabels    *[]Label  `json:"target_labels" yaml:"target_labels"`
 }
 
 type engineIdx int
@@ -86,7 +93,14 @@ func (yd *YandexDiscovery) Subscribe(subscriberID string, addService discovery.A
 		for serviceID, svc := range e.dsn {
 			labels := make(map[string]string)
 			labels["mdb_cluster"] = svc.name
-			yd.subscribers[subscriberID].syncedServices[string(serviceID)] = discovery.Service{DSN: svc.dsn, ConstLabels: labels}
+			labels["provider"] = discovery.YandexMDB
+			targetLabels := make(map[string]string)
+			if yd.config[engineID].TargetLabels != nil {
+				for _, item := range *yd.config[engineID].TargetLabels {
+					targetLabels[item.Name] = item.Value
+				}
+			}
+			yd.subscribers[subscriberID].syncedServices[string(serviceID)] = discovery.Service{DSN: svc.dsn, ConstLabels: labels, TargetLabels: targetLabels}
 		}
 		e.RUnlock()
 		yd.subscribers[subscriberID].SyncedVersion[engineIdx(engineID)] = e.version
@@ -115,6 +129,7 @@ func (yd *YandexDiscovery) Sync() error {
 				subscriber.SyncedVersion[engineIdx(engineID)] = e.version
 				needSync = true
 			}
+
 			for serviceID, dsn := range e.dsn {
 				engineServices[string(serviceID)] = dsn
 			}
@@ -135,7 +150,11 @@ func (yd *YandexDiscovery) Sync() error {
 				labels := make(map[string]string)
 				labels["mdb_cluster"] = engineServices[*v.Left].name
 				labels["provider"] = discovery.YandexMDB
-				appendSvc[*v.Left] = discovery.Service{DSN: engineServices[*v.Left].dsn, ConstLabels: labels}
+				targetLabels := make(map[string]string)
+				for _, l := range engineServices[*v.Left].labels {
+					targetLabels[l.Name] = l.Value
+				}
+				appendSvc[*v.Left] = discovery.Service{DSN: engineServices[*v.Left].dsn, ConstLabels: labels, TargetLabels: targetLabels}
 				subscriber.syncedServices[*v.Left] = appendSvc[*v.Left]
 			}
 		}

@@ -14,6 +14,7 @@ import (
 
 type clusterDSN struct {
 	dsn, name string
+	labels    []Label
 }
 
 type hostDb string
@@ -60,9 +61,15 @@ func (ye *yandexEngine) Start(ctx context.Context) error {
 				for _, host := range cluster.Hosts {
 					for _, database := range cluster.Databases {
 						hostDb := hostDb(makeValidMetricName(fmt.Sprintf("%s_%s", host.Name, database.Name)))
-						clustersMap[hostDb] = clusterDSN{
+						dsn := clusterDSN{
 							dsn:  fmt.Sprintf("postgresql://%s:%s@%s:6432/%s", username, password, host.Name, database.Name),
-							name: cluster.Name}
+							name: cluster.Name,
+						}
+						clustersMap[hostDb] = dsn
+						if ye.config.TargetLabels != nil {
+							dsn.labels = *ye.config.TargetLabels
+						}
+						clustersMap[hostDb] = dsn
 					}
 				}
 			}
