@@ -204,13 +204,18 @@ func (n PgscvCollector) Collect(out chan<- prometheus.Metric) {
 		if err != nil {
 			log.Errorf("update service config failed: %s", err.Error())
 		}
-		if n.Config.rolConnLimit > -1 {
-			concurrencyLimit = n.Config.rolConnLimit
+
+		if n.Config.ConcurrencyLimit != nil {
+			if n.Config.rolConnLimit > -1 {
+				concurrencyLimit = n.Config.rolConnLimit
+			} else {
+				concurrencyLimit = len(n.Collectors)
+			}
+			if *n.Config.ConcurrencyLimit < concurrencyLimit {
+				concurrencyLimit = *n.Config.ConcurrencyLimit
+			}
 		} else {
 			concurrencyLimit = len(n.Collectors)
-		}
-		if n.Config.ConcurrencyLimit != nil && *n.Config.ConcurrencyLimit < concurrencyLimit {
-			concurrencyLimit = *n.Config.ConcurrencyLimit
 		}
 	} else {
 		concurrencyLimit = len(n.Collectors)
