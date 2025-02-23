@@ -3,6 +3,7 @@ package service
 
 import (
 	"fmt"
+	"github.com/prometheus/client_golang/prometheus/collectors"
 	"regexp"
 	"strings"
 	"sync"
@@ -317,9 +318,10 @@ func (repo *Repository) setupServices(config Config) error {
 				// Put updated service into repo.
 				repo.addService(service)
 				registry := prometheus.NewRegistry()
+				registry.MustRegister(collectors.NewProcessCollector(collectors.ProcessCollectorOpts{}))
+				registry.MustRegister(collectors.NewGoCollector())
 				registry.MustRegister(service.Collector)
 				repo.addRegistry(service.ServiceID, registry)
-
 				log.Debugf("service configured [%s]", id)
 			}
 		}()
