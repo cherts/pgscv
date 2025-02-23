@@ -47,6 +47,7 @@ type Config struct {
 	ConnTimeout           int    `yaml:"conn_timeout"`
 	URLPrefix             string `yaml:"url_prefix"` // Url prefix
 	ThrottlingInterval    *int   `yaml:"throttling_interval"`
+	ConcurrencyLimit      *int   `yaml:"concurrency_limit"`
 }
 
 // NewConfig creates new config based on config file or return default config if config file is not specified.
@@ -127,6 +128,9 @@ func NewConfig(configFilePath string) (*Config, error) {
 		}
 		if configFromEnv.ThrottlingInterval != nil {
 			configFromFile.ThrottlingInterval = configFromEnv.ThrottlingInterval
+		}
+		if configFromEnv.ConcurrencyLimit != nil {
+			configFromFile.ConcurrencyLimit = configFromEnv.ConcurrencyLimit
 		}
 		return configFromFile, nil
 	}
@@ -468,6 +472,12 @@ func newConfigFromEnv() (*Config, error) {
 				return nil, fmt.Errorf("invalid setting PGSCV_THROTTLING_INTERVAL, value '%s': %s", value, err)
 			}
 			config.ThrottlingInterval = &throttlingInterval
+		case "PGSCV_CONCURRENCY_LIMIT":
+			concurrencyLimit, err := strconv.Atoi(value)
+			if err != nil {
+				return nil, fmt.Errorf("invalid setting PGSCV_CONCURRENCY_LIMIT, value '%s', allowed only digits", value)
+			}
+			config.ConcurrencyLimit = &concurrencyLimit
 		}
 	}
 	return config, nil

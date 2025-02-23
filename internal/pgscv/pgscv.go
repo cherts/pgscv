@@ -42,6 +42,7 @@ func Start(ctx context.Context, config *Config) error {
 		SkipConnErrorMode:  config.SkipConnErrorMode,
 		ConnTimeout:        config.ConnTimeout,
 		ThrottlingInterval: config.ThrottlingInterval,
+		ConcurrencyLimit:   config.ConcurrencyLimit,
 	}
 
 	if len(config.ServicesConnsSettings) == 0 && config.DiscoveryServices == nil {
