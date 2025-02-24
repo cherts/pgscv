@@ -20,6 +20,7 @@ services:
       - "-promscrape.config=/etc/vmagent.yaml"
       - "-remoteWrite.url=http://victoriametrics:8428/api/v1/write"
       - "-remoteWrite.tmpDataPath=/vmagentdata"
+      - "-promscrape.httpSDCheckInterval=30s"
     depends_on:
       - victoriametrics
       - pgscv

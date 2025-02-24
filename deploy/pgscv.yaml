@@ -23,10 +23,12 @@
 #        user: "postgres_exporter"
 #        refresh_interval: 5
 #        target_labels:
-#          - name: __meta_datacenter
-#            value: dc1
+#          - name: folder_id
+#            value: "b1000000000000"
+#          - name: __scrape_timeout__
+#            value: 1m
 #          - name: __scrape_interval__
-#            value: 5m
+#            value: 2m
 #        clusters:
 #          - name: ".*"
 #            db:
@@ -37,10 +39,10 @@ services:
     service_type: "postgres"
     conninfo: "postgres://postgres:password@127.0.0.1:5432/postgres"
 #    target_labels:
-#      - name: __meta_datacenter
-#        value: dc2
+#      - name: __scrape_timeout__
+#        value: 30s
 #      - name: __scrape_interval__
-#        value: 5m
+#        value: 2m
   "pgbouncer:6432": 
     service_type: "pgbouncer"
     conninfo: "postgres://pgbouncer:password@127.0.0.1:6432/pgbouncer"

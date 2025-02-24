@@ -11,6 +11,7 @@ services:
       - "-remoteWrite.url=http://vmauth:8427/insert/0/prometheus/"
       - "-remoteWrite.tmpDataPath=/vmagentdata"
       - "-promscrape.noStaleMarkers"
+      - "-promscrape.httpSDCheckInterval=30s"
     depends_on:
       - vminsert-1
       - vminsert-2
@@ -30,6 +31,7 @@ services:
       - "-remoteWrite.url=http://vmauth:8427/insert/0/prometheus/"
       - "-remoteWrite.tmpDataPath=/vmagentdata"
       - "-promscrape.noStaleMarkers"
+      - "-promscrape.httpSDCheckInterval=30s"
     depends_on:
       - vminsert-1
       - vminsert-2

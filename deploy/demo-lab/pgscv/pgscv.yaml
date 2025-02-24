@@ -130,7 +130,7 @@ disable_collectors:
 #  - postgres/indexes
 #  - postgres/functions
 #  - postgres/locks
-  - postgres/logs
+#  - postgres/logs
 #  - postgres/replication
 #  - postgres/replication_slots
 #  - postgres/statements
