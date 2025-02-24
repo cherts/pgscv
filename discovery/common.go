@@ -10,8 +10,9 @@ type Config interface{}
 
 // Service abstract service definition
 type Service struct {
-	DSN         string
-	ConstLabels map[string]string
+	DSN          string
+	ConstLabels  map[string]string
+	TargetLabels map[string]string
 }
 
 // AddServiceFunc services arg is map serviceId -> data source name
