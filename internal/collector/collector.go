@@ -206,6 +206,8 @@ func (n PgscvCollector) Collect(out chan<- prometheus.Metric) {
 		}
 
 		if n.Config.ConcurrencyLimit != nil {
+			log.Debugf("Role rolConnLimit: %d", n.Config.rolConnLimit)
+			log.Debugf("ConcurrencyLimit: %d connection limit set for DB", *n.Config.ConcurrencyLimit)
 			if n.Config.rolConnLimit > -1 {
 				concurrencyLimit = n.Config.rolConnLimit
 			} else {
@@ -217,9 +219,13 @@ func (n PgscvCollector) Collect(out chan<- prometheus.Metric) {
 		} else {
 			concurrencyLimit = len(n.Collectors)
 		}
+		log.Debugf("Set ConcurrencyLimit: %d", concurrencyLimit)
 	} else {
 		concurrencyLimit = len(n.Collectors)
+		log.Debugf("Set default ConcurrencyLimit: %d", concurrencyLimit)
 	}
+
+	log.Debugf("Launch collectors with ConcurrencyLimit: %d", concurrencyLimit)
 
 	wgCollector := sync.WaitGroup{}
 	wgSender := sync.WaitGroup{}
