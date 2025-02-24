@@ -10,7 +10,7 @@ services:
       #- "-remoteWrite.url=http://vminsert-1:8480/insert/0/prometheus/"
       - "-remoteWrite.url=http://vmauth:8427/insert/0/prometheus/"
       - "-remoteWrite.tmpDataPath=/vmagentdata"
-      - "-promscrape.noStaleMarkers"
+      #- "-promscrape.noStaleMarkers"
       - "-promscrape.httpSDCheckInterval=30s"
     depends_on:
       - vminsert-1
@@ -30,7 +30,7 @@ services:
       #- "-remoteWrite.url=http://vminsert-2:8480/insert/0/prometheus/"
       - "-remoteWrite.url=http://vmauth:8427/insert/0/prometheus/"
       - "-remoteWrite.tmpDataPath=/vmagentdata"
-      - "-promscrape.noStaleMarkers"
+      #- "-promscrape.noStaleMarkers"
       - "-promscrape.httpSDCheckInterval=30s"
     depends_on:
       - vminsert-1

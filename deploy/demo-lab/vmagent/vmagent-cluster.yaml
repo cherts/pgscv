@@ -5,6 +5,7 @@ scrape_configs:
   - job_name: 'pgscv'
     http_sd_configs:
       - url: http://pgscv:9890/targets
+    no_stale_markers: true
   - job_name: 'vmagent'
     static_configs:
       - targets: ['vmagent-1:8429', 'vmagent-2:8429']
