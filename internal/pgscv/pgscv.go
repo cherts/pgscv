@@ -135,6 +135,7 @@ func subscribeYandex(ds *discovery.Discovery, config *Config, serviceRepo *servi
 				ConstLabels:        &constLabels,
 				TargetLabels:       &targetLabels,
 				ConnTimeout:        config.ConnTimeout,
+				ConcurrencyLimit:   config.ConcurrencyLimit,
 			}
 			var cs = make(service.ConnsSettings, len(services))
 			for serviceID, svc := range services {
