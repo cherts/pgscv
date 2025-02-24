@@ -3,6 +3,7 @@ package service
 
 import (
 	"fmt"
+	"github.com/prometheus/client_golang/prometheus/collectors"
 	"regexp"
 	"strings"
 	"sync"
@@ -29,8 +30,9 @@ type Service struct {
 	ConnSettings ConnSetting
 	// Prometheus-based metrics collector associated with the service. Each 'service' has its own dedicated collector instance
 	// which implements a service-specific set of metric collectors.
-	Collector   Collector
-	ConstLabels *map[string]string
+	Collector    Collector
+	ConstLabels  *map[string]string
+	TargetLabels *map[string]string
 }
 
 const system0ServiceID = "system:0"
@@ -51,6 +53,7 @@ type Config struct {
 	CollectTopQuery    int
 	SkipConnErrorMode  bool
 	ConstLabels        *map[string]*map[string]string
+	TargetLabels       *map[string]*map[string]string
 	ConnTimeout        int  // in seconds
 	ThrottlingInterval *int // in seconds, default 25
 	ConcurrencyLimit   *int
@@ -232,6 +235,15 @@ func (repo *Repository) addServicesFromConfig(config Config) {
 			if config.ConstLabels != nil && (*config.ConstLabels)[k] != nil {
 				s.ConstLabels = (*config.ConstLabels)[k]
 			}
+			if cs.TargetLabels == nil && config.TargetLabels != nil && (*config.TargetLabels)[k] != nil {
+				s.TargetLabels = (*config.TargetLabels)[k]
+			} else if cs.TargetLabels != nil {
+				targetLabels := map[string]string{}
+				for _, item := range *cs.TargetLabels {
+					targetLabels[item.Name] = item.Value
+				}
+				s.TargetLabels = &targetLabels
+			}
 
 			// Use entry key as ServiceID unique identifier.
 			repo.addService(s)
@@ -272,6 +284,9 @@ func (repo *Repository) setupServices(config Config) error {
 				if config.ConstLabels != nil && (*config.ConstLabels)[id] != nil {
 					collectorConfig.ConstLabels = (*config.ConstLabels)[id]
 				}
+				if config.TargetLabels != nil && (*config.TargetLabels)[id] != nil {
+					collectorConfig.TargetLabels = (*config.TargetLabels)[id]
+				}
 
 				switch service.ConnSettings.ServiceType {
 				case model.ServiceTypeSystem:
@@ -305,9 +320,10 @@ func (repo *Repository) setupServices(config Config) error {
 				// Put updated service into repo.
 				repo.addService(service)
 				registry := prometheus.NewRegistry()
+				registry.MustRegister(collectors.NewProcessCollector(collectors.ProcessCollectorOpts{}))
+				registry.MustRegister(collectors.NewGoCollector())
 				registry.MustRegister(service.Collector)
 				repo.addRegistry(service.ServiceID, registry)
-
 				log.Debugf("service configured [%s]", id)
 			}
 		}()

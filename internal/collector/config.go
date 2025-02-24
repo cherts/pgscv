@@ -37,6 +37,7 @@ type Config struct {
 	CollectTopIndex  int
 	CollectTopQuery  int
 	ConstLabels      *map[string]string
+	TargetLabels     *map[string]string
 	ConnTimeout      int // in seconds
 	ConcurrencyLimit *int
 }

@@ -23,6 +23,11 @@
 #        password_from_env: DB_PASSWORD
 #        user: "postgres_exporter"
 #        refresh_interval: 5
+#        target_labels:
+#          - name: __meta_datacenter
+#            value: dc1
+#          - name: __scrape_interval__
+#            value: 5m
 #        clusters:
 #          - name: ".*"
 #            db:
@@ -32,6 +37,11 @@ services:
   "postgres:5432":
     service_type: "postgres"
     conninfo: "postgres://postgres:password@127.0.0.1:5432/postgres"
+#    target_labels:
+#      - name: __meta_datacenter
+#        value: dc2
+#      - name: __scrape_interval__
+#        value: 5m
   "pgbouncer:6432": 
     service_type: "pgbouncer"
     conninfo: "postgres://pgbouncer:password@127.0.0.1:6432/pgbouncer"
