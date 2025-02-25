@@ -102,7 +102,7 @@ func (c *postgresStatSubscriptionCollector) Update(config Config, ch chan<- prom
 	return nil
 }
 
-// postgresSubscriptionStat
+// postgresSubscriptionStat represents per-subscription stats based on pg_stat_subscription.
 type postgresSubscriptionStat struct {
 	Pid        string // a pid
 	SubName    string // a subscription name
