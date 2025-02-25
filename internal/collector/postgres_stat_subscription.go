@@ -2,7 +2,6 @@ package collector
 
 import (
 	"strconv"
-	"strings"
 
 	"github.com/cherts/pgscv/internal/log"
 	"github.com/cherts/pgscv/internal/model"
@@ -11,70 +10,51 @@ import (
 )
 
 const (
-	postgresStatSubscriptionQuery14 = "SELECT subname, pid, COALESCE(relid::regclass, 'main') AS relname, " +
+	postgresStatSubscriptionQuery14 = "SELECT pid, subname, COALESCE(relid::regclass::text, 'main') AS relname, " +
+		"COALESCE(NULL::text, 'nothing') AS worker_type, " +
 		"pg_wal_lsn_diff(pg_current_wal_lsn(), received_lsn) AS received, " +
-		"pg_wal_lsn_diff(pg_current_wal_lsn(), latest_end_lsn) AS latest, " +
+		"pg_wal_lsn_diff(pg_current_wal_lsn(), latest_end_lsn) AS latest_end, " +
 		"NULL::numeric AS apply_error_count, NULL::numeric AS sync_error_count " +
 		"FROM pg_stat_subscription"
 
-	postgresStatSubscriptionQuery16 = "SELECT s1.subname, s1.pid, COALESCE(s1.relid::regclass, 'main') AS relname, " +
+	postgresStatSubscriptionQuery16 = "SELECT s1.pid, s1.subname, COALESCE(s1.relid::regclass::text, 'main') AS relname, " +
+		"COALESCE(NULL::text, 'nothing') AS worker_type, " +
 		"pg_wal_lsn_diff(pg_current_wal_lsn(), s1.received_lsn) AS received, " +
-		"pg_wal_lsn_diff(pg_current_wal_lsn(), s1.latest_end_lsn) AS latest, " +
+		"pg_wal_lsn_diff(pg_current_wal_lsn(), s1.latest_end_lsn) AS latest_end, " +
 		"s2.apply_error_count, s2.sync_error_count " +
 		"FROM pg_stat_subscription s1 JOIN pg_stat_subscription_stats s2 ON s1.subid = s2.subid"
 
-	postgresStatSubscriptionQueryLatest = "SELECT s1.subname, s1.pid, COALESCE(s1.relid::regclass, 'main') AS relname, " +
+	postgresStatSubscriptionQueryLatest = "SELECT s1.pid, s1.subname, COALESCE(s1.relid::regclass::text, 'main') AS relname, " +
+		"s1.worker_type AS worker_type, " +
 		"pg_wal_lsn_diff(pg_current_wal_lsn(), s1.received_lsn) AS received, " +
-		"pg_wal_lsn_diff(pg_current_wal_lsn(), s1.latest_end_lsn) AS latest, " +
-		"s1.worker_type AS worker_type " +
+		"pg_wal_lsn_diff(pg_current_wal_lsn(), s1.latest_end_lsn) AS latest_end, " +
 		"s2.apply_error_count, s2.sync_error_count " +
 		"FROM pg_stat_subscription s1 JOIN pg_stat_subscription_stats s2 ON s1.subid = s2.subid"
 )
 
 // postgresStatSubscriptionCollector defines metric descriptors and stats store.
 type postgresStatSubscriptionCollector struct {
-	pid             typedDesc
-	received        typedDesc
-	latest          typedDesc
-	workerType      typedDesc
-	applyErrorCount typedDesc
-	syncErrorCount  typedDesc
-	labelNames      []string
+	labelNames []string
+	lagBytes   typedDesc
+	errorCount typedDesc
 }
 
 // NewPostgresStatSubscriptionCollector returns a new Collector exposing postgres pg_stat_subscription stats.
 func NewPostgresStatSubscriptionCollector(constLabels labels, settings model.CollectorSettings) (Collector, error) {
-	var labels = []string{"subname"}
+	var labelNames = []string{"subname", "relname", "worker_type"}
 
 	return &postgresStatSubscriptionCollector{
-		pid: newBuiltinTypedDesc(
-			descOpts{"postgres", "stat_subscription", "pid", "XXXX", 0},
+		labelNames: labelNames,
+		lagBytes: newBuiltinTypedDesc(
+			descOpts{"postgres", "stat_subscription", "lag_bytes", "Number of bytes receiver is behind than sender in each WAL processing phase.", 0},
 			prometheus.GaugeValue,
-			labels, constLabels,
+			labelNames, constLabels,
 			settings.Filters,
 		),
-		received: newBuiltinTypedDesc(
-			descOpts{"postgres", "stat_subscription", "received", "XXXX", 0},
+		errorCount: newBuiltinTypedDesc(
+			descOpts{"postgres", "stat_subscription", "error_count", "Number of times an error occurred.", 0},
 			prometheus.GaugeValue,
-			labels, constLabels,
-			settings.Filters,
-		),
-		latest: newBuiltinTypedDesc(
-			descOpts{"postgres", "stat_subscription", "latest", "XXXX", 0},
-			prometheus.GaugeValue,
-			labels, constLabels,
-			settings.Filters,
-		),
-		applyErrorCount: newBuiltinTypedDesc(
-			descOpts{"postgres", "stat_subscription", "apply_error_count", "XXXX", 0},
-			prometheus.GaugeValue,
-			labels, constLabels,
-			settings.Filters,
-		),
-		syncErrorCount: newBuiltinTypedDesc(
-			descOpts{"postgres", "stat_subscription", "sync_error_count", "XXXX", 0},
-			prometheus.GaugeValue,
-			labels, constLabels,
+			labelNames, constLabels,
 			settings.Filters,
 		),
 	}, nil
@@ -99,14 +79,20 @@ func (c *postgresStatSubscriptionCollector) Update(config Config, ch chan<- prom
 		if err != nil {
 			log.Warnf("get pg_stat_subscription failed: %s; skip", err)
 		} else {
-			stats := parsePostgresStatSubscription(res, []string{"subname"})
-
+			stats := parsePostgresSubscriptionStat(res, c.labelNames)
 			for _, stat := range stats {
-				ch <- c.pid.newConstMetric(stat.Pid, stat.SubName)
-				ch <- c.received.newConstMetric(stat.Received, stat.SubName)
-				ch <- c.latest.newConstMetric(stat.Latest, stat.SubName)
-				ch <- c.applyErrorCount.newConstMetric(stat.ApplyErrorCount, stat.SubName)
-				ch <- c.syncErrorCount.newConstMetric(stat.SyncErrorCount, stat.SubName)
+				if value, ok := stat.values["received"]; ok {
+					ch <- c.lagBytes.newConstMetric(value, stat.SubName, stat.RelName, stat.WorkerType, "received")
+				}
+				if value, ok := stat.values["latest_end"]; ok {
+					ch <- c.lagBytes.newConstMetric(value, stat.SubName, stat.RelName, stat.WorkerType, "latest_end")
+				}
+				if value, ok := stat.values["apply_error_count"]; ok {
+					ch <- c.errorCount.newConstMetric(value, stat.SubName, stat.RelName, stat.WorkerType, "apply")
+				}
+				if value, ok := stat.values["sync_error_count"]; ok {
+					ch <- c.errorCount.newConstMetric(value, stat.SubName, stat.RelName, stat.WorkerType, "sync")
+				}
 			}
 		}
 	}
@@ -114,40 +100,45 @@ func (c *postgresStatSubscriptionCollector) Update(config Config, ch chan<- prom
 	return nil
 }
 
-// postgresStatSubscription
-type postgresStatSubscription struct {
-	SubName         string // a subscription name
-	Pid             float64
-	Received        float64
-	Latest          float64
-	ApplyErrorCount float64
-	SyncErrorCount  float64
+// postgresSubscriptionStat
+type postgresSubscriptionStat struct {
+	Pid        string // a pid
+	SubName    string // a subscription name
+	RelName    string // a relname
+	WorkerType string // a worker_type
+	values     map[string]float64
 }
 
-// parsePostgresStatSubscription parses PGResult and returns structs with stats values.
-func parsePostgresStatSubscription(r *model.PGResult, labelNames []string) map[string]postgresStatSubscription {
+// parsePostgresSubscriptionStat parses PGResult and returns structs with stats values.
+func parsePostgresSubscriptionStat(r *model.PGResult, labelNames []string) map[string]postgresSubscriptionStat {
 	log.Debug("parse postgres stat_subscription stats")
 
-	var stats = make(map[string]postgresStatSubscription)
+	var stats = make(map[string]postgresSubscriptionStat)
 
 	for _, row := range r.Rows {
-		var SubName string
+		stat := postgresSubscriptionStat{values: map[string]float64{}}
 
+		// collect label values
 		for i, colname := range r.Colnames {
 			switch string(colname.Name) {
+			case "pid":
+				stat.Pid = row[i].String
 			case "subname":
-				SubName = row[i].String
+				stat.SubName = row[i].String
+			case "relname":
+				stat.RelName = row[i].String
+			case "worker_type":
+				stat.WorkerType = row[i].String
 			}
 		}
 
-		// create a stat_io name consisting of trio BackendType/IoObject/IoContext
-		statSubsciption := strings.Join([]string{SubName}, "")
+		// use pid as key in the map
+		pid := stat.Pid
 
 		// Put stats with labels (but with no data values yet) into stats store.
-		if _, ok := stats[statSubsciption]; !ok {
-			stats[statSubsciption] = postgresStatSubscription{SubName: SubName}
-		}
+		stats[pid] = stat
 
+		// fetch data values from columns
 		for i, colname := range r.Colnames {
 			// skip columns if its value used as a label
 			if stringsContains(labelNames, string(colname.Name)) {
@@ -166,24 +157,23 @@ func parsePostgresStatSubscription(r *model.PGResult, labelNames []string) map[s
 				continue
 			}
 
-			s := stats[statSubsciption]
+			s := stats[pid]
 
+			// Run column-specific logic
 			switch string(colname.Name) {
-			case "pid":
-				s.Pid = v
 			case "received":
-				s.Received = v
-			case "latest":
-				s.Latest = v
+				s.values["received"] = v
+			case "latest_end":
+				s.values["latest_end"] = v
 			case "apply_error_count":
-				s.ApplyErrorCount = v
+				s.values["apply_error_count"] = v
 			case "sync_error_count":
-				s.SyncErrorCount = v
+				s.values["sync_error_count"] = v
 			default:
 				continue
 			}
 
-			stats[statSubsciption] = s
+			stats[pid] = s
 		}
 	}
 
