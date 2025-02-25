@@ -40,6 +40,7 @@ type postgresStatSubscriptionCollector struct {
 }
 
 // NewPostgresStatSubscriptionCollector returns a new Collector exposing postgres pg_stat_subscription stats.
+// For details see https://www.postgresql.org/docs/current/monitoring-stats.html#MONITORING-PG-STAT-SUBSCRIPTION
 func NewPostgresStatSubscriptionCollector(constLabels labels, settings model.CollectorSettings) (Collector, error) {
 	var labelNames = []string{"subname", "relname", "worker_type"}
 
@@ -79,6 +80,7 @@ func (c *postgresStatSubscriptionCollector) Update(config Config, ch chan<- prom
 		if err != nil {
 			log.Warnf("get pg_stat_subscription failed: %s; skip", err)
 		} else {
+			// Parse pg_stat_subscription stats.
 			stats := parsePostgresSubscriptionStat(res, c.labelNames)
 			for _, stat := range stats {
 				if value, ok := stat.values["received"]; ok {
