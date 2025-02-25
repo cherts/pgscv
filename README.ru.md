@@ -15,6 +15,7 @@
 - **Метрики ОС:** поддержка сбора показателей работы операционной системы (только Linux);
 - **Поддержка обнаружения сервисов мониторинга** Через специальный эндпойнт `/targets` можно производить обнаружение всех сервисов мониторинга ([смотри документацию](https://github.com/cherts/pgscv/wiki/Service-discovery))
 - **Поддержка тротлинга** Механизм тротлинга позволяет лимитировать обращения к эндпойнтам `/metrics` и `/metrics?target=xxx` для защиты баз данных от потока запросов мониторинга от множества агентов сбора метрик ([смотри документацию](https://github.com/cherts/pgscv/wiki/Throttling)).
+- **Поддержка контроля параллелизма** Можно ограничить возможности параллельного сбора данных мониторинга из базы данных для контроля нагрузки создаваемой экспортером ([смотри документацию](https://github.com/cherts/pgscv/wiki/Сoncurrency)).
 - **TLS и аутентификация**: Эндпойнты `/metrics` и `/metrics?target=xxx` могут быть защищены с помощью базовой аутентификации и TLS;
 - **Сбор показателей из нескольких сервисов**: pgSCV может собирать метрики из многих экземпляров баз данных, включая базы данных расположенные в облачных средах (Amazon AWS, Yandex.Cloud, VK.Cloud);
 - **Настраиваемые пользовательские метрики**: pgSCV можно настроить на сбор кастомных пользовательских метрик;
@@ -32,7 +33,7 @@
 Загрузите архив со страницы [releases](https://github.com/cherts/pgscv/releases). Распакуйте архив. Создайте минимальный файл конфигураации. Запустите pgSCV под пользователем postgres.
 
 ```bash
-curl -s -L https://github.com/cherts/pgscv/releases/download/v0.12.0/pgscv_0.12.0_linux_$(uname -m).tar.gz -o - | tar xzf - -C /tmp && \
+curl -s -L https://github.com/cherts/pgscv/releases/download/v0.13.0/pgscv_0.13.0_linux_$(uname -m).tar.gz -o - | tar xzf - -C /tmp && \
 mv /tmp/pgscv.yaml /etc && \
 mv /tmp/pgscv.service /etc/systemd/system &&  \
 mv /tmp/pgscv.default /etc/default/pgscv && \

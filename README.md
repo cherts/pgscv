@@ -22,6 +22,7 @@ This project is a continuation of the development of the original pgSCV by [Alex
 - **OS metrics:** support collecting metrics of operating system (only Linux).
 - **Support Prometheus service discovery.** `/targets` endpoint is used to discover all monitoring services ([see documentation](https://github.com/cherts/pgscv/wiki/Service-discovery))
 - **Throttling support** The throttling allows limiting calls to the `/metrics` and `/metrics?target=xxx` endpoints to protect databases from a flood of monitoring requests from multiple collection agents ([see documentation](https://github.com/cherts/pgscv/wiki/Throttling)).
+- **Concurrency limitting support** It is possible to limit the parallel collection of monitoring data from the database to control the load created by the exporter. ([see documentatio](https://github.com/cherts/pgscv/wiki/Сoncurrency)).
 - **TLS and authentication**. `/metrics` and и `/metrics?target=xxx` endpoint could be protected with basic authentication and TLS.
 - **Collecting metrics from multiple services**. pgSCV can collect metrics from many databases instances.
 - **User-defined metrics**. pgSCV could be configured in a way to collect metrics defined by user.
@@ -39,7 +40,7 @@ This project is a continuation of the development of the original pgSCV by [Alex
 Download the archive from [releases](https://github.com/cherts/pgscv/releases). Unpack the archive. Create minimum config file. Start pgSCV systemd service under `postgres` user.
 
 ```bash
-curl -s -L https://github.com/cherts/pgscv/releases/download/v0.12.0/pgscv_0.12.0_linux_$(uname -m).tar.gz -o - | tar xzf - -C /tmp && \
+curl -s -L https://github.com/cherts/pgscv/releases/download/v0.13.0/pgscv_0.13.0_linux_$(uname -m).tar.gz -o - | tar xzf - -C /tmp && \
 mv /tmp/pgscv.yaml /etc && \
 mv /tmp/pgscv.service /etc/systemd/system &&  \
 mv /tmp/pgscv.default /etc/default/pgscv && \
