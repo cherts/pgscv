@@ -2,9 +2,10 @@
 package collector
 
 import (
-	"github.com/jackc/pgx/v4"
 	"strconv"
 	"sync"
+
+	"github.com/jackc/pgx/v4"
 
 	"github.com/cherts/pgscv/internal/filter"
 	"github.com/cherts/pgscv/internal/log"
@@ -200,14 +201,15 @@ func (n PgscvCollector) Collect(out chan<- prometheus.Metric) {
 	var concurrencyLimit int
 	if n.Config.ServiceType == "postgres" {
 		if n.Config.postgresServiceConfig.blockSize == 0 {
+			log.Debug("updating service configuration...")
 			err := n.Config.FillPostgresServiceConfig(n.Config.ConnTimeout)
 			if err != nil {
 				log.Errorf("update service config failed: %s", err.Error())
 			}
 		}
 		if n.Config.ConcurrencyLimit != nil {
-			log.Debugf("Role rolConnLimit: %d", n.Config.rolConnLimit)
-			log.Debugf("ConcurrencyLimit: %d connection limit set for DB", *n.Config.ConcurrencyLimit)
+			log.Debugf("user rolConnLimit: %d", n.Config.rolConnLimit)
+			log.Debugf("current ConcurrencyLimit: %d connection limit set for DB", *n.Config.ConcurrencyLimit)
 			if n.Config.rolConnLimit > -1 {
 				concurrencyLimit = n.Config.rolConnLimit
 			} else {
@@ -219,13 +221,13 @@ func (n PgscvCollector) Collect(out chan<- prometheus.Metric) {
 		} else {
 			concurrencyLimit = len(n.Collectors)
 		}
-		log.Debugf("Set ConcurrencyLimit: %d", concurrencyLimit)
+		log.Debugf("set ConcurrencyLimit: %d", concurrencyLimit)
 	} else {
 		concurrencyLimit = len(n.Collectors)
-		log.Debugf("Set default ConcurrencyLimit: %d", concurrencyLimit)
+		log.Debugf("set default ConcurrencyLimit: %d", concurrencyLimit)
 	}
 
-	log.Debugf("Launch collectors with ConcurrencyLimit: %d", concurrencyLimit)
+	log.Debugf("launch collectors with ConcurrencyLimit: %d", concurrencyLimit)
 
 	wgCollector := sync.WaitGroup{}
 	wgSender := sync.WaitGroup{}
