@@ -1,0 +1,474 @@
+services:
+  postgres9: &postgres_old_base
+    container_name: postgres9
+    image: postgres:9-alpine
+    hostname: postgres9
+    command:
+      - "postgres"
+      - "-c"
+      - "listen_addresses=*"
+      - "-c"
+      - "shared_buffers=128MB"
+      - "-c"
+      - "shared_preload_libraries=pg_stat_statements"
+      - "-c"
+      - "pg_stat_statements.max=10000"
+      - "-c"
+      - "pg_stat_statements.track=all"
+      - "-c"
+      - "max_replication_slots=5"
+      - "-c"
+      - "hot_standby=on"
+      - "-c"
+      - "max_wal_senders=5"
+      - "-c"
+      - "wal_level=replica"
+      - "-c"
+      - "checkpoint_completion_target=0.9"
+      - "-c"
+      - "checkpoint_timeout=600"
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-postgres}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      #POSTGRES_HOST_AUTH_METHOD: ${POSTGRES_HOST_AUTH_METHOD:-trust}
+      POSTGRES_HOST_AUTH_METHOD: "md5\nhost replication all 0.0.0.0/0 md5"
+      PGDATA: /data/postgres
+    ports:
+      - 5429:5432
+    volumes:
+       - pg9_data:/data/postgres
+       - ${PWD}/postgres/init_9.sql:/docker-entrypoint-initdb.d/01-init.sql
+    networks: [ monitoring ]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 400M
+  postgres10:
+    <<: *postgres_old_base
+    container_name: postgres10
+    image: postgres:10-alpine
+    hostname: postgres10
+    volumes:
+       - pg10_data:/data/postgres
+       - ${PWD}/postgres/init_10.sql:/docker-entrypoint-initdb.d/01-init.sql
+    ports:
+      - 5430:5432
+  postgres11: &postgres_base
+    container_name: postgres11
+    image: postgres:11-alpine
+    hostname: postgres11
+    command: &postgres_base_command
+      - "postgres"
+      - "-c"
+      - "listen_addresses=*"
+      - "-c"
+      - "shared_buffers=128MB"
+      - "-c"
+      - "shared_preload_libraries=pg_stat_statements"
+      - "-c"
+      - "pg_stat_statements.max=10000"
+      - "-c"
+      - "pg_stat_statements.track=all"
+      - "-c"
+      - "jit=off"
+      - "-c"
+      - "track_io_timing=on"
+      - "-c"
+      - "checkpoint_completion_target=0.9"
+      - "-c"
+      - "checkpoint_timeout=600"
+    environment: &postgres_base_env
+      POSTGRES_DB: ${POSTGRES_DB:-postgres}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      #POSTGRES_HOST_AUTH_METHOD: ${POSTGRES_HOST_AUTH_METHOD:-trust}
+      POSTGRES_HOST_AUTH_METHOD: "md5\nhost replication all 0.0.0.0/0 md5"
+      PGDATA: /data/postgres
+    ports:
+      - 5431:5432
+    volumes:
+       - pg11_data:/data/postgres
+       - ${PWD}/postgres/init.sql:/docker-entrypoint-initdb.d/01-init.sql
+    networks: [ monitoring ]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 400M
+  postgres12:
+    <<: *postgres_base
+    container_name: postgres12
+    image: postgres:12-alpine
+    hostname: postgres12
+    volumes:
+       - pg12_data:/data/postgres
+       - ${PWD}/postgres/init.sql:/docker-entrypoint-initdb.d/01-init.sql
+    ports:
+      - 5432:5432
+  postgres13:
+    <<: *postgres_base
+    container_name: postgres13
+    image: postgres:13-alpine
+    hostname: postgres13
+    volumes:
+       - pg13_data:/data/postgres
+       - ${PWD}/postgres/init.sql:/docker-entrypoint-initdb.d/01-init.sql
+    ports:
+      - 5433:5432
+  postgres14:
+    <<: *postgres_base
+    container_name: postgres14
+    image: postgres:14-alpine
+    hostname: postgres14
+    volumes:
+       - pg14_data:/data/postgres
+       - ${PWD}/postgres/init.sql:/docker-entrypoint-initdb.d/01-init.sql
+    ports:
+      - 5434:5432
+  postgres15:
+    <<: *postgres_base
+    container_name: postgres15
+    image: postgres:15-alpine
+    hostname: postgres15
+    volumes:
+       - pg15_data:/data/postgres
+       - ${PWD}/postgres/init.sql:/docker-entrypoint-initdb.d/01-init.sql
+    ports:
+      - 5435:5432
+  postgres16:
+    <<: *postgres_base
+    container_name: postgres16
+    image: postgres:16-alpine
+    hostname: postgres16
+    volumes:
+       - pg16_data:/data/postgres
+       - ${PWD}/postgres/init.sql:/docker-entrypoint-initdb.d/01-init.sql
+    ports:
+      - 5436:5432
+  postgres17:
+    <<: *postgres_base
+    container_name: postgres17
+    image: postgres:17-alpine
+    hostname: postgres17
+    volumes:
+       - pg17_data:/data/postgres
+       - ${PWD}/postgres/init.sql:/docker-entrypoint-initdb.d/01-init.sql
+    ports:
+      - 5437:5432
+  postgres9replica1:
+    <<: *postgres_old_base
+    container_name: postgres9replica1
+    image: postgres:9-alpine
+    hostname: postgres9replica1
+    environment:
+      <<: *postgres_base_env
+      PG_REPLICA_HOST: "postgres9"
+      PG_REPL_SLOT: "replica_slot1"
+    volumes:
+       - pg9_replica1data:/data/postgres
+       - ${PWD}/postgres/init_basebackup.sh:/docker-entrypoint-initdb.d/01-basebackup.sh
+    ports:
+      - 4429:5432
+    depends_on:
+      - postgres9
+  postgres9replica2:
+    <<: *postgres_old_base
+    container_name: postgres9replica2
+    image: postgres:9-alpine
+    hostname: postgres9replica2
+    environment:
+      <<: *postgres_base_env
+      PG_REPLICA_HOST: "postgres9replica1"
+      PG_REPL_SLOT: "replica_slot2"
+    volumes:
+       - pg9_replica2data:/data/postgres
+       - ${PWD}/postgres/init_basebackup.sh:/docker-entrypoint-initdb.d/01-basebackup.sh
+    ports:
+      - 3429:5432
+    depends_on:
+      - postgres9replica1
+  postgres10replica1:
+    <<: *postgres_old_base
+    container_name: postgres10replica1
+    image: postgres:10-alpine
+    hostname: postgres10replica1
+    environment:
+      <<: *postgres_base_env
+      PG_REPLICA_HOST: "postgres10"
+      PG_REPL_SLOT: "replica_slot1"
+    volumes:
+       - pg10_replica1data:/data/postgres
+       - ${PWD}/postgres/init_basebackup.sh:/docker-entrypoint-initdb.d/01-basebackup.sh
+    ports:
+      - 4430:5432
+    depends_on:
+      - postgres10
+  postgres11replica1:
+    <<: *postgres_old_base
+    container_name: postgres11replica1
+    image: postgres:11-alpine
+    hostname: postgres11replica1
+    environment:
+      <<: *postgres_base_env
+      PG_REPLICA_HOST: "postgres11"
+      PG_REPL_SLOT: "replica_slot1"
+    volumes:
+       - pg11_replica1data:/data/postgres
+       - ${PWD}/postgres/init_basebackup.sh:/docker-entrypoint-initdb.d/01-basebackup.sh
+    ports:
+      - 4431:5432
+    depends_on:
+      - postgres11
+  postgres12replica1:
+    <<: *postgres_base
+    container_name: postgres12replica1
+    image: postgres:12-alpine
+    hostname: postgres12replica1
+    environment:
+      <<: *postgres_base_env
+      PG_REPLICA_HOST: "postgres12"
+      PG_REPL_SLOT: "replica_slot1"
+    volumes:
+       - pg12_replica1data:/data/postgres
+       - ${PWD}/postgres/init_basebackup.sh:/docker-entrypoint-initdb.d/01-basebackup.sh
+    ports:
+      - 4432:5432
+    depends_on:
+      - postgres12
+  postgres13replica1:
+    <<: *postgres_base
+    container_name: postgres13replica1
+    image: postgres:13-alpine
+    hostname: postgres13replica1
+    environment:
+      <<: *postgres_base_env
+      PG_REPLICA_HOST: "postgres13"
+      PG_REPL_SLOT: "replica_slot1"
+    volumes:
+       - pg13_replica1data:/data/postgres
+       - ${PWD}/postgres/init_basebackup.sh:/docker-entrypoint-initdb.d/01-basebackup.sh
+    ports:
+      - 4433:5432
+    depends_on:
+      - postgres13
+  postgres14replica1:
+    <<: *postgres_base
+    container_name: postgres14replica1
+    image: postgres:14-alpine
+    hostname: postgres14replica1
+    environment:
+      <<: *postgres_base_env
+      PG_REPLICA_HOST: "postgres14"
+      PG_REPL_SLOT: "replica_slot1"
+    volumes:
+       - pg14_replica1data:/data/postgres
+       - ${PWD}/postgres/init_basebackup.sh:/docker-entrypoint-initdb.d/01-basebackup.sh
+    ports:
+      - 4434:5432
+    depends_on:
+      - postgres14
+  postgres15replica1:
+    <<: *postgres_base
+    container_name: postgres15replica1
+    image: postgres:15-alpine
+    hostname: postgres15replica1
+    environment:
+      <<: *postgres_base_env
+      PG_REPLICA_HOST: "postgres15"
+      PG_REPL_SLOT: "replica_slot1"
+    volumes:
+       - pg15_replica1data:/data/postgres
+       - ${PWD}/postgres/init_basebackup.sh:/docker-entrypoint-initdb.d/01-basebackup.sh
+    ports:
+      - 4435:5432
+    depends_on:
+      - postgres15
+  postgres16replica1:
+    <<: *postgres_base
+    container_name: postgres16replica1
+    image: postgres:16-alpine
+    hostname: postgres16replica1
+    environment:
+      <<: *postgres_base_env
+      PG_REPLICA_HOST: "postgres16"
+      PG_REPL_SLOT: "replica_slot1"
+    volumes:
+       - pg16_replica1data:/data/postgres
+       - ${PWD}/postgres/init_basebackup.sh:/docker-entrypoint-initdb.d/01-basebackup.sh
+    ports:
+      - 4436:5432
+    depends_on:
+      - postgres16
+  postgres17replica1:
+    <<: *postgres_base
+    container_name: postgres17replica1
+    image: postgres:17-alpine
+    hostname: postgres17replica1
+    environment:
+      <<: *postgres_base_env
+      PG_REPLICA_HOST: "postgres17"
+      PG_REPL_SLOT: "replica_slot1"
+    volumes:
+       - pg17_replica1data:/data/postgres
+       - ${PWD}/postgres/init_basebackup.sh:/docker-entrypoint-initdb.d/01-basebackup.sh
+    ports:
+      - 4437:5432
+    depends_on:
+      - postgres17
+  postgres17replica2:
+    <<: *postgres_base
+    container_name: postgres17replica2
+    image: postgres:17-alpine
+    hostname: postgres17replica2
+    environment:
+      <<: *postgres_base_env
+      PG_REPLICA_HOST: "postgres17replica1"
+      PG_REPL_SLOT: "replica_slot2"
+    volumes:
+       - pg17_replica2data:/data/postgres
+       - ${PWD}/postgres/init_basebackup.sh:/docker-entrypoint-initdb.d/01-basebackup.sh
+    ports:
+      - 3437:5432
+    depends_on:
+      - postgres17replica1
+
+volumes:
+  pg9_data:
+    driver: local
+    driver_opts:
+      o: bind
+      type: rw
+      device: ${PWD}/postgres/pg9data
+  pg10_data:
+    driver: local
+    driver_opts:
+      o: bind
+      type: rw
+      device: ${PWD}/postgres/pg10data
+  pg11_data:
+    driver: local
+    driver_opts:
+      o: bind
+      type: rw
+      device: ${PWD}/postgres/pg11data
+  pg12_data:
+    driver: local
+    driver_opts:
+      o: bind
+      type: rw
+      device: ${PWD}/postgres/pg12data
+  pg13_data:
+    driver: local
+    driver_opts:
+      o: bind
+      type: rw
+      device: ${PWD}/postgres/pg13data
+  pg14_data:
+    driver: local
+    driver_opts:
+      o: bind
+      type: rw
+      device: ${PWD}/postgres/pg14data
+  pg15_data:
+    driver: local
+    driver_opts:
+      o: bind
+      type: rw
+      device: ${PWD}/postgres/pg15data
+  pg16_data:
+    driver: local
+    driver_opts:
+      o: bind
+      type: rw
+      device: ${PWD}/postgres/pg16data
+  pg17_data:
+    driver: local
+    driver_opts:
+      o: bind
+      type: rw
+      device: ${PWD}/postgres/pg17data
+  pg9_replica1data:
+    driver: local
+    driver_opts:
+      o: bind
+      type: rw
+      device: ${PWD}/postgres/pg9replica1data
+  pg9_replica2data:
+    driver: local
+    driver_opts:
+      o: bind
+      type: rw
+      device: ${PWD}/postgres/pg9replica2data
+  pg10_replica1data:
+    driver: local
+    driver_opts:
+      o: bind
+      type: rw
+      device: ${PWD}/postgres/pg10replica1data
+  pg11_replica1data:
+    driver: local
+    driver_opts:
+      o: bind
+      type: rw
+      device: ${PWD}/postgres/pg11replica1data
+  pg12_replica1data:
+    driver: local
+    driver_opts:
+      o: bind
+      type: rw
+      device: ${PWD}/postgres/pg12replica1data
+  pg13_replica1data:
+    driver: local
+    driver_opts:
+      o: bind
+      type: rw
+      device: ${PWD}/postgres/pg13replica1data
+  pg14_replica1data:
+    driver: local
+    driver_opts:
+      o: bind
+      type: rw
+      device: ${PWD}/postgres/pg14replica1data
+  pg15_replica1data:
+    driver: local
+    driver_opts:
+      o: bind
+      type: rw
+      device: ${PWD}/postgres/pg15replica1data
+  pg16_replica1data:
+    driver: local
+    driver_opts:
+      o: bind
+      type: rw
+      device: ${PWD}/postgres/pg16replica1data
+  pg17_replica1data:
+    driver: local
+    driver_opts:
+      o: bind
+      type: rw
+      device: ${PWD}/postgres/pg17replica1data
+  pg17_replica2data:
+    driver: local
+    driver_opts:
+      o: bind
+      type: rw
+      device: ${PWD}/postgres/pg17replica2data
+
+networks:
+  monitoring:

@@ -1,0 +1,228 @@
+services:
+  vmagent-1:
+    container_name: vmagent-1
+    image: victoriametrics/vmagent:v1.111.0
+    volumes:
+      - vmagent1_data:/vmagentdata
+      - ${PWD}/vmagent/vmagent-cluster.yaml:/etc/vmagent.yaml
+    command:
+      - "-promscrape.config=/etc/vmagent.yaml"
+      #- "-remoteWrite.url=http://vminsert-1:8480/insert/0/prometheus/"
+      - "-remoteWrite.url=http://vmauth:8427/insert/0/prometheus/"
+      - "-remoteWrite.tmpDataPath=/vmagentdata"
+      #- "-promscrape.noStaleMarkers"
+      - "-promscrape.httpSDCheckInterval=30s"
+    depends_on:
+      - vminsert-1
+      - vminsert-2
+      - pgscv
+    ports:
+      - 8429:8429
+    networks: [ monitoring ]
+  vmagent-2:
+    container_name: vmagent-2
+    image: victoriametrics/vmagent:v1.111.0
+    volumes:
+      - vmagent2_data:/vmagentdata
+      - ${PWD}/vmagent/vmagent-cluster.yaml:/etc/vmagent.yaml
+    command:
+      - "-promscrape.config=/etc/vmagent.yaml"
+      #- "-remoteWrite.url=http://vminsert-2:8480/insert/0/prometheus/"
+      - "-remoteWrite.url=http://vmauth:8427/insert/0/prometheus/"
+      - "-remoteWrite.tmpDataPath=/vmagentdata"
+      #- "-promscrape.noStaleMarkers"
+      - "-promscrape.httpSDCheckInterval=30s"
+    depends_on:
+      - vminsert-1
+      - vminsert-2
+      - pgscv
+    ports:
+      - 9429:8429
+    networks: [ monitoring ]
+  vmstorage-1:
+    container_name: vmstorage-1
+    image: victoriametrics/vmstorage:v1.111.0-cluster
+    ports:
+      - 8482
+      - 8400
+      - 8401
+    volumes:
+      - vmstorage1_data:/storage
+    command:
+      - "-storageDataPath=/storage"
+      - "-retentionPeriod=2d"
+    restart: always
+    networks: [ monitoring ]
+  vmstorage-2:
+    container_name: vmstorage-2
+    image: victoriametrics/vmstorage:v1.111.0-cluster
+    ports:
+      - 8482
+      - 8400
+      - 8401
+    volumes:
+      - vmstorage2_data:/storage
+    command:
+      - "-storageDataPath=/storage"
+      - "-retentionPeriod=2d"
+    restart: always
+    networks: [ monitoring ]
+  vminsert-1:
+    container_name: vminsert-1
+    image: victoriametrics/vminsert:v1.111.0-cluster
+    depends_on:
+      - "vmstorage-1"
+      - "vmstorage-2"
+    command:
+      - "-storageNode=vmstorage-1:8400"
+      - "-storageNode=vmstorage-2:8400"
+    ports:
+      - 8480:8480
+    restart: always
+    networks: [ monitoring ]
+  vminsert-2:
+    container_name: vminsert-2
+    image: victoriametrics/vminsert:v1.111.0-cluster
+    depends_on:
+      - "vmstorage-1"
+      - "vmstorage-2"
+    command:
+      - "-storageNode=vmstorage-1:8400"
+      - "-storageNode=vmstorage-2:8400"
+    ports:
+      - 9480:8480
+    restart: always
+    networks: [ monitoring ]
+  vmselect-1:
+    container_name: vmselect-1
+    image: victoriametrics/vmselect:v1.111.0-cluster
+    depends_on:
+      - "vmstorage-1"
+      - "vmstorage-2"
+    command:
+      - "-storageNode=vmstorage-1:8401"
+      - "-storageNode=vmstorage-2:8401"
+      - "-vmalert.proxyURL=http://vmalert:8880"
+    ports:
+      - 8481
+    restart: always
+    networks: [ monitoring ]
+  vmselect-2:
+    container_name: vmselect-2
+    image: victoriametrics/vmselect:v1.111.0-cluster
+    depends_on:
+      - "vmstorage-1"
+      - "vmstorage-2"
+    command:
+      - "-storageNode=vmstorage-1:8401"
+      - "-storageNode=vmstorage-2:8401"
+      - "-vmalert.proxyURL=http://vmalert:8880"
+    ports:
+      - 8481
+    restart: always
+    networks: [ monitoring ]
+  vmauth:
+    container_name: vmauth
+    image: victoriametrics/vmauth:v1.111.0
+    depends_on:
+      - "vmselect-1"
+      - "vmselect-2"
+    volumes:
+      - ${PWD}/victoriametrics/auth-cluster-all.yml:/etc/auth.yml
+    command:
+      - "-auth.config=/etc/auth.yml"
+    ports:
+      - 8427:8427
+    restart: always
+    networks: [ monitoring ]
+  vmalert:
+    container_name: vmalert
+    image: victoriametrics/vmalert:v1.111.0
+    depends_on:
+      - "vmauth"
+    ports:
+      - 8880:8880
+    volumes:
+      - ${PWD}/victoriametrics/rules/alerts-cluster.yml:/etc/alerts/alerts.yml
+      - ${PWD}/victoriametrics/rules/alerts-health.yml:/etc/alerts/alerts-health.yml
+      - ${PWD}/victoriametrics/rules/alerts-vmagent.yml:/etc/alerts/alerts-vmagent.yml
+      - ${PWD}/victoriametrics/rules/alerts-vmalert.yml:/etc/alerts/alerts-vmalert.yml
+    command:
+      - "-datasource.url=http://vmauth:8427/select/0/prometheus"
+      - "-remoteRead.url=http://vmauth:8427/select/0/prometheus"
+      - "-remoteWrite.url=http://vmauth:8427/insert/0/prometheus"
+      #- "-remoteWrite.url=http://vminsert-1:8480/insert/0/prometheus"
+      - "-notifier.url=http://alertmanager:9093/"
+      - "-rule=/etc/alerts/*.yml"
+      # display source of alerts in grafana
+      - "-external.url=http://127.0.0.1:3000" #grafana outside container
+      - '-external.alert.source=explore?orgId=1&left={"datasource":"VictoriaMetrics","queries":[{"expr":{{.Expr|jsonEscape|queryEscape}},"refId":"A"}],"range":{"from":"{{ .ActiveAt.UnixMilli }}","to":"now"}}'
+    restart: always
+    networks: [ monitoring ]
+  alertmanager:
+    container_name: alertmanager
+    image: prom/alertmanager:v0.28.0
+    volumes:
+      - ${PWD}/victoriametrics/alertmanager.yml:/config/alertmanager.yml
+    command:
+      - "-config.file=/config/alertmanager.yml"
+    ports:
+      - 9093:9093
+    restart: always
+    networks: [ monitoring ]
+  grafana:
+    container_name: grafana
+    image: grafana/grafana:main
+    volumes:
+      - grafana_cluster_data:/var/lib/grafana
+      - ${PWD}/grafana/provisioning/datasources/cluster.yml:/etc/grafana/provisioning/datasources/cluster.yml
+      - ${PWD}/grafana/provisioning/dashboards:/etc/grafana/provisioning/dashboards
+      - ${PWD}/grafana/dashboards/vmetrics_cluster.json:/var/lib/grafana/dashboards/vmetrics_cluster.json
+      - ${PWD}/grafana/dashboards/vmagent.json:/var/lib/grafana/dashboards/vmagent.json
+      - ${PWD}/grafana/dashboards/vmalert.json:/var/lib/grafana/dashboards/vmalert.json
+      - ${PWD}/grafana/dashboards/vmauth.json:/var/lib/grafana/dashboards/vmauth.json
+      - ${PWD}/grafana/dashboards/pgSCV_System.json:/var/lib/grafana/dashboards/pgSCV_System.json
+      - ${PWD}/grafana/dashboards/pgSCV_PostgreSQL.json:/var/lib/grafana/dashboards/pgSCV_PostgreSQL.json
+      - ${PWD}/grafana/dashboards/pgSCV_Pgbouncer.json:/var/lib/grafana/dashboards/pgSCV_Pgbouncer.json
+      - ${PWD}/grafana/dashboards/pgSCV_Patroni.json:/var/lib/grafana/dashboards/pgSCV_Patroni.json
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: "admin"
+    depends_on: [ "vmauth" ]
+    ports:
+      - 3000:3000
+    networks: [ monitoring ]
+
+volumes:
+  vmagent1_data:
+    driver: local
+    driver_opts:
+      o: bind
+      type: rw
+      device: ${PWD}/vmagent/data1
+  vmagent2_data:
+    driver: local
+    driver_opts:
+      o: bind
+      type: rw
+      device: ${PWD}/vmagent/data2
+  vmstorage1_data:
+    driver: local
+    driver_opts:
+      o: bind
+      type: rw
+      device: ${PWD}/victoriametrics/vmstorage1data
+  vmstorage2_data:
+    driver: local
+    driver_opts:
+      o: bind
+      type: rw
+      device: ${PWD}/victoriametrics/vmstorage2data
+  grafana_cluster_data:
+    driver: local
+    driver_opts:
+      o: bind
+      type: rw
+      device: ${PWD}/grafana/cluster_data
+
+networks:
+  monitoring:

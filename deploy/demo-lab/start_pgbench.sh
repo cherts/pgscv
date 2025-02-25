@@ -74,7 +74,7 @@ for DATA in ${PG_VERSIONS[@]}; do
 	PG_VER=$(echo "${DATA}" | awk -F',' '{print $1}')
 	PGREPACK_VER=$(echo "${DATA}" | awk -F',' '{print $2}')
 	_logging "Running pgbench for PostgreSQL v${PG_VER} in an infinite loop..."
-	_logging "If you want to stop the test to create step-file '${SCRIPT_DIR}/pgbench/stop_pgbench_${PG_HOST}${PG_VER}_${PG_PORT}'"
+	_logging "If you want to stop the test to create stop-file '${SCRIPT_DIR}/pgbench/stop_pgbench_${PG_HOST}${PG_VER}_${PG_PORT}'"
 	${DOCKER_BIN} run -it -d --rm --network "$(basename ${SCRIPT_DIR})_${DOCKER_NETWORK}" \
 		--name pgbench_${PG_VER} \
 		-e ${PWD}/pgbench/.env \

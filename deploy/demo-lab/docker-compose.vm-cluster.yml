@@ -2,5 +2,5 @@ include:
   - path: compose.postgres.yml
   - path: compose.patroni.yml
   - path: compose.pgbouncer.yml
+  - path: compose.victoriametrics.cluster.yml
   - path: compose.pgscv.yml
-  - path: compose.victoriametrics.yml

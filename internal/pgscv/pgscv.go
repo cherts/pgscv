@@ -23,6 +23,11 @@ import (
 
 const pgSCVSubscriber = "pgscv_subscriber"
 
+type target struct {
+	Targets []string          `json:"targets"`
+	Labels  map[string]string `json:"labels,omitempty"`
+}
+
 // Start is the application's starting point.
 func Start(ctx context.Context, config *Config) error {
 	log.Debug("start application")
@@ -42,6 +47,7 @@ func Start(ctx context.Context, config *Config) error {
 		SkipConnErrorMode:  config.SkipConnErrorMode,
 		ConnTimeout:        config.ConnTimeout,
 		ThrottlingInterval: config.ThrottlingInterval,
+		ConcurrencyLimit:   config.ConcurrencyLimit,
 	}
 
 	if len(config.ServicesConnsSettings) == 0 && config.DiscoveryServices == nil {
@@ -116,6 +122,7 @@ func subscribeYandex(ds *discovery.Discovery, config *Config, serviceRepo *servi
 		// addService
 		func(services map[string]discovery.Service) error {
 			constLabels := make(map[string]*map[string]string)
+			targetLabels := make(map[string]*map[string]string)
 			serviceDiscoveryConfig := service.Config{
 				NoTrackMode:        config.NoTrackMode,
 				ConnDefaults:       config.Defaults,
@@ -126,7 +133,9 @@ func subscribeYandex(ds *discovery.Discovery, config *Config, serviceRepo *servi
 				CollectTopQuery:    config.CollectTopQuery,
 				SkipConnErrorMode:  config.SkipConnErrorMode,
 				ConstLabels:        &constLabels,
+				TargetLabels:       &targetLabels,
 				ConnTimeout:        config.ConnTimeout,
+				ConcurrencyLimit:   config.ConcurrencyLimit,
 			}
 			var cs = make(service.ConnsSettings, len(services))
 			for serviceID, svc := range services {
@@ -135,6 +144,7 @@ func subscribeYandex(ds *discovery.Discovery, config *Config, serviceRepo *servi
 					Conninfo:    svc.DSN,
 				}
 				constLabels[serviceID] = &svc.ConstLabels
+				targetLabels[serviceID] = &svc.TargetLabels
 			}
 			serviceDiscoveryConfig.ConnsSettings = cs
 			serviceRepo.AddServicesFromConfig(serviceDiscoveryConfig)
@@ -190,7 +200,7 @@ func getMetricsHandler(repository *service.Repository, throttlingInterval *int) 
 		} else {
 			registry := repository.GetRegistry(target)
 			if registry == nil {
-				net_http.Error(w, fmt.Sprintf("Target %s not registered", target), http.StatusNotFound)
+				net_http.Error(w, fmt.Sprintf("target %s not registered", target), http.StatusNotFound)
 				return
 			}
 			h := promhttp.InstrumentMetricHandler(
@@ -204,8 +214,6 @@ func getMetricsHandler(repository *service.Repository, throttlingInterval *int) 
 // getTargetsHandler return http handler function to /targets endpoint
 func getTargetsHandler(repository *service.Repository, urlPrefix string, enableTLS bool) func(w net_http.ResponseWriter, r *net_http.Request) {
 	return func(w net_http.ResponseWriter, r *net_http.Request) {
-		svcIDs := repository.GetServiceIDs()
-		targets := make([]string, len(svcIDs))
 		var url string
 		if urlPrefix != "" {
 			url = strings.Trim(urlPrefix, "/")
@@ -216,16 +224,37 @@ func getTargetsHandler(repository *service.Repository, urlPrefix string, enableT
 				url = r.Host
 			}
 		}
-		for i, svcID := range svcIDs {
-			targets[i] = fmt.Sprintf("%s/metrics?target=%s", url, svcID)
-		}
-		data := []struct {
-			Targets []string `json:"targets"`
-		}{
-			0: {Targets: targets},
+		repository.RLock()
+		defer repository.RUnlock()
+		groupedTargets := make(map[string]*target)
+
+		for _, service := range repository.Services {
+			targetURL := fmt.Sprintf("%s/metrics?target=%s", url, service.ServiceID)
+			if service.TargetLabels == nil {
+				if _, exists := groupedTargets["no_labels"]; !exists {
+					groupedTargets["no_labels"] = &target{
+						Targets: []string{},
+					}
+				}
+				groupedTargets["no_labels"].Targets = append(groupedTargets["no_labels"].Targets, targetURL)
+			} else {
+				labelsKey := fmt.Sprintf("%v", *service.TargetLabels)
+				if _, exists := groupedTargets[labelsKey]; !exists {
+					groupedTargets[labelsKey] = &target{
+						Targets: []string{},
+						Labels:  *service.TargetLabels,
+					}
+				}
+				groupedTargets[labelsKey].Targets = append(groupedTargets[labelsKey].Targets, targetURL)
+			}
 		}
 
-		jsonData, err := json.Marshal(data)
+		var result []target
+		for _, target := range groupedTargets {
+			result = append(result, *target)
+		}
+
+		jsonData, err := json.Marshal(result)
 		if err != nil {
 			net_http.Error(w, err.Error(), net_http.StatusInternalServerError)
 			return
