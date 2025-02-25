@@ -3,6 +3,13 @@ package pgscv
 
 import (
 	"fmt"
+	"io/fs"
+	"os"
+	"path/filepath"
+	"regexp"
+	"strconv"
+	"strings"
+
 	sd "github.com/cherts/pgscv/discovery"
 	"github.com/cherts/pgscv/internal/http"
 	"github.com/cherts/pgscv/internal/log"
@@ -10,12 +17,6 @@ import (
 	"github.com/cherts/pgscv/internal/service"
 	"github.com/jackc/pgx/v4"
 	"gopkg.in/yaml.v2"
-	"io/fs"
-	"os"
-	"path/filepath"
-	"regexp"
-	"strconv"
-	"strings"
 )
 
 const (
@@ -285,6 +286,9 @@ func (c *Config) Validate() error {
 	}
 	if c.CollectTopIndex > 0 {
 		log.Infof("TopIndex: limit (%d indexes) enabled", c.CollectTopIndex)
+	}
+	if c.ConcurrencyLimit != nil {
+		log.Infof("ConcurrencyLimit: %d connection limit set for DB", *c.ConcurrencyLimit)
 	}
 	if c.ConnTimeout > 0 {
 		log.Infof("ConnTimeout: %d seconds timeout set for connecting to DB", c.ConnTimeout)
