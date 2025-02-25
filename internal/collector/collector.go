@@ -2,10 +2,9 @@
 package collector
 
 import (
+	"github.com/jackc/pgx/v4"
 	"strconv"
 	"sync"
-
-	"github.com/jackc/pgx/v4"
 
 	"github.com/cherts/pgscv/internal/filter"
 	"github.com/cherts/pgscv/internal/log"
@@ -199,12 +198,13 @@ func (n PgscvCollector) Describe(ch chan<- *prometheus.Desc) {
 func (n PgscvCollector) Collect(out chan<- prometheus.Metric) {
 	// Update settings of Postgres collectors if service was unavailabled when register
 	var concurrencyLimit int
-	if n.Config.ServiceType == "postgres" && n.Config.postgresServiceConfig.blockSize == 0 {
-		err := n.Config.FillPostgresServiceConfig(n.Config.ConnTimeout)
-		if err != nil {
-			log.Errorf("update service config failed: %s", err.Error())
+	if n.Config.ServiceType == "postgres" {
+		if n.Config.postgresServiceConfig.blockSize == 0 {
+			err := n.Config.FillPostgresServiceConfig(n.Config.ConnTimeout)
+			if err != nil {
+				log.Errorf("update service config failed: %s", err.Error())
+			}
 		}
-
 		if n.Config.ConcurrencyLimit != nil {
 			if n.Config.rolConnLimit > -1 {
 				concurrencyLimit = n.Config.rolConnLimit
@@ -231,17 +231,19 @@ func (n PgscvCollector) Collect(out chan<- prometheus.Metric) {
 	sem := make(chan struct{}, concurrencyLimit)
 	wgCollector.Add(len(n.Collectors))
 	for name, c := range n.Collectors {
-		sem <- struct{}{}
 		go func(name string, c Collector) {
-			defer func() { <-sem }()
+			sem <- struct{}{}
+			defer func() {
+				<-sem
+				wgCollector.Done()
+			}()
 			collect(name, n.Config, c, pipelineIn)
-			wgCollector.Done()
 		}(name, c)
 	}
 
 	// Run sender.
 	wgSender.Add(1)
-	close(sem)
+
 	go func() {
 		send(pipelineIn, out)
 		wgSender.Done()
@@ -249,6 +251,7 @@ func (n PgscvCollector) Collect(out chan<- prometheus.Metric) {
 
 	// Wait until all collectors have been finished. Close the channel and allow to sender to send metrics.
 	wgCollector.Wait()
+	close(sem)
 	close(pipelineIn)
 
 	// Wait until metrics have been sent.
