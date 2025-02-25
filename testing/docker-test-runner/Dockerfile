@@ -9,6 +9,7 @@ LABEL version="1.0.7"
 
 # install dependencies
 RUN apt-get update && \
+    apt-get -y upgrade && \
     apt-get install -y vim make gcc git curl pgbouncer && \
     curl -s -L https://go.dev/dl/go1.23.6.linux-amd64.tar.gz -o - | tar xzf - -C /usr/local && \
     export PATH=$PATH:/usr/local/go/bin && \
