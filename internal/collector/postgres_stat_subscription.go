@@ -42,7 +42,7 @@ type postgresStatSubscriptionCollector struct {
 // NewPostgresStatSubscriptionCollector returns a new Collector exposing postgres pg_stat_subscription stats.
 // For details see https://www.postgresql.org/docs/current/monitoring-stats.html#MONITORING-PG-STAT-SUBSCRIPTION
 func NewPostgresStatSubscriptionCollector(constLabels labels, settings model.CollectorSettings) (Collector, error) {
-	var labelNames = []string{"subname", "relname", "worker_type"}
+	var labelNames = []string{"subname", "relname", "worker_type", "lag"}
 
 	return &postgresStatSubscriptionCollector{
 		labelNames: labelNames,
@@ -55,7 +55,7 @@ func NewPostgresStatSubscriptionCollector(constLabels labels, settings model.Col
 		errorCount: newBuiltinTypedDesc(
 			descOpts{"postgres", "stat_subscription", "error_count", "Number of times an error occurred.", 0},
 			prometheus.GaugeValue,
-			labelNames, constLabels,
+			[]string{"subname", "relname", "worker_type", "type"}, constLabels,
 			settings.Filters,
 		),
 	}, nil
