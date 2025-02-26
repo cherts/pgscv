@@ -51,7 +51,7 @@ func NewPostgresStatSubscriptionCollector(constLabels labels, settings model.Col
 		),
 		errorCount: newBuiltinTypedDesc(
 			descOpts{"postgres", "stat_subscription", "error_count", "Number of times an error occurred.", 0},
-			prometheus.GaugeValue,
+			prometheus.CounterValue,
 			[]string{"subname", "relname", "worker_type", "type"}, constLabels,
 			settings.Filters,
 		),
