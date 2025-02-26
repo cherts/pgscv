@@ -10,24 +10,21 @@ import (
 )
 
 const (
-	postgresStatSubscriptionQuery14 = "SELECT pid, subname, COALESCE(relid::regclass::text, 'main') AS relname, " +
-		"COALESCE(NULL::text, 'nothing') AS worker_type, " +
-		"pg_wal_lsn_diff(pg_current_wal_lsn(), received_lsn) AS received, " +
-		"pg_wal_lsn_diff(pg_current_wal_lsn(), latest_end_lsn) AS latest_end, " +
-		"NULL::numeric AS apply_error_count, NULL::numeric AS sync_error_count " +
+	postgresStatSubscriptionQuery14 = "SELECT subid, subname, COALESCE(relid::regclass::text, 'unknown') AS relname, " +
+		"COALESCE(NULL::text, 'unknown') AS worker_type, " +
+		"COALESCE(pg_wal_lsn_diff(received_lsn, latest_end_lsn), 0) AS lag_bytes, " +
+		"COALESCE(NULL::numeric, 0) AS apply_error_count, COALESCE(NULL::numeric, 0) AS sync_error_count " +
 		"FROM pg_stat_subscription"
 
-	postgresStatSubscriptionQuery16 = "SELECT s1.pid, s1.subname, COALESCE(s1.relid::regclass::text, 'main') AS relname, " +
-		"COALESCE(NULL::text, 'nothing') AS worker_type, " +
-		"pg_wal_lsn_diff(pg_current_wal_lsn(), s1.received_lsn) AS received, " +
-		"pg_wal_lsn_diff(pg_current_wal_lsn(), s1.latest_end_lsn) AS latest_end, " +
+	postgresStatSubscriptionQuery16 = "SELECT s1.subid, s1.subname, COALESCE(s1.relid::regclass::text, 'unknown') AS relname, " +
+		"COALESCE(NULL::text, 'unknown') AS worker_type, " +
+		"COALESCE(pg_wal_lsn_diff(s1.received_lsn, s1.latest_end_lsn), 0) AS lag_bytes, " +
 		"s2.apply_error_count, s2.sync_error_count " +
 		"FROM pg_stat_subscription s1 JOIN pg_stat_subscription_stats s2 ON s1.subid = s2.subid"
 
-	postgresStatSubscriptionQueryLatest = "SELECT s1.pid, s1.subname, COALESCE(s1.relid::regclass::text, 'main') AS relname, " +
-		"s1.worker_type AS worker_type, " +
-		"pg_wal_lsn_diff(pg_current_wal_lsn(), s1.received_lsn) AS received, " +
-		"pg_wal_lsn_diff(pg_current_wal_lsn(), s1.latest_end_lsn) AS latest_end, " +
+	postgresStatSubscriptionQueryLatest = "SELECT s1.subid, s1.subname, COALESCE(s1.relid::regclass::text, 'unknown') AS relname, " +
+		"COALESCE(s1.worker_type, 'unknown') AS worker_type, " +
+		"COALESCE(pg_wal_lsn_diff(s1.received_lsn, s1.latest_end_lsn), 0) AS lag_bytes, " +
 		"s2.apply_error_count, s2.sync_error_count " +
 		"FROM pg_stat_subscription s1 JOIN pg_stat_subscription_stats s2 ON s1.subid = s2.subid"
 )
@@ -42,7 +39,7 @@ type postgresStatSubscriptionCollector struct {
 // NewPostgresStatSubscriptionCollector returns a new Collector exposing postgres pg_stat_subscription stats.
 // For details see https://www.postgresql.org/docs/current/monitoring-stats.html#MONITORING-PG-STAT-SUBSCRIPTION
 func NewPostgresStatSubscriptionCollector(constLabels labels, settings model.CollectorSettings) (Collector, error) {
-	var labelNames = []string{"subname", "relname", "worker_type", "lag"}
+	var labelNames = []string{"subname", "relname", "worker_type"}
 
 	return &postgresStatSubscriptionCollector{
 		labelNames: labelNames,
@@ -83,11 +80,8 @@ func (c *postgresStatSubscriptionCollector) Update(config Config, ch chan<- prom
 			// Parse pg_stat_subscription stats.
 			stats := parsePostgresSubscriptionStat(res, c.labelNames)
 			for _, stat := range stats {
-				if value, ok := stat.values["received"]; ok {
-					ch <- c.lagBytes.newConstMetric(value, stat.SubName, stat.RelName, stat.WorkerType, "received")
-				}
-				if value, ok := stat.values["latest_end"]; ok {
-					ch <- c.lagBytes.newConstMetric(value, stat.SubName, stat.RelName, stat.WorkerType, "latest_end")
+				if value, ok := stat.values["lag_bytes"]; ok {
+					ch <- c.lagBytes.newConstMetric(value, stat.SubName, stat.RelName, stat.WorkerType)
 				}
 				if value, ok := stat.values["apply_error_count"]; ok {
 					ch <- c.errorCount.newConstMetric(value, stat.SubName, stat.RelName, stat.WorkerType, "apply")
@@ -104,7 +98,7 @@ func (c *postgresStatSubscriptionCollector) Update(config Config, ch chan<- prom
 
 // postgresSubscriptionStat represents per-subscription stats based on pg_stat_subscription.
 type postgresSubscriptionStat struct {
-	Pid        string // a pid
+	Subid      string // a subid
 	SubName    string // a subscription name
 	RelName    string // a relname
 	WorkerType string // a worker_type
@@ -123,8 +117,8 @@ func parsePostgresSubscriptionStat(r *model.PGResult, labelNames []string) map[s
 		// collect label values
 		for i, colname := range r.Colnames {
 			switch string(colname.Name) {
-			case "pid":
-				stat.Pid = row[i].String
+			case "subid":
+				stat.Subid = row[i].String
 			case "subname":
 				stat.SubName = row[i].String
 			case "relname":
@@ -135,10 +129,10 @@ func parsePostgresSubscriptionStat(r *model.PGResult, labelNames []string) map[s
 		}
 
 		// use pid as key in the map
-		pid := stat.Pid
+		subid := stat.Subid
 
 		// Put stats with labels (but with no data values yet) into stats store.
-		stats[pid] = stat
+		stats[subid] = stat
 
 		// fetch data values from columns
 		for i, colname := range r.Colnames {
@@ -159,14 +153,12 @@ func parsePostgresSubscriptionStat(r *model.PGResult, labelNames []string) map[s
 				continue
 			}
 
-			s := stats[pid]
+			s := stats[subid]
 
 			// Run column-specific logic
 			switch string(colname.Name) {
-			case "received":
-				s.values["received"] = v
-			case "latest_end":
-				s.values["latest_end"] = v
+			case "lag_bytes":
+				s.values["lag_bytes"] = v
 			case "apply_error_count":
 				s.values["apply_error_count"] = v
 			case "sync_error_count":
@@ -175,7 +167,7 @@ func parsePostgresSubscriptionStat(r *model.PGResult, labelNames []string) map[s
 				continue
 			}
 
-			stats[pid] = s
+			stats[subid] = s
 		}
 	}
 
