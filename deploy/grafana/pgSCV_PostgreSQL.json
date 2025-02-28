@@ -8910,10 +8910,12 @@
       {
         "current": {
           "text": [
-            "postgres"
+            "postgres",
+            "pgscv"
           ],
           "value": [
-            "postgres"
+            "postgres",
+            "pgscv"
           ]
         },
         "description": "Exclude users",
@@ -8928,7 +8930,7 @@
             "value": "postgres"
           },
           {
-            "selected": false,
+            "selected": true,
             "text": "pgscv",
             "value": "pgscv"
           }
