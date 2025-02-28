@@ -58,7 +58,7 @@
       }
     ]
   },
-  "description": "PostgreSQL dashboard for pgSCV metrics (Prometheus version, pgSCV 0.14.0 edition)",
+  "description": "PostgreSQL dashboard for pgSCV metrics (Prometheus version, pgSCV 0.12.0 edition)",
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 1,
@@ -8939,7 +8939,7 @@
     ]
   },
   "time": {
-    "from": "now-30m",
+    "from": "now-3h",
     "to": "now"
   },
   "timepicker": {
