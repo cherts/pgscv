@@ -1,47 +1,4 @@
 {
-  "__inputs": [
-    {
-      "name": "DS_VICTORIAMETRICS",
-      "label": "victoriametrics",
-      "description": "",
-      "type": "datasource",
-      "pluginId": "prometheus",
-      "pluginName": "Prometheus"
-    }
-  ],
-  "__elements": {},
-  "__requires": [
-    {
-      "type": "grafana",
-      "id": "grafana",
-      "name": "Grafana",
-      "version": "11.6.0-227265"
-    },
-    {
-      "type": "datasource",
-      "id": "prometheus",
-      "name": "Prometheus",
-      "version": "1.0.0"
-    },
-    {
-      "type": "panel",
-      "id": "stat",
-      "name": "Stat",
-      "version": ""
-    },
-    {
-      "type": "panel",
-      "id": "table",
-      "name": "Table",
-      "version": ""
-    },
-    {
-      "type": "panel",
-      "id": "timeseries",
-      "name": "Time series",
-      "version": ""
-    }
-  ],
   "annotations": {
     "list": [
       {
@@ -58,11 +15,11 @@
       }
     ]
   },
-  "description": "PostgreSQL dashboard for pgSCV metrics (Prometheus version, pgSCV 0.13.0 edition)",
+  "description": "PostgreSQL dashboard for pgSCV metrics (Prometheus version, pgSCV 0.12.0 edition)",
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 1,
-  "id": null,
+  "id": 7,
   "links": [
     {
       "asDropdown": true,
@@ -189,7 +146,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_VICTORIAMETRICS}"
+            "uid": "DS_VM_01"
           },
           "editorMode": "code",
           "exemplar": false,
@@ -206,7 +163,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "${DS_VICTORIAMETRICS}"
+        "uid": "DS_VM_01"
       },
       "description": "Current role of PostgreSQL node (Primary or Replica).",
       "fieldConfig": {
@@ -275,7 +232,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_VICTORIAMETRICS}"
+            "uid": "DS_VM_01"
           },
           "editorMode": "code",
           "exemplar": false,
@@ -292,7 +249,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "${DS_VICTORIAMETRICS}"
+        "uid": "DS_VM_01"
       },
       "description": "Rate of successfully executed statements per second.",
       "fieldConfig": {
@@ -355,7 +312,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_VICTORIAMETRICS}"
+            "uid": "DS_VM_01"
           },
           "editorMode": "code",
           "exemplar": false,
@@ -372,7 +329,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "${DS_VICTORIAMETRICS}"
+        "uid": "DS_VM_01"
       },
       "description": "Total number of log messages rate (per minute) with severity higher than LOG (e.g. WARNING, ERROR, FATAL and PANIC).",
       "fieldConfig": {
@@ -431,7 +388,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_VICTORIAMETRICS}"
+            "uid": "DS_VM_01"
           },
           "editorMode": "code",
           "exemplar": false,
@@ -448,7 +405,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "${DS_VICTORIAMETRICS}"
+        "uid": "DS_VM_01"
       },
       "description": "Average response time calculated using time of executed statements.",
       "fieldConfig": {
@@ -507,7 +464,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_VICTORIAMETRICS}"
+            "uid": "DS_VM_01"
           },
           "editorMode": "code",
           "exemplar": false,
@@ -524,7 +481,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "${DS_VICTORIAMETRICS}"
+        "uid": "DS_VM_01"
       },
       "description": "Current longest transaction activity, initiated by clients or background service (e.g. autovacuum).",
       "fieldConfig": {
@@ -583,7 +540,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_VICTORIAMETRICS}"
+            "uid": "DS_VM_01"
           },
           "editorMode": "code",
           "exemplar": false,
@@ -600,7 +557,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "${DS_VICTORIAMETRICS}"
+        "uid": "DS_VM_01"
       },
       "description": "Total number of connected clients.",
       "fieldConfig": {
@@ -663,7 +620,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_VICTORIAMETRICS}"
+            "uid": "DS_VM_01"
           },
           "editorMode": "code",
           "exemplar": false,
@@ -680,7 +637,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "${DS_VICTORIAMETRICS}"
+        "uid": "DS_VM_01"
       },
       "description": "Total number of invalid indexed in cluster. See Tables panel for more detail.",
       "fieldConfig": {
@@ -735,7 +692,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_VICTORIAMETRICS}"
+            "uid": "DS_VM_01"
           },
           "editorMode": "code",
           "exemplar": false,
@@ -752,7 +709,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "${DS_VICTORIAMETRICS}"
+        "uid": "DS_VM_01"
       },
       "description": "Total number of inactive replication slots.",
       "fieldConfig": {
@@ -807,7 +764,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_VICTORIAMETRICS}"
+            "uid": "DS_VM_01"
           },
           "editorMode": "code",
           "exemplar": false,
@@ -824,7 +781,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "${DS_VICTORIAMETRICS}"
+        "uid": "DS_VM_01"
       },
       "description": "Total number of rollbacks. See \"Client activity\" dashboard for more detail. Select primary node.",
       "fieldConfig": {
@@ -887,7 +844,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_VICTORIAMETRICS}"
+            "uid": "DS_VM_01"
           },
           "editorMode": "code",
           "exemplar": false,
@@ -904,7 +861,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "${DS_VICTORIAMETRICS}"
+        "uid": "DS_VM_01"
       },
       "description": "Total number of conflicts per minute. See the documentation for the pg_stat_database view for more details.",
       "fieldConfig": {
@@ -959,7 +916,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_VICTORIAMETRICS}"
+            "uid": "DS_VM_01"
           },
           "editorMode": "code",
           "exemplar": false,
@@ -976,7 +933,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "${DS_VICTORIAMETRICS}"
+        "uid": "DS_VM_01"
       },
       "description": "Total number of deadlocks occurred. See \"Deadlocks, per minute\" dashboard for more detail.",
       "fieldConfig": {
@@ -1031,7 +988,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_VICTORIAMETRICS}"
+            "uid": "DS_VM_01"
           },
           "editorMode": "code",
           "exemplar": false,
@@ -1048,7 +1005,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "${DS_VICTORIAMETRICS}"
+        "uid": "DS_VM_01"
       },
       "description": "Total number of checksum failures occurred per minute.",
       "fieldConfig": {
@@ -1103,7 +1060,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_VICTORIAMETRICS}"
+            "uid": "DS_VM_01"
           },
           "editorMode": "code",
           "exemplar": false,
@@ -1120,7 +1077,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "${DS_VICTORIAMETRICS}"
+        "uid": "DS_VM_01"
       },
       "description": "Total number of sessions established to this database and closed by reason abandoned, fatal or killed. See \"Session activity\" dashboard for more detail.",
       "fieldConfig": {
@@ -1183,7 +1140,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_VICTORIAMETRICS}"
+            "uid": "DS_VM_01"
           },
           "editorMode": "code",
           "exemplar": false,
@@ -1200,7 +1157,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "${DS_VICTORIAMETRICS}"
+        "uid": "DS_VM_01"
       },
       "description": "Shows if the vacuum/autovacuum process is running. See the \"Vacuum maintenance\" section for more detail.",
       "fieldConfig": {
@@ -1276,7 +1233,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_VICTORIAMETRICS}"
+            "uid": "DS_VM_01"
           },
           "editorMode": "code",
           "exemplar": false,
@@ -1394,12 +1351,12 @@
               "sort": "desc"
             }
           },
-          "pluginVersion": "11.5.0-217209",
+          "pluginVersion": "11.6.0-227265",
           "targets": [
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_VICTORIAMETRICS}"
+                "uid": "DS_VM_01"
               },
               "editorMode": "code",
               "exemplar": true,
@@ -1426,7 +1383,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_VICTORIAMETRICS}"
+                "uid": "DS_VM_01"
               },
               "editorMode": "code",
               "exemplar": true,
@@ -1444,7 +1401,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_VICTORIAMETRICS}"
+            "uid": "DS_VM_01"
           },
           "description": "The most longest activity produced by connected clients and background services.",
           "fieldConfig": {
@@ -1519,12 +1476,12 @@
               "sort": "desc"
             }
           },
-          "pluginVersion": "11.5.0-217209",
+          "pluginVersion": "11.6.0-227265",
           "targets": [
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_VICTORIAMETRICS}"
+                "uid": "DS_VM_01"
               },
               "editorMode": "code",
               "exemplar": true,
@@ -1541,7 +1498,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_VICTORIAMETRICS}"
+            "uid": "DS_VM_01"
           },
           "description": "States of connections established by clients (doesn't include states of background services).",
           "fieldConfig": {
@@ -1690,7 +1647,7 @@
             "h": 8,
             "w": 12,
             "x": 0,
-            "y": 441
+            "y": 25
           },
           "id": 11,
           "options": {
@@ -1707,12 +1664,12 @@
               "sort": "desc"
             }
           },
-          "pluginVersion": "11.5.0-217209",
+          "pluginVersion": "11.6.0-227265",
           "targets": [
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_VICTORIAMETRICS}"
+                "uid": "DS_VM_01"
               },
               "editorMode": "code",
               "exemplar": true,
@@ -1729,7 +1686,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_VICTORIAMETRICS}"
+            "uid": "DS_VM_01"
           },
           "description": "States of connections by database/user/state (without idle* state and autovacuum)",
           "fieldConfig": {
@@ -1878,7 +1835,7 @@
             "h": 8,
             "w": 12,
             "x": 12,
-            "y": 441
+            "y": 25
           },
           "id": 92,
           "options": {
@@ -1895,12 +1852,12 @@
               "sort": "desc"
             }
           },
-          "pluginVersion": "11.5.0-217209",
+          "pluginVersion": "11.6.0-227265",
           "targets": [
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_VICTORIAMETRICS}"
+                "uid": "DS_VM_01"
               },
               "editorMode": "code",
               "exemplar": true,
@@ -1917,7 +1874,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_VICTORIAMETRICS}"
+            "uid": "DS_VM_01"
           },
           "description": "Total number of sessions established to this database and closed by each reason. See the documentation for the pg_stat_database view for more details. Require PostgreSQL v14+",
           "fieldConfig": {
@@ -2065,7 +2022,7 @@
             "h": 8,
             "w": 12,
             "x": 0,
-            "y": 449
+            "y": 33
           },
           "id": 95,
           "options": {
@@ -2082,12 +2039,12 @@
               "sort": "desc"
             }
           },
-          "pluginVersion": "11.5.0-217209",
+          "pluginVersion": "11.6.0-227265",
           "targets": [
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_VICTORIAMETRICS}"
+                "uid": "DS_VM_01"
               },
               "editorMode": "code",
               "exemplar": true,
@@ -2100,7 +2057,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_VICTORIAMETRICS}"
+                "uid": "DS_VM_01"
               },
               "editorMode": "code",
               "exemplar": true,
@@ -2114,7 +2071,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_VICTORIAMETRICS}"
+                "uid": "DS_VM_01"
               },
               "editorMode": "code",
               "exemplar": true,
@@ -2264,7 +2221,7 @@
             "h": 8,
             "w": 9,
             "x": 0,
-            "y": 1493
+            "y": 2213
           },
           "id": 78,
           "options": {
@@ -2285,7 +2242,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_VICTORIAMETRICS}"
+                "uid": "DS_VM_01"
               },
               "editorMode": "code",
               "expr": "sum by (level) (increase(postgres_log_messages_total{instance=\"$instance\",service_id=\"$postgres\"}[1m]))",
@@ -2375,7 +2332,7 @@
             "h": 8,
             "w": 9,
             "x": 9,
-            "y": 1493
+            "y": 2213
           },
           "id": 80,
           "options": {
@@ -2396,7 +2353,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_VICTORIAMETRICS}"
+                "uid": "DS_VM_01"
               },
               "editorMode": "code",
               "expr": "postgres_log_directory_bytes{instance=\"$instance\",service_id=\"$postgres\"}",
@@ -2445,7 +2402,7 @@
             "h": 5,
             "w": 6,
             "x": 18,
-            "y": 1493
+            "y": 2213
           },
           "id": 83,
           "options": {
@@ -2465,7 +2422,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_VICTORIAMETRICS}"
+                "uid": "DS_VM_01"
               },
               "exemplar": false,
               "expr": "sum by (name,setting) (postgres_service_settings_info{instance=\"$instance\",service_id=\"$postgres\",name=~\"logging_collector|log_directory|log_filename\"})",
@@ -2567,7 +2524,7 @@
             "h": 8,
             "w": 12,
             "x": 0,
-            "y": 531
+            "y": 1251
           },
           "id": 19,
           "options": {
@@ -2589,7 +2546,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_VICTORIAMETRICS}"
+                "uid": "DS_VM_01"
               },
               "editorMode": "code",
               "exemplar": true,
@@ -2664,7 +2621,7 @@
             "h": 8,
             "w": 12,
             "x": 12,
-            "y": 531
+            "y": 1251
           },
           "id": 20,
           "options": {
@@ -2686,7 +2643,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_VICTORIAMETRICS}"
+                "uid": "DS_VM_01"
               },
               "editorMode": "code",
               "exemplar": true,
@@ -2762,7 +2719,7 @@
             "h": 8,
             "w": 12,
             "x": 0,
-            "y": 1059
+            "y": 1779
           },
           "id": 21,
           "options": {
@@ -2784,7 +2741,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_VICTORIAMETRICS}"
+                "uid": "DS_VM_01"
               },
               "editorMode": "code",
               "exemplar": true,
@@ -2860,7 +2817,7 @@
             "h": 8,
             "w": 12,
             "x": 12,
-            "y": 1059
+            "y": 1779
           },
           "id": 22,
           "options": {
@@ -2882,7 +2839,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_VICTORIAMETRICS}"
+                "uid": "DS_VM_01"
               },
               "editorMode": "code",
               "exemplar": true,
@@ -2971,7 +2928,7 @@
             "h": 8,
             "w": 12,
             "x": 0,
-            "y": 460
+            "y": 1180
           },
           "id": 27,
           "options": {
@@ -2993,7 +2950,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_VICTORIAMETRICS}"
+                "uid": "DS_VM_01"
               },
               "exemplar": true,
               "expr": "sum by (type) (postgres_activity_wait_events_in_flight{instance=\"$instance\",service_id=\"$postgres\"})",
@@ -3066,7 +3023,7 @@
             "h": 8,
             "w": 12,
             "x": 12,
-            "y": 460
+            "y": 1180
           },
           "id": 28,
           "options": {
@@ -3088,7 +3045,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_VICTORIAMETRICS}"
+                "uid": "DS_VM_01"
               },
               "exemplar": true,
               "expr": "topk(5, postgres_activity_wait_events_in_flight{instance=\"$instance\",service_id=\"$postgres\"})",
@@ -3161,7 +3118,7 @@
             "h": 8,
             "w": 12,
             "x": 0,
-            "y": 468
+            "y": 1188
           },
           "id": 26,
           "options": {
@@ -3183,7 +3140,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_VICTORIAMETRICS}"
+                "uid": "DS_VM_01"
               },
               "exemplar": true,
               "expr": "postgres_locks_in_flight{instance=\"$instance\",service_id=\"$postgres\"}",
@@ -3273,7 +3230,7 @@
             "h": 8,
             "w": 12,
             "x": 12,
-            "y": 468
+            "y": 1188
           },
           "id": 29,
           "options": {
@@ -3295,7 +3252,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_VICTORIAMETRICS}"
+                "uid": "DS_VM_01"
               },
               "editorMode": "code",
               "exemplar": true,
@@ -3384,7 +3341,7 @@
             "h": 8,
             "w": 12,
             "x": 0,
-            "y": 1152
+            "y": 1872
           },
           "id": 41,
           "options": {
@@ -3405,7 +3362,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_VICTORIAMETRICS}"
+                "uid": "DS_VM_01"
               },
               "exemplar": true,
               "expr": "sum by (client_addr) (postgres_replication_lag_all_bytes{instance=\"$instance\",service_id=\"$postgres\"})",
@@ -3478,7 +3435,7 @@
             "h": 8,
             "w": 12,
             "x": 12,
-            "y": 1152
+            "y": 1872
           },
           "id": 38,
           "options": {
@@ -3499,7 +3456,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_VICTORIAMETRICS}"
+                "uid": "DS_VM_01"
               },
               "exemplar": true,
               "expr": "sum by (client_addr) (postgres_replication_lag_all_seconds{instance=\"$instance\",service_id=\"$postgres\"})",
@@ -3601,7 +3558,7 @@
             "h": 8,
             "w": 9,
             "x": 0,
-            "y": 1481
+            "y": 2201
           },
           "id": 33,
           "options": {
@@ -3622,7 +3579,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_VICTORIAMETRICS}"
+                "uid": "DS_VM_01"
               },
               "exemplar": true,
               "expr": "rate(postgres_wal_written_bytes_total{instance=\"$instance\",service_id=\"$postgres\"}[1m])",
@@ -3711,7 +3668,7 @@
             "h": 8,
             "w": 9,
             "x": 9,
-            "y": 1481
+            "y": 2201
           },
           "id": 35,
           "options": {
@@ -3732,7 +3689,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_VICTORIAMETRICS}"
+                "uid": "DS_VM_01"
               },
               "exemplar": true,
               "expr": "postgres_wal_directory_bytes{instance=\"$instance\",service_id=\"$postgres\"}",
@@ -3747,7 +3704,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_VICTORIAMETRICS}"
+            "uid": "DS_VM_01"
           },
           "description": "WAL settings",
           "fieldConfig": {
@@ -3780,7 +3737,7 @@
             "h": 8,
             "w": 6,
             "x": 18,
-            "y": 1481
+            "y": 2201
           },
           "id": 87,
           "options": {
@@ -3800,7 +3757,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_VICTORIAMETRICS}"
+                "uid": "DS_VM_01"
               },
               "exemplar": false,
               "expr": "sum by (name,setting) (postgres_service_settings_info{instance=\"$instance\",service_id=\"$postgres\",name=~\"(max|min)_wal_size|max_slot_wal_keep_size|full_page_writes|wal_keep_(size|segments)|wal_(compression|level|log_hints)\"})",
@@ -3871,6 +3828,7 @@
                 "axisLabel": "",
                 "axisPlacement": "auto",
                 "barAlignment": 0,
+                "barWidthFactor": 0.6,
                 "drawStyle": "line",
                 "fillOpacity": 80,
                 "gradientMode": "none",
@@ -3960,7 +3918,7 @@
             "h": 8,
             "w": 9,
             "x": 0,
-            "y": 1482
+            "y": 47
           },
           "id": 46,
           "options": {
@@ -3971,17 +3929,18 @@
               "showLegend": true
             },
             "tooltip": {
+              "hideZeros": false,
               "maxHeight": 600,
               "mode": "multi",
               "sort": "desc"
             }
           },
-          "pluginVersion": "7.5.7",
+          "pluginVersion": "11.6.0-227265",
           "targets": [
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_VICTORIAMETRICS}"
+                "uid": "DS_VM_01"
               },
               "exemplar": true,
               "expr": "postgres_activity_vacuums_in_flight{instance=\"$instance\",service_id=\"$postgres\"}",
@@ -4011,6 +3970,7 @@
                 "axisLabel": "",
                 "axisPlacement": "auto",
                 "barAlignment": 0,
+                "barWidthFactor": 0.6,
                 "drawStyle": "line",
                 "fillOpacity": 80,
                 "gradientMode": "none",
@@ -4054,7 +4014,7 @@
             "h": 8,
             "w": 9,
             "x": 9,
-            "y": 1482
+            "y": 47
           },
           "id": 47,
           "options": {
@@ -4065,17 +4025,18 @@
               "showLegend": true
             },
             "tooltip": {
+              "hideZeros": false,
               "maxHeight": 600,
               "mode": "multi",
               "sort": "desc"
             }
           },
-          "pluginVersion": "7.5.7",
+          "pluginVersion": "11.6.0-227265",
           "targets": [
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_VICTORIAMETRICS}"
+                "uid": "DS_VM_01"
               },
               "exemplar": true,
               "expr": "topk(5, increase(postgres_table_maintenance_total{type=\"autovacuum\",instance=\"$instance\",service_id=\"$postgres\"}[1m]))",
@@ -4123,7 +4084,7 @@
             "h": 8,
             "w": 6,
             "x": 18,
-            "y": 1482
+            "y": 47
           },
           "id": 86,
           "options": {
@@ -4138,12 +4099,12 @@
             },
             "showHeader": true
           },
-          "pluginVersion": "11.1.0",
+          "pluginVersion": "11.6.0-227265",
           "targets": [
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_VICTORIAMETRICS}"
+                "uid": "DS_VM_01"
               },
               "exemplar": false,
               "expr": "sum by (name,setting) (postgres_service_settings_info{instance=\"$instance\",service_id=\"$postgres\",name=~\"^(auto)?vacuum.+\"})",
@@ -4200,6 +4161,7 @@
                 "axisLabel": "",
                 "axisPlacement": "auto",
                 "barAlignment": 0,
+                "barWidthFactor": 0.6,
                 "drawStyle": "line",
                 "fillOpacity": 0,
                 "gradientMode": "none",
@@ -4289,7 +4251,7 @@
             "h": 8,
             "w": 24,
             "x": 0,
-            "y": 1490
+            "y": 55
           },
           "id": 48,
           "options": {
@@ -4300,17 +4262,18 @@
               "showLegend": true
             },
             "tooltip": {
+              "hideZeros": false,
               "maxHeight": 600,
               "mode": "multi",
               "sort": "asc"
             }
           },
-          "pluginVersion": "7.5.7",
+          "pluginVersion": "11.6.0-227265",
           "targets": [
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_VICTORIAMETRICS}"
+                "uid": "DS_VM_01"
               },
               "editorMode": "code",
               "exemplar": true,
@@ -4342,6 +4305,7 @@
                 "axisLabel": "",
                 "axisPlacement": "auto",
                 "barAlignment": 0,
+                "barWidthFactor": 0.6,
                 "drawStyle": "line",
                 "fillOpacity": 0,
                 "gradientMode": "none",
@@ -4431,7 +4395,7 @@
             "h": 8,
             "w": 24,
             "x": 0,
-            "y": 1498
+            "y": 63
           },
           "id": 88,
           "options": {
@@ -4442,17 +4406,18 @@
               "showLegend": true
             },
             "tooltip": {
+              "hideZeros": false,
               "maxHeight": 600,
               "mode": "multi",
               "sort": "asc"
             }
           },
-          "pluginVersion": "7.5.7",
+          "pluginVersion": "11.6.0-227265",
           "targets": [
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_VICTORIAMETRICS}"
+                "uid": "DS_VM_01"
               },
               "editorMode": "code",
               "exemplar": true,
@@ -4572,7 +4537,7 @@
             "h": 8,
             "w": 12,
             "x": 0,
-            "y": 536
+            "y": 1256
           },
           "id": 52,
           "options": {
@@ -4594,7 +4559,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_VICTORIAMETRICS}"
+                "uid": "DS_VM_01"
               },
               "exemplar": true,
               "expr": "increase(postgres_checkpoints_total{instance=\"$instance\",service_id=\"$postgres\"}[1m])",
@@ -4743,7 +4708,7 @@
             "h": 8,
             "w": 12,
             "x": 12,
-            "y": 536
+            "y": 1256
           },
           "id": 53,
           "options": {
@@ -4765,7 +4730,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_VICTORIAMETRICS}"
+                "uid": "DS_VM_01"
               },
               "editorMode": "code",
               "exemplar": true,
@@ -4790,7 +4755,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_VICTORIAMETRICS}"
+                "uid": "DS_VM_01"
               },
               "exemplar": true,
               "expr": "sum(rate(postgres_database_temp_bytes_total{instance=\"$instance\",service_id=\"$postgres\"}[1m]))",
@@ -4878,7 +4843,7 @@
             "h": 8,
             "w": 12,
             "x": 0,
-            "y": 25
+            "y": 713
           },
           "id": 102,
           "options": {
@@ -4900,11 +4865,11 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_VICTORIAMETRICS}"
+                "uid": "DS_VM_01"
               },
               "editorMode": "code",
               "exemplar": true,
-              "expr": "sum by (backend_type,context) (rate(postgres_stat_io_reads{instance=\"$instance\",service_id=\"$postgres\",backend_type=~\"autovacuum.*\"}*8192)[1m])>0",
+              "expr": "sum by (backend_type,context) (rate(postgres_stat_io_read_bytes{instance=\"$instance\",service_id=\"$postgres\",backend_type=~\"autovacuum.*\"})[1m])>0",
               "interval": "",
               "legendFormat": "{{ backend_type }}/{{ context }}",
               "range": true,
@@ -4913,11 +4878,11 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_VICTORIAMETRICS}"
+                "uid": "DS_VM_01"
               },
               "editorMode": "code",
               "exemplar": true,
-              "expr": "sum by (backend_type,context) (rate(postgres_stat_io_reads{instance=\"$instance\",service_id=\"$postgres\",backend_type=~\"background.*\"}*8192)[1m])>0",
+              "expr": "sum by (backend_type,context) (rate(postgres_stat_io_read_bytes{instance=\"$instance\",service_id=\"$postgres\",backend_type=~\"background.*\"})[1m])>0",
               "hide": false,
               "interval": "",
               "legendFormat": "{{ backend_type }}/{{ context }}",
@@ -4927,11 +4892,11 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_VICTORIAMETRICS}"
+                "uid": "DS_VM_01"
               },
               "editorMode": "code",
               "exemplar": true,
-              "expr": "sum by (backend_type,context) (rate(postgres_stat_io_reads{instance=\"$instance\",service_id=\"$postgres\",backend_type=\"client backend\"}*8192)[1m])>0",
+              "expr": "sum by (backend_type,context) (rate(postgres_stat_io_read_bytes{instance=\"$instance\",service_id=\"$postgres\",backend_type=\"client backend\"})[1m])>0",
               "hide": false,
               "interval": "",
               "legendFormat": "{{ backend_type }}/{{ context }}",
@@ -4941,11 +4906,11 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_VICTORIAMETRICS}"
+                "uid": "DS_VM_01"
               },
               "editorMode": "code",
               "exemplar": true,
-              "expr": "sum by (backend_type,context) (rate(postgres_stat_io_reads{instance=\"$instance\",service_id=\"$postgres\",backend_type=\"checkpointer\"}*8192)[1m])>0",
+              "expr": "sum by (backend_type,context) (rate(postgres_stat_io_read_bytes{instance=\"$instance\",service_id=\"$postgres\",backend_type=\"checkpointer\"})[1m])>0",
               "hide": false,
               "interval": "",
               "legendFormat": "{{ backend_type }}/{{ context }}",
@@ -4955,11 +4920,11 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_VICTORIAMETRICS}"
+                "uid": "DS_VM_01"
               },
               "editorMode": "code",
               "exemplar": true,
-              "expr": "sum by (backend_type) (rate(postgres_stat_io_reads{instance=\"$instance\",service_id=\"$postgres\",backend_type!~\"checkpointer|client backend.*|background.*|autovacuum.*\"}*8192)[1m])>0",
+              "expr": "sum by (backend_type) (rate(postgres_stat_io_read_bytes{instance=\"$instance\",service_id=\"$postgres\",backend_type!~\"checkpointer|client backend.*|background.*|autovacuum.*\"})[1m])>0",
               "hide": false,
               "interval": "",
               "legendFormat": "Other",
@@ -5031,7 +4996,7 @@
             "h": 8,
             "w": 12,
             "x": 12,
-            "y": 25
+            "y": 713
           },
           "id": 104,
           "options": {
@@ -5053,11 +5018,11 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_VICTORIAMETRICS}"
+                "uid": "DS_VM_01"
               },
               "editorMode": "code",
               "exemplar": true,
-              "expr": "sum by (backend_type,context) (rate(postgres_stat_io_writes{instance=\"$instance\",service_id=\"$postgres\",backend_type=~\"autovacuum.*\"}*8192)[1m])>0",
+              "expr": "sum by (backend_type,context) (rate(postgres_stat_io_write_bytes{instance=\"$instance\",service_id=\"$postgres\",backend_type=~\"autovacuum.*\"})[1m])>0",
               "interval": "",
               "legendFormat": "{{ backend_type }}/{{ context }}",
               "range": true,
@@ -5066,11 +5031,11 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_VICTORIAMETRICS}"
+                "uid": "DS_VM_01"
               },
               "editorMode": "code",
               "exemplar": true,
-              "expr": "sum by (backend_type,context) (rate(postgres_stat_io_writes{instance=\"$instance\",service_id=\"$postgres\",backend_type=~\"background.*\"}*8192)[1m])>0",
+              "expr": "sum by (backend_type,context) (rate(postgres_stat_io_write_bytes{instance=\"$instance\",service_id=\"$postgres\",backend_type=~\"background.*\"})[1m])>0",
               "hide": false,
               "interval": "",
               "legendFormat": "{{ backend_type }}/{{ context }}",
@@ -5080,11 +5045,11 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_VICTORIAMETRICS}"
+                "uid": "DS_VM_01"
               },
               "editorMode": "code",
               "exemplar": true,
-              "expr": "sum by (backend_type,context) (rate(postgres_stat_io_writes{instance=\"$instance\",service_id=\"$postgres\",backend_type=\"client backend\"}*8192)[1m])>0",
+              "expr": "sum by (backend_type,context) (rate(postgres_stat_io_write_bytes{instance=\"$instance\",service_id=\"$postgres\",backend_type=\"client backend\"})[1m])>0",
               "hide": false,
               "interval": "",
               "legendFormat": "{{ backend_type }}/{{ context }}",
@@ -5094,11 +5059,11 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_VICTORIAMETRICS}"
+                "uid": "DS_VM_01"
               },
               "editorMode": "code",
               "exemplar": true,
-              "expr": "sum by (backend_type,context) (rate(postgres_stat_io_writes{instance=\"$instance\",service_id=\"$postgres\",backend_type=\"checkpointer\"}*8192)[1m])>0",
+              "expr": "sum by (backend_type,context) (rate(postgres_stat_io_write_bytes{instance=\"$instance\",service_id=\"$postgres\",backend_type=\"checkpointer\"})[1m])>0",
               "hide": false,
               "interval": "",
               "legendFormat": "{{ backend_type }}/{{ context }}",
@@ -5108,11 +5073,11 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_VICTORIAMETRICS}"
+                "uid": "DS_VM_01"
               },
               "editorMode": "code",
               "exemplar": true,
-              "expr": "sum by (backend_type) (rate(postgres_stat_io_writes{instance=\"$instance\",service_id=\"$postgres\",backend_type!~\"checkpointer|client backend.*|background.*|autovacuum.*\"}*8192)[1m])>0",
+              "expr": "sum by (backend_type) (rate(postgres_stat_io_write_bytes{instance=\"$instance\",service_id=\"$postgres\",backend_type!~\"checkpointer|client backend.*|background.*|autovacuum.*\"})[1m])>0",
               "hide": false,
               "interval": "",
               "legendFormat": "Other",
@@ -5184,7 +5149,7 @@
             "h": 8,
             "w": 12,
             "x": 0,
-            "y": 33
+            "y": 753
           },
           "id": 107,
           "options": {
@@ -5206,7 +5171,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_VICTORIAMETRICS}"
+                "uid": "DS_VM_01"
               },
               "editorMode": "code",
               "exemplar": true,
@@ -5220,7 +5185,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_VICTORIAMETRICS}"
+                "uid": "DS_VM_01"
               },
               "editorMode": "code",
               "exemplar": true,
@@ -5234,7 +5199,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_VICTORIAMETRICS}"
+                "uid": "DS_VM_01"
               },
               "editorMode": "code",
               "exemplar": true,
@@ -5248,7 +5213,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_VICTORIAMETRICS}"
+                "uid": "DS_VM_01"
               },
               "editorMode": "code",
               "exemplar": true,
@@ -5262,7 +5227,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_VICTORIAMETRICS}"
+                "uid": "DS_VM_01"
               },
               "editorMode": "code",
               "exemplar": true,
@@ -5338,7 +5303,7 @@
             "h": 8,
             "w": 12,
             "x": 12,
-            "y": 33
+            "y": 753
           },
           "id": 108,
           "options": {
@@ -5360,7 +5325,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_VICTORIAMETRICS}"
+                "uid": "DS_VM_01"
               },
               "editorMode": "code",
               "exemplar": true,
@@ -5374,7 +5339,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_VICTORIAMETRICS}"
+                "uid": "DS_VM_01"
               },
               "editorMode": "code",
               "exemplar": true,
@@ -5388,7 +5353,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_VICTORIAMETRICS}"
+                "uid": "DS_VM_01"
               },
               "editorMode": "code",
               "exemplar": true,
@@ -5402,7 +5367,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_VICTORIAMETRICS}"
+                "uid": "DS_VM_01"
               },
               "editorMode": "code",
               "exemplar": true,
@@ -5416,7 +5381,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_VICTORIAMETRICS}"
+                "uid": "DS_VM_01"
               },
               "editorMode": "code",
               "exemplar": true,
@@ -5492,7 +5457,7 @@
             "h": 8,
             "w": 12,
             "x": 0,
-            "y": 41
+            "y": 761
           },
           "id": 109,
           "options": {
@@ -5514,7 +5479,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_VICTORIAMETRICS}"
+                "uid": "DS_VM_01"
               },
               "editorMode": "code",
               "exemplar": true,
@@ -5527,7 +5492,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_VICTORIAMETRICS}"
+                "uid": "DS_VM_01"
               },
               "editorMode": "code",
               "exemplar": true,
@@ -5541,7 +5506,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_VICTORIAMETRICS}"
+                "uid": "DS_VM_01"
               },
               "editorMode": "code",
               "exemplar": true,
@@ -5555,7 +5520,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_VICTORIAMETRICS}"
+                "uid": "DS_VM_01"
               },
               "editorMode": "code",
               "exemplar": true,
@@ -5569,7 +5534,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_VICTORIAMETRICS}"
+                "uid": "DS_VM_01"
               },
               "editorMode": "code",
               "exemplar": true,
@@ -5645,9 +5610,9 @@
             "h": 8,
             "w": 12,
             "x": 12,
-            "y": 41
+            "y": 761
           },
-          "id": 120,
+          "id": 119,
           "options": {
             "legend": {
               "calcs": [],
@@ -5667,7 +5632,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_VICTORIAMETRICS}"
+                "uid": "DS_VM_01"
               },
               "editorMode": "code",
               "exemplar": true,
@@ -5680,7 +5645,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_VICTORIAMETRICS}"
+                "uid": "DS_VM_01"
               },
               "editorMode": "code",
               "exemplar": true,
@@ -5694,7 +5659,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_VICTORIAMETRICS}"
+                "uid": "DS_VM_01"
               },
               "editorMode": "code",
               "exemplar": true,
@@ -5708,7 +5673,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_VICTORIAMETRICS}"
+                "uid": "DS_VM_01"
               },
               "editorMode": "code",
               "exemplar": true,
@@ -5722,7 +5687,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_VICTORIAMETRICS}"
+                "uid": "DS_VM_01"
               },
               "editorMode": "code",
               "exemplar": true,
@@ -5798,7 +5763,7 @@
             "h": 8,
             "w": 12,
             "x": 0,
-            "y": 49
+            "y": 769
           },
           "id": 105,
           "options": {
@@ -5820,7 +5785,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_VICTORIAMETRICS}"
+                "uid": "DS_VM_01"
               },
               "editorMode": "code",
               "exemplar": true,
@@ -5833,7 +5798,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_VICTORIAMETRICS}"
+                "uid": "DS_VM_01"
               },
               "editorMode": "code",
               "exemplar": true,
@@ -5847,7 +5812,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_VICTORIAMETRICS}"
+                "uid": "DS_VM_01"
               },
               "editorMode": "code",
               "exemplar": true,
@@ -5861,7 +5826,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_VICTORIAMETRICS}"
+                "uid": "DS_VM_01"
               },
               "editorMode": "code",
               "exemplar": true,
@@ -5875,7 +5840,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_VICTORIAMETRICS}"
+                "uid": "DS_VM_01"
               },
               "editorMode": "code",
               "exemplar": true,
@@ -5943,7 +5908,7 @@
                   }
                 ]
               },
-              "unit": "binBps"
+              "unit": "none"
             },
             "overrides": []
           },
@@ -5951,7 +5916,7 @@
             "h": 8,
             "w": 12,
             "x": 12,
-            "y": 49
+            "y": 769
           },
           "id": 106,
           "options": {
@@ -5973,7 +5938,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_VICTORIAMETRICS}"
+                "uid": "DS_VM_01"
               },
               "editorMode": "code",
               "exemplar": true,
@@ -5986,7 +5951,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_VICTORIAMETRICS}"
+                "uid": "DS_VM_01"
               },
               "editorMode": "code",
               "exemplar": true,
@@ -6000,7 +5965,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_VICTORIAMETRICS}"
+                "uid": "DS_VM_01"
               },
               "editorMode": "code",
               "exemplar": true,
@@ -6014,7 +5979,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_VICTORIAMETRICS}"
+                "uid": "DS_VM_01"
               },
               "editorMode": "code",
               "exemplar": true,
@@ -6028,7 +5993,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_VICTORIAMETRICS}"
+                "uid": "DS_VM_01"
               },
               "editorMode": "code",
               "exemplar": true,
@@ -6104,9 +6069,9 @@
             "h": 8,
             "w": 12,
             "x": 0,
-            "y": 57
+            "y": 777
           },
-          "id": 119,
+          "id": 120,
           "options": {
             "legend": {
               "calcs": [],
@@ -6126,7 +6091,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_VICTORIAMETRICS}"
+                "uid": "DS_VM_01"
               },
               "editorMode": "code",
               "exemplar": true,
@@ -6139,7 +6104,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_VICTORIAMETRICS}"
+                "uid": "DS_VM_01"
               },
               "editorMode": "code",
               "exemplar": true,
@@ -6153,7 +6118,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_VICTORIAMETRICS}"
+                "uid": "DS_VM_01"
               },
               "editorMode": "code",
               "exemplar": true,
@@ -6167,7 +6132,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_VICTORIAMETRICS}"
+                "uid": "DS_VM_01"
               },
               "editorMode": "code",
               "exemplar": true,
@@ -6181,7 +6146,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_VICTORIAMETRICS}"
+                "uid": "DS_VM_01"
               },
               "editorMode": "code",
               "exemplar": true,
@@ -6257,7 +6222,7 @@
             "h": 8,
             "w": 12,
             "x": 12,
-            "y": 57
+            "y": 777
           },
           "id": 110,
           "options": {
@@ -6279,7 +6244,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_VICTORIAMETRICS}"
+                "uid": "DS_VM_01"
               },
               "editorMode": "code",
               "exemplar": true,
@@ -6292,7 +6257,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_VICTORIAMETRICS}"
+                "uid": "DS_VM_01"
               },
               "editorMode": "code",
               "exemplar": true,
@@ -6306,7 +6271,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_VICTORIAMETRICS}"
+                "uid": "DS_VM_01"
               },
               "editorMode": "code",
               "exemplar": true,
@@ -6320,7 +6285,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_VICTORIAMETRICS}"
+                "uid": "DS_VM_01"
               },
               "editorMode": "code",
               "exemplar": true,
@@ -6334,7 +6299,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_VICTORIAMETRICS}"
+                "uid": "DS_VM_01"
               },
               "editorMode": "code",
               "exemplar": true,
@@ -6424,7 +6389,7 @@
             "h": 8,
             "w": 12,
             "x": 0,
-            "y": 90
+            "y": 714
           },
           "id": 117,
           "options": {
@@ -6441,12 +6406,12 @@
               "sort": "desc"
             }
           },
-          "pluginVersion": "11.6.0-223626",
+          "pluginVersion": "11.6.0-227265",
           "targets": [
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_VICTORIAMETRICS}"
+                "uid": "DS_VM_01"
               },
               "editorMode": "code",
               "exemplar": true,
@@ -6521,7 +6486,7 @@
             "h": 8,
             "w": 12,
             "x": 12,
-            "y": 90
+            "y": 714
           },
           "id": 118,
           "options": {
@@ -6538,12 +6503,12 @@
               "sort": "desc"
             }
           },
-          "pluginVersion": "11.6.0-223626",
+          "pluginVersion": "11.6.0-227265",
           "targets": [
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_VICTORIAMETRICS}"
+                "uid": "DS_VM_01"
               },
               "editorMode": "code",
               "exemplar": true,
@@ -6618,7 +6583,7 @@
             "h": 8,
             "w": 12,
             "x": 0,
-            "y": 98
+            "y": 722
           },
           "id": 112,
           "options": {
@@ -6635,12 +6600,12 @@
               "sort": "desc"
             }
           },
-          "pluginVersion": "11.6.0-223626",
+          "pluginVersion": "11.6.0-227265",
           "targets": [
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_VICTORIAMETRICS}"
+                "uid": "DS_VM_01"
               },
               "editorMode": "code",
               "exemplar": true,
@@ -6715,7 +6680,7 @@
             "h": 8,
             "w": 12,
             "x": 12,
-            "y": 98
+            "y": 722
           },
           "id": 113,
           "options": {
@@ -6732,12 +6697,12 @@
               "sort": "desc"
             }
           },
-          "pluginVersion": "11.6.0-223626",
+          "pluginVersion": "11.6.0-227265",
           "targets": [
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_VICTORIAMETRICS}"
+                "uid": "DS_VM_01"
               },
               "editorMode": "code",
               "exemplar": true,
@@ -6812,7 +6777,7 @@
             "h": 8,
             "w": 12,
             "x": 0,
-            "y": 106
+            "y": 730
           },
           "id": 114,
           "options": {
@@ -6829,12 +6794,12 @@
               "sort": "desc"
             }
           },
-          "pluginVersion": "11.6.0-223626",
+          "pluginVersion": "11.6.0-227265",
           "targets": [
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_VICTORIAMETRICS}"
+                "uid": "DS_VM_01"
               },
               "editorMode": "code",
               "exemplar": true,
@@ -6909,7 +6874,7 @@
             "h": 8,
             "w": 12,
             "x": 12,
-            "y": 106
+            "y": 730
           },
           "id": 115,
           "options": {
@@ -6926,12 +6891,12 @@
               "sort": "desc"
             }
           },
-          "pluginVersion": "11.6.0-223626",
+          "pluginVersion": "11.6.0-227265",
           "targets": [
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_VICTORIAMETRICS}"
+                "uid": "DS_VM_01"
               },
               "editorMode": "code",
               "exemplar": true,
@@ -7006,7 +6971,7 @@
             "h": 8,
             "w": 12,
             "x": 0,
-            "y": 114
+            "y": 738
           },
           "id": 116,
           "options": {
@@ -7023,12 +6988,12 @@
               "sort": "desc"
             }
           },
-          "pluginVersion": "11.6.0-223626",
+          "pluginVersion": "11.6.0-227265",
           "targets": [
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_VICTORIAMETRICS}"
+                "uid": "DS_VM_01"
               },
               "editorMode": "code",
               "exemplar": true,
@@ -7118,7 +7083,7 @@
             "h": 8,
             "w": 12,
             "x": 0,
-            "y": 666
+            "y": 1386
           },
           "id": 65,
           "options": {
@@ -7140,7 +7105,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_VICTORIAMETRICS}"
+                "uid": "DS_VM_01"
               },
               "exemplar": true,
               "expr": "postgres_tablespace_directory_bytes{instance=\"$instance\",service_id=\"$postgres\"}",
@@ -7163,7 +7128,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_VICTORIAMETRICS}"
+                "uid": "DS_VM_01"
               },
               "exemplar": true,
               "expr": "postgres_log_directory_bytes{instance=\"$instance\",service_id=\"$postgres\"}",
@@ -7238,7 +7203,7 @@
             "h": 8,
             "w": 12,
             "x": 12,
-            "y": 666
+            "y": 1386
           },
           "id": 66,
           "options": {
@@ -7260,7 +7225,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_VICTORIAMETRICS}"
+                "uid": "DS_VM_01"
               },
               "editorMode": "code",
               "exemplar": true,
@@ -7336,7 +7301,7 @@
             "h": 8,
             "w": 12,
             "x": 0,
-            "y": 690
+            "y": 1410
           },
           "id": 69,
           "options": {
@@ -7358,7 +7323,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_VICTORIAMETRICS}"
+                "uid": "DS_VM_01"
               },
               "editorMode": "code",
               "exemplar": true,
@@ -7434,7 +7399,7 @@
             "h": 8,
             "w": 12,
             "x": 12,
-            "y": 690
+            "y": 1410
           },
           "id": 70,
           "options": {
@@ -7456,7 +7421,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_VICTORIAMETRICS}"
+                "uid": "DS_VM_01"
               },
               "editorMode": "code",
               "exemplar": true,
@@ -7532,7 +7497,7 @@
             "h": 8,
             "w": 12,
             "x": 0,
-            "y": 698
+            "y": 1418
           },
           "id": 67,
           "options": {
@@ -7554,7 +7519,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_VICTORIAMETRICS}"
+                "uid": "DS_VM_01"
               },
               "editorMode": "code",
               "exemplar": true,
@@ -7630,7 +7595,7 @@
             "h": 8,
             "w": 12,
             "x": 12,
-            "y": 698
+            "y": 1418
           },
           "id": 68,
           "options": {
@@ -7652,7 +7617,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_VICTORIAMETRICS}"
+                "uid": "DS_VM_01"
               },
               "editorMode": "code",
               "exemplar": true,
@@ -7742,7 +7707,7 @@
             "h": 8,
             "w": 12,
             "x": 0,
-            "y": 1314
+            "y": 2034
           },
           "id": 57,
           "options": {
@@ -7764,7 +7729,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_VICTORIAMETRICS}"
+                "uid": "DS_VM_01"
               },
               "editorMode": "code",
               "exemplar": true,
@@ -7840,7 +7805,7 @@
             "h": 8,
             "w": 12,
             "x": 12,
-            "y": 1314
+            "y": 2034
           },
           "id": 60,
           "options": {
@@ -7862,7 +7827,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_VICTORIAMETRICS}"
+                "uid": "DS_VM_01"
               },
               "editorMode": "code",
               "exemplar": true,
@@ -7938,7 +7903,7 @@
             "h": 8,
             "w": 12,
             "x": 0,
-            "y": 1322
+            "y": 2042
           },
           "id": 89,
           "options": {
@@ -7960,7 +7925,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_VICTORIAMETRICS}"
+                "uid": "DS_VM_01"
               },
               "editorMode": "code",
               "exemplar": true,
@@ -8036,7 +8001,7 @@
             "h": 8,
             "w": 12,
             "x": 12,
-            "y": 1322
+            "y": 2042
           },
           "id": 59,
           "options": {
@@ -8058,7 +8023,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_VICTORIAMETRICS}"
+                "uid": "DS_VM_01"
               },
               "editorMode": "code",
               "exemplar": true,
@@ -8133,7 +8098,7 @@
             "h": 8,
             "w": 12,
             "x": 0,
-            "y": 1330
+            "y": 2050
           },
           "id": 58,
           "options": {
@@ -8154,7 +8119,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_VICTORIAMETRICS}"
+                "uid": "DS_VM_01"
               },
               "editorMode": "code",
               "exemplar": true,
@@ -8229,7 +8194,7 @@
             "h": 8,
             "w": 12,
             "x": 12,
-            "y": 1330
+            "y": 2050
           },
           "id": 61,
           "options": {
@@ -8250,7 +8215,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_VICTORIAMETRICS}"
+                "uid": "DS_VM_01"
               },
               "editorMode": "code",
               "exemplar": true,
@@ -8325,7 +8290,7 @@
             "h": 8,
             "w": 12,
             "x": 0,
-            "y": 1338
+            "y": 2058
           },
           "id": 94,
           "options": {
@@ -8346,7 +8311,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_VICTORIAMETRICS}"
+                "uid": "DS_VM_01"
               },
               "editorMode": "code",
               "exemplar": true,
@@ -8413,7 +8378,7 @@
             "h": 8,
             "w": 12,
             "x": 12,
-            "y": 1338
+            "y": 2058
           },
           "id": 93,
           "options": {
@@ -8433,7 +8398,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_VICTORIAMETRICS}"
+                "uid": "DS_VM_01"
               },
               "editorMode": "code",
               "exemplar": false,
@@ -8564,7 +8529,7 @@
             "h": 8,
             "w": 12,
             "x": 0,
-            "y": 668
+            "y": 1388
           },
           "id": 34,
           "options": {
@@ -8586,7 +8551,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_VICTORIAMETRICS}"
+                "uid": "DS_VM_01"
               },
               "exemplar": true,
               "expr": "postgres_archiver_lag_bytes{instance=\"$instance\",service_id=\"$postgres\"}",
@@ -8660,7 +8625,7 @@
             "h": 8,
             "w": 12,
             "x": 12,
-            "y": 668
+            "y": 1388
           },
           "id": 42,
           "options": {
@@ -8682,7 +8647,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "${DS_VICTORIAMETRICS}"
+                "uid": "DS_VM_01"
               },
               "exemplar": true,
               "expr": "increase(postgres_archiver_archived_total{instance=\"$instance\",service_id=\"$postgres\"}[1m])",
@@ -8709,7 +8674,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_VICTORIAMETRICS}"
+            "uid": "DS_VM_01"
           },
           "description": "Important: when WAL archiving is disabled, metrics will not be collected.",
           "fieldConfig": {
@@ -8755,7 +8720,7 @@
             "h": 8,
             "w": 24,
             "x": 0,
-            "y": 676
+            "y": 1396
           },
           "id": 85,
           "options": {
@@ -8819,6 +8784,7 @@
       "type": "row"
     }
   ],
+  "preload": false,
   "refresh": "1m",
   "schemaVersion": 41,
   "tags": [
@@ -8827,7 +8793,10 @@
   "templating": {
     "list": [
       {
-        "current": {},
+        "current": {
+          "text": "victoriametrics",
+          "value": "DS_VM_01"
+        },
         "includeAll": false,
         "label": "DS",
         "name": "ds",
@@ -8839,10 +8808,13 @@
       },
       {
         "allValue": ".*",
-        "current": {},
+        "current": {
+          "text": "pgscv:9890",
+          "value": "pgscv:9890"
+        },
         "datasource": {
           "type": "prometheus",
-          "uid": "${DS_VICTORIAMETRICS}"
+          "uid": "DS_VM_01"
         },
         "definition": "label_values(pgscv_services_registered_total{service=\"postgres\"},instance)",
         "includeAll": false,
@@ -8859,10 +8831,13 @@
         "type": "query"
       },
       {
-        "current": {},
+        "current": {
+          "text": "postgres17",
+          "value": "postgres17"
+        },
         "datasource": {
           "type": "prometheus",
-          "uid": "${DS_VICTORIAMETRICS}"
+          "uid": "DS_VM_01"
         },
         "definition": "label_values(pgscv_services_registered_total{instance=\"$instance\", service=\"postgres\"},service_id)",
         "includeAll": false,
@@ -8879,10 +8854,17 @@
         "type": "query"
       },
       {
-        "current": {},
+        "current": {
+          "text": [
+            "All"
+          ],
+          "value": [
+            "$__all"
+          ]
+        },
         "datasource": {
           "type": "prometheus",
-          "uid": "${DS_VICTORIAMETRICS}"
+          "uid": "DS_VM_01"
         },
         "definition": "label_values(postgres_database_size_bytes{instance=\"$instance\"},database)",
         "includeAll": true,
@@ -8902,9 +8884,11 @@
       {
         "current": {
           "text": [
+            "postgres",
             "pgscv"
           ],
           "value": [
+            "postgres",
             "pgscv"
           ]
         },
@@ -8915,7 +8899,7 @@
         "name": "exclude",
         "options": [
           {
-            "selected": false,
+            "selected": true,
             "text": "postgres",
             "value": "postgres"
           },
@@ -8940,6 +8924,5 @@
   "timezone": "",
   "title": "pgSCV: PostgreSQL",
   "uid": "N6PwjKeGz",
-  "version": 34,
-  "weekStart": ""
+  "version": 6
 }
