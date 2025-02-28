@@ -53,7 +53,7 @@ func Test_parsePostgresStatIO(t *testing.T) {
 					{Name: []byte("writebacks")}, {Name: []byte("writeback_time")}, {Name: []byte("extends")}, {Name: []byte("extend_time")},
 					{Name: []byte("hits")}, {Name: []byte("evictions")}, {Name: []byte("reuses")},
 					{Name: []byte("fsyncs")}, {Name: []byte("fsync_time")},
-					{Name: []byte("read_bytes")}, {Name: []byte("write_bytes")}, {Name: []byte("extends_bytes")},
+					{Name: []byte("read_bytes")}, {Name: []byte("write_bytes")}, {Name: []byte("extend_bytes")},
 				},
 				Rows: [][]sql.NullString{
 					{

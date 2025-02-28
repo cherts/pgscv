@@ -192,7 +192,7 @@ func (c *postgresStatIOCollector) Update(config Config, ch chan<- prometheus.Met
 				ch <- c.fsyncTime.newConstMetric(stat.FsyncTime, stat.BackendType, stat.IoObject, stat.IoContext)
 				ch <- c.readBytes.newConstMetric(stat.ReadBytes, stat.BackendType, stat.IoObject, stat.IoContext)
 				ch <- c.writeBytes.newConstMetric(stat.WriteBytes, stat.BackendType, stat.IoObject, stat.IoContext)
-				ch <- c.extendBytes.newConstMetric(stat.ExtendsBytes, stat.BackendType, stat.IoObject, stat.IoContext)
+				ch <- c.extendBytes.newConstMetric(stat.ExtendBytes, stat.BackendType, stat.IoObject, stat.IoContext)
 			}
 		}
 	}
@@ -220,7 +220,7 @@ type postgresStatIO struct {
 	FsyncTime     float64
 	ReadBytes     float64
 	WriteBytes    float64
-	ExtendsBytes  float64
+	ExtendBytes   float64
 }
 
 // parsePostgresStatIO parses PGResult and returns structs with stats values.
@@ -301,7 +301,7 @@ func parsePostgresStatIO(r *model.PGResult, labelNames []string) map[string]post
 			case "write_bytes":
 				s.WriteBytes = v
 			case "extend_bytes":
-				s.ExtendsBytes = v
+				s.ExtendBytes = v
 			default:
 				continue
 			}
