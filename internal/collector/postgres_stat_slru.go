@@ -30,49 +30,50 @@ type postgresStatSlruCollector struct {
 
 // NewPostgresStatSlruCollector returns a new Collector exposing postgres pg_stat_slru stats.
 func NewPostgresStatSlruCollector(constLabels labels, settings model.CollectorSettings) (Collector, error) {
-	var labels = []string{"name"}
+	var labelNames = []string{"name"}
 
 	return &postgresStatSlruCollector{
+		labelNames: labelNames,
 		blksZeroed: newBuiltinTypedDesc(
 			descOpts{"postgres", "stat_slru", "blks_zeroed", "Number of blocks zeroed during initializations.", 0},
 			prometheus.GaugeValue,
-			labels, constLabels,
+			labelNames, constLabels,
 			settings.Filters,
 		),
 		blksHit: newBuiltinTypedDesc(
 			descOpts{"postgres", "stat_slru", "blks_hit", "Number of times disk blocks were found already in the SLRU, so that a read was not necessary (this only includes hits in the SLRU, not the operating system's file system cache).", 0},
 			prometheus.GaugeValue,
-			labels, constLabels,
+			labelNames, constLabels,
 			settings.Filters,
 		),
 		blksRead: newBuiltinTypedDesc(
 			descOpts{"postgres", "stat_slru", "blks_read", "Number of disk blocks read for this SLRU.", 0},
 			prometheus.GaugeValue,
-			labels, constLabels,
+			labelNames, constLabels,
 			settings.Filters,
 		),
 		blksWritten: newBuiltinTypedDesc(
 			descOpts{"postgres", "stat_slru", "blks_written", "Number of disk blocks written for this SLRU.", 0},
 			prometheus.GaugeValue,
-			labels, constLabels,
+			labelNames, constLabels,
 			settings.Filters,
 		),
 		blksExists: newBuiltinTypedDesc(
 			descOpts{"postgres", "stat_slru", "blks_exists", "Number of blocks checked for existence for this SLRU.", 0},
 			prometheus.GaugeValue,
-			labels, constLabels,
+			labelNames, constLabels,
 			settings.Filters,
 		),
 		flushes: newBuiltinTypedDesc(
 			descOpts{"postgres", "stat_slru", "flushes", "Number of flushes of dirty data for this SLRU.", 0},
 			prometheus.GaugeValue,
-			labels, constLabels,
+			labelNames, constLabels,
 			settings.Filters,
 		),
 		truncates: newBuiltinTypedDesc(
 			descOpts{"postgres", "stat_slru", "truncates", "Number of truncates for this SLRU.", 0},
 			prometheus.GaugeValue,
-			labels, constLabels,
+			labelNames, constLabels,
 			settings.Filters,
 		),
 	}, nil
@@ -97,7 +98,7 @@ func (c *postgresStatSlruCollector) Update(config Config, ch chan<- prometheus.M
 		if err != nil {
 			log.Warnf("get pg_stat_slru failed: %s; skip", err)
 		} else {
-			stats := parsePostgresStatSlru(res, []string{"name"})
+			stats := parsePostgresStatSlru(res, c.labelNames)
 
 			for _, stat := range stats {
 				ch <- c.blksZeroed.newConstMetric(stat.BlksZeroed, stat.SlruName)
