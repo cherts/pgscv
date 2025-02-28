@@ -73,7 +73,7 @@ func Test_parsePostgresStatIO(t *testing.T) {
 					Writebacks: 0, WritebackTime: 0, Extends: 0, ExtendTime: 0,
 					Hits: 0, Evictions: 0, Reuses: 0,
 					Fsyncs: 0, FsyncTime: 0,
-					ReadBytes: 0, WriteBytes: 0, ExtendsBytes: 0,
+					ReadBytes: 0, WriteBytes: 0, ExtendBytes: 0,
 				},
 			},
 		},
