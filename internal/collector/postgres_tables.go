@@ -16,10 +16,10 @@ const (
 	userTablesQuery = "SELECT current_database() AS database, s1.schemaname AS schema, s1.relname AS table, " +
 		"seq_scan, seq_tup_read, idx_scan, idx_tup_fetch, n_tup_ins, n_tup_upd, n_tup_del, n_tup_hot_upd, " +
 		"n_live_tup, n_dead_tup, n_mod_since_analyze, " +
-		"EXTRACT('epoch' FROM age(now(), greatest(last_vacuum, last_autovacuum))) AS last_vacuum_seconds, " +
-		"EXTRACT('epoch' FROM age(now(), greatest(last_analyze, last_autoanalyze))) AS last_analyze_seconds, " +
-		"EXTRACT('epoch' FROM greatest(last_vacuum, last_autovacuum)) AS last_vacuum_time, " +
-		"EXTRACT('epoch' FROM greatest(last_analyze, last_autoanalyze)) AS last_analyze_time, " +
+		"EXTRACT(EPOCH FROM AGE(now(), GREATEST(last_vacuum, last_autovacuum))) AS last_vacuum_seconds, " +
+		"EXTRACT(EPOCH FROM AGE(now(), GREATEST(last_analyze, last_autoanalyze))) AS last_analyze_seconds, " +
+		"EXTRACT(EPOCH FROM GREATEST(last_vacuum, last_autovacuum)) AS last_vacuum_time, " +
+		"EXTRACT(EPOCH FROM GREATEST(last_analyze, last_autoanalyze)) AS last_analyze_time, " +
 		"vacuum_count, autovacuum_count,  analyze_count, autoanalyze_count, heap_blks_read, heap_blks_hit, idx_blks_read, " +
 		"idx_blks_hit, toast_blks_read, toast_blks_hit, tidx_blks_read, tidx_blks_hit, " +
 		"pg_table_size(s1.relid) AS size_bytes, reltuples " +
@@ -28,10 +28,10 @@ const (
 
 	userTablesQueryTopK = "WITH stat AS ( SELECT s1.schemaname AS schema, s1.relname AS table, seq_scan, seq_tup_read, idx_scan, idx_tup_fetch, " +
 		"n_tup_ins, n_tup_upd, n_tup_del, n_tup_hot_upd, n_live_tup, n_dead_tup, n_mod_since_analyze, " +
-		"EXTRACT('epoch' FROM age(now(), greatest(last_vacuum, last_autovacuum))) AS last_vacuum_seconds, " +
-		"EXTRACT('epoch' FROM age(now(), greatest(last_analyze, last_autoanalyze))) AS last_analyze_seconds, " +
-		"EXTRACT('epoch' FROM greatest(last_vacuum, last_autovacuum)) AS last_vacuum_time, " +
-		"EXTRACT('epoch' FROM greatest(last_analyze, last_autoanalyze)) AS last_analyze_time, " +
+		"EXTRACT(EPOCH FROM AGE(now(), GREATEST(last_vacuum, last_autovacuum))) AS last_vacuum_seconds, " +
+		"EXTRACT(EPOCH FROM AGE(now(), GREATEST(last_analyze, last_autoanalyze))) AS last_analyze_seconds, " +
+		"EXTRACT(EPOCH FROM GREATEST(last_vacuum, last_autovacuum)) AS last_vacuum_time, " +
+		"EXTRACT(EPOCH FROM GREATEST(last_analyze, last_autoanalyze)) AS last_analyze_time, " +
 		"vacuum_count, autovacuum_count, analyze_count, autoanalyze_count, heap_blks_read, heap_blks_hit, idx_blks_read, " +
 		"idx_blks_hit, toast_blks_read, toast_blks_hit, tidx_blks_read, tidx_blks_hit, pg_table_size(s1.relid) AS size_bytes, " +
 		"reltuples, (row_number() OVER (ORDER BY seq_scan DESC NULLS LAST) < $1) OR (row_number() OVER (ORDER BY seq_tup_read DESC NULLS LAST) < $1) OR " +
