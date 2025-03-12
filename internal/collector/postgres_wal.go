@@ -12,13 +12,13 @@ import (
 
 const (
 	postgresWalQuery96 = "SELECT pg_is_in_recovery()::int AS recovery, " +
-		"(case pg_is_in_recovery() when 't' then pg_last_xlog_receive_location() else pg_current_xlog_location() end) - '0/00000000' AS wal_written"
+		"(CASE pg_is_in_recovery() WHEN 't' THEN pg_last_xlog_receive_location() ELSE pg_current_xlog_location() END) - '0/00000000' AS wal_written"
 
 	postgresWalQuery13 = "SELECT pg_is_in_recovery()::int AS recovery, " +
-		"(case pg_is_in_recovery() when 't' then pg_last_wal_receive_lsn() else pg_current_wal_lsn() end) - '0/00000000' AS wal_written"
+		"(CASE pg_is_in_recovery() WHEN 't' THEN pg_last_wal_receive_lsn() ELSE pg_current_wal_lsn() END) - '0/00000000' AS wal_written"
 
 	postgresWalQueryLatest = "SELECT pg_is_in_recovery()::int AS recovery, wal_records, wal_fpi, " +
-		"(case pg_is_in_recovery() when 't' then pg_last_wal_receive_lsn() - '0/00000000' else pg_current_wal_lsn() - '0/00000000' end) AS wal_written, " +
+		"(CASE pg_is_in_recovery() WHEN 't' THEN pg_last_wal_receive_lsn() - '0/00000000' ELSE pg_current_wal_lsn() - '0/00000000' END) AS wal_written, " +
 		"wal_bytes, wal_buffers_full, wal_write, wal_sync, wal_write_time, wal_sync_time, extract('epoch' from stats_reset) as reset_time " +
 		"FROM pg_stat_wal"
 )
