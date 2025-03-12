@@ -11,9 +11,9 @@ import (
 )
 
 const (
-	postgresStatSlruQuery = "SELECT name, coalesce(blks_zeroed, 0) AS blks_zeroed, coalesce(blks_hit, 0) AS blks_hit, " +
-		"coalesce(blks_read, 0) AS blks_read, coalesce(blks_written, 0) AS blks_written, coalesce(blks_exists, 0) AS blks_exists, " +
-		"coalesce(flushes, 0) AS flushes, coalesce(truncates, 0) AS truncates FROM pg_stat_slru"
+	postgresStatSlruQuery = "SELECT name, COALESCE(blks_zeroed, 0) AS blks_zeroed, COALESCE(blks_hit, 0) AS blks_hit, " +
+		"COALESCE(blks_read, 0) AS blks_read, COALESCE(blks_written, 0) AS blks_written, COALESCE(blks_exists, 0) AS blks_exists, " +
+		"COALESCE(flushes, 0) AS flushes, COALESCE(truncates, 0) AS truncates FROM pg_stat_slru"
 )
 
 // postgresStatSlruCollector defines metric descriptors and stats store.
