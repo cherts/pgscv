@@ -11,7 +11,7 @@ import (
 )
 
 const walArchivingQuery = "SELECT archived_count, failed_count, " +
-	"extract(epoch from now() - last_archived_time) AS since_last_archive_seconds, " +
+	"EXTRACT(EPOCH FROM now() - last_archived_time) AS since_last_archive_seconds, " +
 	"(SELECT count(*) FROM pg_ls_archive_statusdir() WHERE name ~'.ready') AS lag_files " +
 	"FROM pg_stat_archiver WHERE archived_count > 0"
 
