@@ -18,7 +18,7 @@ const (
 	// Postgres 9.5 doesn't have 'wait_event_type', 'wait_event' and 'backend_type'  attributes.
 	postgresActivityQuery95 = "SELECT " +
 		"COALESCE(usename, 'system') AS user, datname AS database, state, waiting, " +
-		"COALESCE(extract(epoch FROM clock_timestamp() - xact_start), 0) AS active_seconds, " +
+		"COALESCE(EXTRACT(EPOCH FROM clock_timestamp() - xact_start), 0) AS active_seconds, " +
 		"CASE WHEN waiting = 't' THEN EXTRACT(EPOCH FROM clock_timestamp() - state_change) ELSE 0 END AS waiting_seconds, " +
 		"LEFT(query, 32) AS query " +
 		"FROM pg_stat_activity"
