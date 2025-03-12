@@ -43,12 +43,12 @@ const (
 		"SELECT DATABASE, \"user\", queryid, query, calls, rows, total_time, blk_read_time, blk_write_time, shared_blks_hit, " +
 		"shared_blks_read, shared_blks_dirtied, shared_blks_written, local_blks_hit, local_blks_read, local_blks_dirtied, local_blks_written, " +
 		"temp_blks_read, temp_blks_written FROM stat WHERE visible UNION ALL SELECT DATABASE, 'all_users', NULL, " +
-		"'all_queries', NULLIF(sum(COALESCE(calls, 0)), 0), NULLIF(sum(COALESCE(ROWS, 0)), 0), NULLIF(sum(COALESCE(total_time, 0)), 0), " +
-		"NULLIF(sum(COALESCE(blk_read_time, 0)), 0), NULLIF(sum(COALESCE(blk_write_time, 0)), 0), " +
-		"NULLIF(sum(COALESCE(shared_blks_hit, 0)), 0), NULLIF(sum(COALESCE(shared_blks_read, 0)), 0), NULLIF(sum(COALESCE(shared_blks_dirtied, 0)), 0), " +
-		"NULLIF(sum(COALESCE(shared_blks_written, 0)), 0), NULLIF(sum(COALESCE(local_blks_hit, 0)), 0), NULLIF(sum(COALESCE(local_blks_read, 0)), 0), " +
-		"NULLIF(sum(COALESCE(local_blks_dirtied, 0)), 0), NULLIF(sum(COALESCE(local_blks_written, 0)), 0), NULLIF(sum(COALESCE(temp_blks_read, 0)), 0), " +
-		"NULLIF(sum(COALESCE(temp_blks_written, 0)), 0) FROM stat WHERE NOT visible GROUP BY DATABASE HAVING EXISTS (SELECT 1 FROM stat WHERE NOT visible)"
+		"'all_queries', NULLIF(SUM(COALESCE(calls, 0)), 0), NULLIF(SUM(COALESCE(ROWS, 0)), 0), NULLIF(SUM(COALESCE(total_time, 0)), 0), " +
+		"NULLIF(SUM(COALESCE(blk_read_time, 0)), 0), NULLIF(SUM(COALESCE(blk_write_time, 0)), 0), " +
+		"NULLIF(SUM(COALESCE(shared_blks_hit, 0)), 0), NULLIF(SUM(COALESCE(shared_blks_read, 0)), 0), NULLIF(SUM(COALESCE(shared_blks_dirtied, 0)), 0), " +
+		"NULLIF(SUM(COALESCE(shared_blks_written, 0)), 0), NULLIF(SUM(COALESCE(local_blks_hit, 0)), 0), NULLIF(SUM(COALESCE(local_blks_read, 0)), 0), " +
+		"NULLIF(SUM(COALESCE(local_blks_dirtied, 0)), 0), NULLIF(SUM(COALESCE(local_blks_written, 0)), 0), NULLIF(SUM(COALESCE(temp_blks_read, 0)), 0), " +
+		"NULLIF(SUM(COALESCE(temp_blks_written, 0)), 0) FROM stat WHERE NOT visible GROUP BY DATABASE HAVING EXISTS (SELECT 1 FROM stat WHERE NOT visible)"
 
 	// postgresStatementsQueryLatest defines query for querying statements metrics.
 	// 1. use NULLIF(value, 0) to nullify zero values, NULL are skipped by stats method and metrics wil not be generated.
@@ -83,13 +83,13 @@ const (
 		"SELECT DATABASE, \"user\", queryid, query, calls, rows, total_exec_time, total_plan_time, blk_read_time, blk_write_time, shared_blks_hit, " +
 		"shared_blks_read, shared_blks_dirtied, shared_blks_written, local_blks_hit, local_blks_read, local_blks_dirtied, local_blks_written, " +
 		"temp_blks_read, temp_blks_written, wal_records, wal_fpi, wal_bytes FROM stat WHERE visible UNION ALL SELECT DATABASE, 'all_users', NULL, " +
-		"'all_queries', NULLIF(sum(COALESCE(calls, 0)), 0), NULLIF(sum(COALESCE(ROWS, 0)), 0), NULLIF(sum(COALESCE(total_exec_time, 0)), 0), " +
-		"NULLIF(sum(COALESCE(total_plan_time, 0)), 0), NULLIF(sum(COALESCE(blk_read_time, 0)), 0), NULLIF(sum(COALESCE(blk_write_time, 0)), 0), " +
-		"NULLIF(sum(COALESCE(shared_blks_hit, 0)), 0), NULLIF(sum(COALESCE(shared_blks_read, 0)), 0), NULLIF(sum(COALESCE(shared_blks_dirtied, 0)), 0), " +
-		"NULLIF(sum(COALESCE(shared_blks_written, 0)), 0), NULLIF(sum(COALESCE(local_blks_hit, 0)), 0), NULLIF(sum(COALESCE(local_blks_read, 0)), 0), " +
-		"NULLIF(sum(COALESCE(local_blks_dirtied, 0)), 0), NULLIF(sum(COALESCE(local_blks_written, 0)), 0), NULLIF(sum(COALESCE(temp_blks_read, 0)), 0), " +
-		"NULLIF(sum(COALESCE(temp_blks_written, 0)), 0), NULLIF(sum(COALESCE(wal_records, 0)), 0), NULLIF(sum(COALESCE(wal_fpi, 0)), 0), " +
-		"NULLIF(sum(COALESCE(wal_bytes, 0)), 0) FROM stat WHERE NOT visible GROUP BY DATABASE HAVING EXISTS (SELECT 1 FROM stat WHERE NOT visible)"
+		"'all_queries', NULLIF(SUM(COALESCE(calls, 0)), 0), NULLIF(SUM(COALESCE(ROWS, 0)), 0), NULLIF(SUM(COALESCE(total_exec_time, 0)), 0), " +
+		"NULLIF(SUM(COALESCE(total_plan_time, 0)), 0), NULLIF(SUM(COALESCE(blk_read_time, 0)), 0), NULLIF(SUM(COALESCE(blk_write_time, 0)), 0), " +
+		"NULLIF(SUM(COALESCE(shared_blks_hit, 0)), 0), NULLIF(SUM(COALESCE(shared_blks_read, 0)), 0), NULLIF(SUM(COALESCE(shared_blks_dirtied, 0)), 0), " +
+		"NULLIF(SUM(COALESCE(shared_blks_written, 0)), 0), NULLIF(SUM(COALESCE(local_blks_hit, 0)), 0), NULLIF(SUM(COALESCE(local_blks_read, 0)), 0), " +
+		"NULLIF(SUM(COALESCE(local_blks_dirtied, 0)), 0), NULLIF(SUM(COALESCE(local_blks_written, 0)), 0), NULLIF(SUM(COALESCE(temp_blks_read, 0)), 0), " +
+		"NULLIF(SUM(COALESCE(temp_blks_written, 0)), 0), NULLIF(SUM(COALESCE(wal_records, 0)), 0), NULLIF(SUM(COALESCE(wal_fpi, 0)), 0), " +
+		"NULLIF(SUM(COALESCE(wal_bytes, 0)), 0) FROM stat WHERE NOT visible GROUP BY DATABASE HAVING EXISTS (SELECT 1 FROM stat WHERE NOT visible)"
 
 	// postgresStatementsQueryLatest defines query for querying statements metrics.
 	// 1. use nullif(value, 0) to nullify zero values, NULL are skipped by stats method and metrics wil not be generated.
@@ -124,13 +124,13 @@ const (
 		"SELECT DATABASE, \"user\", queryid, query, calls, rows, total_exec_time, total_plan_time, blk_read_time, blk_write_time, shared_blks_hit, " +
 		"shared_blks_read, shared_blks_dirtied, shared_blks_written, local_blks_hit, local_blks_read, local_blks_dirtied, local_blks_written, " +
 		"temp_blks_read, temp_blks_written, wal_records, wal_fpi, wal_bytes FROM stat WHERE visible UNION ALL SELECT DATABASE, 'all_users', NULL, " +
-		"'all_queries', NULLIF(sum(COALESCE(calls, 0)), 0), NULLIF(sum(COALESCE(ROWS, 0)), 0), NULLIF(sum(COALESCE(total_exec_time, 0)), 0), " +
-		"NULLIF(sum(COALESCE(total_plan_time, 0)), 0), NULLIF(sum(COALESCE(blk_read_time, 0)), 0), NULLIF(sum(COALESCE(blk_write_time, 0)), 0), " +
-		"NULLIF(sum(COALESCE(shared_blks_hit, 0)), 0), NULLIF(sum(COALESCE(shared_blks_read, 0)), 0), NULLIF(sum(COALESCE(shared_blks_dirtied, 0)), 0), " +
-		"NULLIF(sum(COALESCE(shared_blks_written, 0)), 0), NULLIF(sum(COALESCE(local_blks_hit, 0)), 0), NULLIF(sum(COALESCE(local_blks_read, 0)), 0), " +
-		"NULLIF(sum(COALESCE(local_blks_dirtied, 0)), 0), NULLIF(sum(COALESCE(local_blks_written, 0)), 0), NULLIF(sum(COALESCE(temp_blks_read, 0)), 0), " +
-		"NULLIF(sum(COALESCE(temp_blks_written, 0)), 0), NULLIF(sum(COALESCE(wal_records, 0)), 0), NULLIF(sum(COALESCE(wal_fpi, 0)), 0), " +
-		"NULLIF(sum(COALESCE(wal_bytes, 0)), 0) FROM stat WHERE NOT visible GROUP BY DATABASE HAVING EXISTS (SELECT 1 FROM stat WHERE NOT visible)"
+		"'all_queries', NULLIF(SUM(COALESCE(calls, 0)), 0), NULLIF(SUM(COALESCE(ROWS, 0)), 0), NULLIF(SUM(COALESCE(total_exec_time, 0)), 0), " +
+		"NULLIF(SUM(COALESCE(total_plan_time, 0)), 0), NULLIF(SUM(COALESCE(blk_read_time, 0)), 0), NULLIF(SUM(COALESCE(blk_write_time, 0)), 0), " +
+		"NULLIF(SUM(COALESCE(shared_blks_hit, 0)), 0), NULLIF(SUM(COALESCE(shared_blks_read, 0)), 0), NULLIF(SUM(COALESCE(shared_blks_dirtied, 0)), 0), " +
+		"NULLIF(SUM(COALESCE(shared_blks_written, 0)), 0), NULLIF(SUM(COALESCE(local_blks_hit, 0)), 0), NULLIF(SUM(COALESCE(local_blks_read, 0)), 0), " +
+		"NULLIF(SUM(COALESCE(local_blks_dirtied, 0)), 0), NULLIF(SUM(COALESCE(local_blks_written, 0)), 0), NULLIF(SUM(COALESCE(temp_blks_read, 0)), 0), " +
+		"NULLIF(SUM(COALESCE(temp_blks_written, 0)), 0), NULLIF(SUM(COALESCE(wal_records, 0)), 0), NULLIF(SUM(COALESCE(wal_fpi, 0)), 0), " +
+		"NULLIF(SUM(COALESCE(wal_bytes, 0)), 0) FROM stat WHERE NOT visible GROUP BY DATABASE HAVING EXISTS (SELECT 1 FROM stat WHERE NOT visible)"
 )
 
 // postgresStatementsCollector ...
