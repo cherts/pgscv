@@ -2,8 +2,9 @@
 package collector
 
 import (
-	"github.com/jackc/pgx/v4"
 	"strings"
+
+	"github.com/jackc/pgx/v4"
 
 	"github.com/cherts/pgscv/internal/log"
 	"github.com/cherts/pgscv/internal/model"
@@ -388,7 +389,7 @@ func collectSchemaSequences(conn *store.DB, ch chan<- prometheus.Metric, desc ty
 
 // getSchemaSequences searches sequences attached to the poor-typed columns with risk of exhaustion.
 func getSchemaSequences(conn *store.DB) (map[string]postgresGenericStat, error) {
-	var query = `SELECT schemaname AS schema, sequencename AS sequence, coalesce(last_value, 0) / max_value::float AS ratio FROM pg_sequences`
+	var query = `SELECT schemaname AS schema, sequencename AS sequence, COALESCE(last_value, 0) / max_value::float AS ratio FROM pg_sequences`
 
 	res, err := conn.Query(query)
 	if err != nil {
