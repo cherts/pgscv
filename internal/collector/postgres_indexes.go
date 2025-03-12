@@ -33,9 +33,9 @@ const (
 		"SELECT current_database() AS database, \"schema\", \"table\", \"index\", \"key\", isvalid, idx_scan, idx_tup_read, idx_tup_fetch, " +
 		"idx_blks_read, idx_blks_hit, size_bytes FROM stat WHERE visible " +
 		"UNION ALL SELECT current_database() AS database, 'all_shemas', 'all_other_tables', 'all_other_indexes', true, null, " +
-		"NULLIF(SUM(coalesce(idx_scan,0)),0), NULLIF(SUM(coalesce(idx_tup_fetch,0)),0), NULLIF(SUM(coalesce(idx_tup_read,0)),0), " +
-		"NULLIF(SUM(coalesce(idx_blks_read,0)),0), NULLIF(SUM(coalesce(idx_blks_hit,0)),0), " +
-		"NULLIF(SUM(coalesce(size_bytes,0)),0) FROM stat WHERE NOT visible HAVING EXISTS (SELECT 1 FROM stat WHERE NOT visible)"
+		"NULLIF(SUM(COALESCE(idx_scan,0)),0), NULLIF(SUM(COALESCE(idx_tup_fetch,0)),0), NULLIF(SUM(COALESCE(idx_tup_read,0)),0), " +
+		"NULLIF(SUM(COALESCE(idx_blks_read,0)),0), NULLIF(SUM(COALESCE(idx_blks_hit,0)),0), " +
+		"NULLIF(SUM(COALESCE(size_bytes,0)),0) FROM stat WHERE NOT visible HAVING EXISTS (SELECT 1 FROM stat WHERE NOT visible)"
 )
 
 // postgresIndexesCollector defines metric descriptors and stats store.
