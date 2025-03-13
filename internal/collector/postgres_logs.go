@@ -122,6 +122,11 @@ func (c *postgresLogsCollector) Update(config Config, ch chan<- prometheus.Metri
 		return nil
 	}
 
+	if config.logDestination != "stderr" {
+		log.Debugln("[postgres log collector]: PostgreSQL parameter log_destination not set to stderr, log collector disabled")
+		return nil
+	}
+
 	// Notify log collector goroutine if logfile has been changed.
 	logfile, err := queryCurrentLogfile(config.ConnString, config.ConnTimeout)
 	if err != nil {
