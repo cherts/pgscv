@@ -1,6 +1,7 @@
 module github.com/cherts/pgscv
 
 go 1.23.6
+toolchain go1.24.1
 
 require (
 	github.com/alecthomas/kingpin/v2 v2.4.0
@@ -11,7 +12,7 @@ require (
 	github.com/rs/zerolog v1.34.0
 	github.com/stretchr/testify v1.10.0
 	golang.org/x/crypto v0.36.0 // indirect
-	golang.org/x/net v0.37.0
+	golang.org/x/net v0.38.0
 	golang.org/x/sys v0.31.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0
 )
