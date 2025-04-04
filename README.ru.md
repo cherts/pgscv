@@ -11,8 +11,8 @@
 
 ### Основные возможности
 - **Поддерживаемые сервисы**: поддержка сбора показателей работы PostgreSQL, Pgbouncer и Patroni;
-- **Обнаружение и мониторинг Облачных управляемых баз данных** Yandex Managed Service for PostgreSQL ([смотри документацию](https://github.com/cherts/pgscv/wiki/Monitoring-Cloud-Managed-Databases));
 - **Метрики ОС:** поддержка сбора показателей работы операционной системы (только Linux);
+- **Обнаружение и мониторинг Облачных управляемых баз данных** Yandex Managed Service for PostgreSQL ([смотри документацию](https://github.com/cherts/pgscv/wiki/Monitoring-Cloud-Managed-Databases));
 - **Поддержка обнаружения сервисов мониторинга** Через специальный эндпойнт `/targets` можно производить обнаружение всех сервисов мониторинга ([смотри документацию](https://github.com/cherts/pgscv/wiki/Service-discovery))
 - **Поддержка тротлинга** Механизм тротлинга позволяет лимитировать обращения к эндпойнтам `/metrics` и `/metrics?target=xxx` для защиты баз данных от потока запросов мониторинга от множества агентов сбора метрик ([смотри документацию](https://github.com/cherts/pgscv/wiki/Throttling)).
 - **Поддержка контроля параллелизма** Можно ограничить возможности параллельного сбора данных мониторинга из базы данных для контроля нагрузки создаваемой экспортером ([смотри документацию](https://github.com/cherts/pgscv/wiki/Concurrency)).
@@ -114,6 +114,10 @@ helm install -n pgscv-ns pgscv deploy/helm-chart/
 
 ### Текущий разработчик и сопровождающий
 - [Mikhail Grigorev](https://github.com/cherts)
+
+### Разработчики внесшие вклад
+- [Dmitry Bulashev](https://github.com/dbulashev)
+- [Stanislav Stolbov](https://github.com/sstolbov)
 
 ### Автор оригинальной версии
 - [Alexey Lesovsky](https://github.com/lesovsky)
