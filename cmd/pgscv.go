@@ -1,7 +1,4 @@
 // Package main is a pgSCV main package
-//
-//gosec:disable G108
-//gosec:disable G114
 package main
 
 import (
