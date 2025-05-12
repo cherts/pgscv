@@ -4,15 +4,16 @@ package main
 import (
 	"context"
 	"fmt"
+	"github.com/alecthomas/kingpin/v2"
 	"github.com/cherts/pgscv/discovery/factory"
 	sdlog "github.com/cherts/pgscv/discovery/log"
+	"github.com/cherts/pgscv/internal/log"
+	"github.com/cherts/pgscv/internal/pgscv"
+	"net/http"
+	_ "net/http/pprof"
 	"os"
 	"os/signal"
 	"syscall"
-
-	"github.com/alecthomas/kingpin/v2"
-	"github.com/cherts/pgscv/internal/log"
-	"github.com/cherts/pgscv/internal/pgscv"
 )
 
 var (
@@ -25,6 +26,12 @@ func main() {
 		logLevel    = kingpin.Flag("log-level", "set log level: debug, info, warn, error").Default("info").Envar("LOG_LEVEL").String()
 		configFile  = kingpin.Flag("config-file", "path to config file").Default("").Envar("PGSCV_CONFIG_FILE").String()
 	)
+	go func() {
+		err := http.ListenAndServe("0.0.0.0:8080", nil)
+		if err != nil {
+			return
+		}
+	}()
 	kingpin.Parse()
 	log.SetLevel(*logLevel)
 	log.SetApplication(appName)
