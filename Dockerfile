@@ -1,14 +1,14 @@
 ﻿# stage 1
-# __release_tag__ golang 1.23 was released 2024-08-13
-FROM golang:1.23 AS build
+# __release_tag__ golang 1.24 was released 2025-02-11
+FROM golang:1.24 AS build
 LABEL stage=intermediate
 WORKDIR /app
 COPY . .
 RUN make build
 
 # stage 2: scratch
-# __release_tag__ alpine 3.20.0 was released 2024-05-22
-FROM alpine:3.20.0 AS dist
+# __release_tag__ alpine 3.21.3 was released 2025-02-13
+FROM alpine:3.21.3 AS dist
 COPY --from=build /app/bin/pgscv /bin/pgscv
 #COPY docker_entrypoint.sh /bin/
 EXPOSE 9890
