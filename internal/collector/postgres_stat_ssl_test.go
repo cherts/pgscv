@@ -37,13 +37,13 @@ func Test_parsePostgresStatSsl(t *testing.T) {
 				},
 				Rows: [][]sql.NullString{
 					{
-						{String: "postgres", Valid: true}, {String: "postgres", Valid: true}, {String: "1", Valid: true},
+						{String: "NULL", Valid: true}, {String: "postgres", Valid: true}, {String: "1", Valid: true},
 					},
 				},
 			},
 			want: map[string]postgresStatSsl{
-				"postgres/postgres": {
-					Database: "postgres", Username: "postgres", ConnNumber: 1,
+				"NULL/postgres": {
+					Database: "NULL", Username: "postgres", ConnNumber: 1,
 				},
 			},
 		},
