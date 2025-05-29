@@ -11,11 +11,11 @@ import (
 
 func TestPostgresStatSubscriptionCollector_Update(t *testing.T) {
 	var input = pipelineInput{
-		required: []string{
+		required: []string{},
+		optional: []string{
 			"postgres_stat_subscription_lag_bytes",
 			"postgres_stat_subscription_error_count",
 		},
-		optional:  []string{},
 		collector: NewPostgresStatSubscriptionCollector,
 		service:   model.ServiceTypePostgresql,
 	}
