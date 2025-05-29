@@ -12,48 +12,48 @@ import (
 
 const (
 	databasesQuery11 = "SELECT " +
-		"coalesce(datname, 'global') AS database, " +
+		"COALESCE(datname, 'global') AS database, " +
 		"xact_commit, xact_rollback, blks_read, blks_hit, tup_returned, tup_fetched, tup_inserted, tup_updated, tup_deleted, " +
 		"conflicts, temp_files, temp_bytes, deadlocks, blk_read_time, blk_write_time, pg_database_size(datname) as size_bytes, " +
-		"coalesce(extract('epoch' from age(now(), stats_reset)), 0) as stats_age_seconds " +
+		"COALESCE(EXTRACT(EPOCH FROM AGE(now(), stats_reset)), 0) as stats_age_seconds " +
 		"FROM pg_stat_database WHERE datname IN (SELECT datname FROM pg_database WHERE datallowconn AND NOT datistemplate) " +
 		"OR datname IS NULL"
 
 	databasesQuery12 = "SELECT " +
-		"coalesce(datname, 'global') AS database, " +
+		"COALESCE(datname, 'global') AS database, " +
 		"xact_commit, xact_rollback, blks_read, blks_hit, tup_returned, tup_fetched, tup_inserted, tup_updated, tup_deleted, " +
-		"conflicts, temp_files, temp_bytes, deadlocks, checksum_failures, coalesce(extract(epoch from checksum_last_failure), 0) AS last_checksum_failure_unixtime, " +
+		"conflicts, temp_files, temp_bytes, deadlocks, checksum_failures, COALESCE(EXTRACT(EPOCH FROM checksum_last_failure), 0) AS last_checksum_failure_unixtime, " +
 		"blk_read_time, blk_write_time, pg_database_size(datname) as size_bytes, " +
-		"coalesce(extract('epoch' from age(now(), stats_reset)), 0) as stats_age_seconds " +
+		"COALESCE(EXTRACT(EPOCH FROM AGE(now(), stats_reset)), 0) as stats_age_seconds " +
 		"FROM pg_stat_database WHERE datname IN (SELECT datname FROM pg_database WHERE datallowconn AND NOT datistemplate) " +
 		"OR datname IS NULL"
 
 	databasesQuery17 = "SELECT " +
-		"coalesce(datname, 'global') AS database, " +
+		"COALESCE(datname, 'global') AS database, " +
 		"xact_commit, xact_rollback, blks_read, blks_hit, tup_returned, tup_fetched, tup_inserted, tup_updated, tup_deleted, " +
-		"conflicts, temp_files, temp_bytes, deadlocks, checksum_failures, coalesce(extract(epoch from checksum_last_failure), 0) AS last_checksum_failure_unixtime, " +
+		"conflicts, temp_files, temp_bytes, deadlocks, checksum_failures, COALESCE(EXTRACT(EPOCH FROM checksum_last_failure), 0) AS last_checksum_failure_unixtime, " +
 		"blk_read_time, blk_write_time, " +
 		"session_time, active_time, idle_in_transaction_time, sessions, sessions_abandoned, sessions_fatal, sessions_killed, " +
 		"pg_database_size(datname) as size_bytes, " +
-		"coalesce(extract('epoch' from age(now(), stats_reset)), 0) as stats_age_seconds " +
+		"COALESCE(EXTRACT(EPOCH FROM AGE(now(), stats_reset)), 0) as stats_age_seconds " +
 		"FROM pg_stat_database WHERE datname IN (SELECT datname FROM pg_database WHERE datallowconn AND NOT datistemplate) " +
 		"OR datname IS NULL"
 
 	databasesQueryLatest = "SELECT " +
-		"coalesce(datname, 'global') AS database, " +
+		"COALESCE(datname, 'global') AS database, " +
 		"xact_commit, xact_rollback, blks_read, blks_hit, tup_returned, tup_fetched, tup_inserted, tup_updated, tup_deleted, " +
-		"conflicts, temp_files, temp_bytes, deadlocks, checksum_failures, coalesce(extract(epoch from checksum_last_failure), 0) AS last_checksum_failure_unixtime, " +
+		"conflicts, temp_files, temp_bytes, deadlocks, checksum_failures, COALESCE(EXTRACT(EPOCH from checksum_last_failure), 0) AS last_checksum_failure_unixtime, " +
 		"blk_read_time, blk_write_time, " +
 		"session_time, active_time, idle_in_transaction_time, sessions, sessions_abandoned, sessions_fatal, sessions_killed, " +
 		"parallel_workers_to_launch, parallel_workers_launched " +
 		"pg_database_size(datname) as size_bytes, " +
-		"coalesce(extract('epoch' from age(now(), stats_reset)), 0) as stats_age_seconds " +
+		"COALESCE(EXTRACT(EPOCH FROM AGE(now(), stats_reset)), 0) as stats_age_seconds " +
 		"FROM pg_stat_database WHERE datname IN (SELECT datname FROM pg_database WHERE datallowconn AND NOT datistemplate) " +
 		"OR datname IS NULL"
 
-	xidLimitQuery = "SELECT 'database' AS src, 2147483647 - greatest(max(age(datfrozenxid)), max(age(coalesce(nullif(datminmxid, 1), datfrozenxid)))) AS to_limit FROM pg_database " +
-		"UNION SELECT 'prepared_xacts' AS src, 2147483647 - coalesce(max(age(transaction)), 0) AS to_limit FROM pg_prepared_xacts " +
-		"UNION SELECT 'replication_slots' AS src, 2147483647 - greatest(coalesce(min(age(xmin)), 0), coalesce(min(age(catalog_xmin)), 0)) AS to_limit FROM pg_replication_slots"
+	xidLimitQuery = "SELECT 'database' AS src, 2147483647 - GREATEST(MAX(AGE(datfrozenxid)), MAX(AGE(COALESCE(NULLIF(datminmxid, 1), datfrozenxid)))) AS to_limit FROM pg_database " +
+		"UNION SELECT 'prepared_xacts' AS src, 2147483647 - COALESCE(MAX(AGE(transaction)), 0) AS to_limit FROM pg_prepared_xacts " +
+		"UNION SELECT 'replication_slots' AS src, 2147483647 - GREATEST(COALESCE(MIN(AGE(xmin)), 0), COALESCE(MIN(AGE(catalog_xmin)), 0)) AS to_limit FROM pg_replication_slots"
 )
 
 type postgresDatabasesCollector struct {

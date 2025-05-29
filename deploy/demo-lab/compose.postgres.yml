@@ -86,6 +86,8 @@ services:
       - "checkpoint_completion_target=0.9"
       - "-c"
       - "checkpoint_timeout=600"
+      - "-c"
+      - "wal_level=logical"
     environment: &postgres_base_env
       POSTGRES_DB: ${POSTGRES_DB:-postgres}
       POSTGRES_USER: ${POSTGRES_USER:-postgres}

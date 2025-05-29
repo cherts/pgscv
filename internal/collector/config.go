@@ -54,8 +54,9 @@ type postgresServiceConfig struct {
 	serverVersionNum int
 	// dataDirectory defines filesystem path where Postgres' data files and directories resides.
 	dataDirectory string
-	// loggingCollector defines value of 'logging_collector' GUC.
+	// loggingCollector defines value of 'logging_collector' and 'log_destination' GUC.
 	loggingCollector bool
+	logDestination   string
 	// pgStatStatements defines is pg_stat_statements available in shared_preload_libraries and available for queries
 	pgStatStatements bool
 	// pgStatStatementsDatabase defines the database name where pg_stat_statements is available
@@ -160,6 +161,14 @@ func newPostgresServiceConfig(connStr string, connTimeout int) (postgresServiceC
 	if setting == "on" {
 		config.loggingCollector = true
 	}
+
+	// Get setting of 'log_destination' GUC.
+	err = conn.Conn().QueryRow(context.Background(), "SELECT setting FROM pg_settings WHERE name = 'log_destination'").Scan(&setting)
+	if err != nil {
+		return config, fmt.Errorf("failed to get log_destination setting from pg_settings, %s, please check user grants", err)
+	}
+
+	config.logDestination = setting
 
 	// Discover pg_stat_statements.
 	exists, database, schema, err := discoverPgStatStatements(connStr)

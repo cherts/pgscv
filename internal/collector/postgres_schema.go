@@ -2,8 +2,9 @@
 package collector
 
 import (
-	"github.com/jackc/pgx/v4"
 	"strings"
+
+	"github.com/jackc/pgx/v4"
 
 	"github.com/cherts/pgscv/internal/log"
 	"github.com/cherts/pgscv/internal/model"
@@ -40,7 +41,7 @@ func NewPostgresSchemasCollector(constLabels labels, settings model.CollectorSet
 			settings.Filters,
 		),
 		invalididx: newBuiltinTypedDesc(
-			descOpts{"postgres", "schema", "invalid_indexes_bytes", "Number of bytes occupied by invalid indexes.", 0},
+			descOpts{"postgres", "schema", "invalid_indexes_bytes", "Number of bytes occupied by invalid index.", 0},
 			prometheus.GaugeValue,
 			[]string{"database", "schema", "table", "index"}, constLabels,
 			settings.Filters,
@@ -253,7 +254,7 @@ func collectSchemaInvalidIndexes(conn *store.DB, ch chan<- prometheus.Metric, de
 // getSchemaInvalidIndexes searches invalid indexes in the database and return its names if such indexes have been found.
 func getSchemaInvalidIndexes(conn *store.DB) (map[string]postgresGenericStat, error) {
 	var query = "SELECT c1.relnamespace::regnamespace::text AS schema, c2.relname AS table, c1.relname AS index, " +
-		"pg_relation_size(c1.relname::regclass) AS bytes " +
+		"pg_relation_size(i.indexrelid) AS bytes " +
 		"FROM pg_index i JOIN pg_class c1 ON i.indexrelid = c1.oid JOIN pg_class c2 ON i.indrelid = c2.oid WHERE NOT i.indisvalid"
 	res, err := conn.Query(query)
 	if err != nil {
@@ -388,7 +389,7 @@ func collectSchemaSequences(conn *store.DB, ch chan<- prometheus.Metric, desc ty
 
 // getSchemaSequences searches sequences attached to the poor-typed columns with risk of exhaustion.
 func getSchemaSequences(conn *store.DB) (map[string]postgresGenericStat, error) {
-	var query = `SELECT schemaname AS schema, sequencename AS sequence, coalesce(last_value, 0) / max_value::float AS ratio FROM pg_sequences`
+	var query = `SELECT schemaname AS schema, sequencename AS sequence, COALESCE(last_value, 0) / max_value::float AS ratio FROM pg_sequences`
 
 	res, err := conn.Query(query)
 	if err != nil {

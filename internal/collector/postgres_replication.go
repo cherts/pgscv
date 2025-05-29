@@ -12,35 +12,35 @@ import (
 
 const (
 	// Query for Postgres version 9.6 and older.
-	postgresReplicationQuery96 = "SELECT pid, coalesce(host(client_addr), '127.0.0.1') AS client_addr, " +
-		"coalesce(client_port, '0') AS client_port, " +
+	postgresReplicationQuery96 = "SELECT pid, COALESCE(host(client_addr), '127.0.0.1') AS client_addr, " +
+		"COALESCE(client_port, '0') AS client_port, " +
 		"usename AS user, application_name, state, " +
-		"CASE WHEN pg_is_in_recovery() THEN coalesce(pg_xlog_location_diff(pg_last_xlog_receive_location(), sent_location), 0) " +
-		"ELSE coalesce(pg_xlog_location_diff(pg_current_xlog_location(), sent_location), 0) END AS pending_lag_bytes, " +
-		"coalesce(pg_xlog_location_diff(sent_location, write_location), 0) AS write_lag_bytes, " +
-		"coalesce(pg_xlog_location_diff(write_location, flush_location), 0) AS flush_lag_bytes, " +
-		"coalesce(pg_xlog_location_diff(flush_location, replay_location), 0) AS replay_lag_bytes, " +
-		"CASE WHEN pg_is_in_recovery() THEN coalesce(pg_xlog_location_diff(pg_last_xlog_replay_location(), replay_location), 0) " +
-		"ELSE coalesce(pg_xlog_location_diff(pg_current_xlog_location(), replay_location), 0) END AS total_lag_bytes, " +
+		"CASE WHEN pg_is_in_recovery() THEN COALESCE(pg_xlog_location_diff(pg_last_xlog_receive_location(), sent_location), 0) " +
+		"ELSE COALESCE(pg_xlog_location_diff(pg_current_xlog_location(), sent_location), 0) END AS pending_lag_bytes, " +
+		"COALESCE(pg_xlog_location_diff(sent_location, write_location), 0) AS write_lag_bytes, " +
+		"COALESCE(pg_xlog_location_diff(write_location, flush_location), 0) AS flush_lag_bytes, " +
+		"COALESCE(pg_xlog_location_diff(flush_location, replay_location), 0) AS replay_lag_bytes, " +
+		"CASE WHEN pg_is_in_recovery() THEN COALESCE(pg_xlog_location_diff(pg_last_xlog_replay_location(), replay_location), 0) " +
+		"ELSE COALESCE(pg_xlog_location_diff(pg_current_xlog_location(), replay_location), 0) END AS total_lag_bytes, " +
 		"NULL::numeric AS write_lag_seconds, NULL::numeric AS flush_lag_seconds, " +
 		"NULL::numeric AS replay_lag_seconds, NULL::numeric AS total_lag_seconds " +
 		"FROM pg_stat_replication"
 
 	// Query for Postgres versions from 10 and newer.
-	postgresReplicationQueryLatest = "SELECT pid, coalesce(host(client_addr), '127.0.0.1') AS client_addr, " +
-		"coalesce(client_port, '0') AS client_port, " +
+	postgresReplicationQueryLatest = "SELECT pid, COALESCE(host(client_addr), '127.0.0.1') AS client_addr, " +
+		"COALESCE(client_port, '0') AS client_port, " +
 		"usename AS user, application_name, state, " +
-		"CASE WHEN pg_is_in_recovery() THEN coalesce(abs(pg_wal_lsn_diff(pg_last_wal_receive_lsn(), sent_lsn)), 0) " +
-		"ELSE coalesce(pg_wal_lsn_diff(pg_current_wal_lsn(), sent_lsn), 0) END AS pending_lag_bytes, " +
-		"coalesce(pg_wal_lsn_diff(sent_lsn, write_lsn), 0) AS write_lag_bytes, " +
-		"coalesce(pg_wal_lsn_diff(write_lsn, flush_lsn), 0) AS flush_lag_bytes, " +
-		"coalesce(pg_wal_lsn_diff(flush_lsn, replay_lsn), 0) AS replay_lag_bytes, " +
-		"CASE WHEN pg_is_in_recovery() THEN coalesce(pg_wal_lsn_diff(pg_last_wal_replay_lsn(), replay_lsn), 0) " +
-		"ELSE coalesce(pg_wal_lsn_diff(pg_current_wal_lsn(), replay_lsn), 0) END AS total_lag_bytes, " +
-		"coalesce(extract(epoch from write_lag), 0) AS write_lag_seconds, " +
-		"coalesce(extract(epoch from flush_lag), 0) AS flush_lag_seconds, " +
-		"coalesce(extract(epoch from replay_lag), 0) AS replay_lag_seconds, " +
-		"coalesce(extract(epoch from write_lag+flush_lag+replay_lag), 0) AS total_lag_seconds " +
+		"CASE WHEN pg_is_in_recovery() THEN COALESCE(abs(pg_wal_lsn_diff(pg_last_wal_receive_lsn(), sent_lsn)), 0) " +
+		"ELSE COALESCE(pg_wal_lsn_diff(pg_current_wal_lsn(), sent_lsn), 0) END AS pending_lag_bytes, " +
+		"COALESCE(pg_wal_lsn_diff(sent_lsn, write_lsn), 0) AS write_lag_bytes, " +
+		"COALESCE(pg_wal_lsn_diff(write_lsn, flush_lsn), 0) AS flush_lag_bytes, " +
+		"COALESCE(pg_wal_lsn_diff(flush_lsn, replay_lsn), 0) AS replay_lag_bytes, " +
+		"CASE WHEN pg_is_in_recovery() THEN COALESCE(pg_wal_lsn_diff(pg_last_wal_replay_lsn(), replay_lsn), 0) " +
+		"ELSE COALESCE(pg_wal_lsn_diff(pg_current_wal_lsn(), replay_lsn), 0) END AS total_lag_bytes, " +
+		"COALESCE(EXTRACT(EPOCH FROM write_lag), 0) AS write_lag_seconds, " +
+		"COALESCE(EXTRACT(EPOCH FROM flush_lag), 0) AS flush_lag_seconds, " +
+		"COALESCE(EXTRACT(EPOCH FROM replay_lag), 0) AS replay_lag_seconds, " +
+		"COALESCE(EXTRACT(EPOCH FROM write_lag+flush_lag+replay_lag), 0) AS total_lag_seconds " +
 		"FROM pg_stat_replication"
 )
 

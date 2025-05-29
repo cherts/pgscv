@@ -11,11 +11,22 @@ import (
 )
 
 const (
-	postgresStatIoQuery = "SELECT backend_type, object, context, coalesce(reads, 0) AS reads, coalesce(read_time, 0) AS read_time, " +
-		"coalesce(writes, 0) AS writes, coalesce(write_time, 0) AS write_time, coalesce(writebacks, 0) AS writebacks, " +
-		"coalesce(writeback_time, 0) AS writeback_time, coalesce(extends, 0) AS extends, coalesce(extend_time, 0) AS extend_time, " +
-		"coalesce(op_bytes, 0) AS op_bytes, coalesce(hits, 0) AS hits, coalesce(evictions, 0) AS evictions, coalesce(reuses, 0) AS reuses, " +
-		"coalesce(fsyncs, 0) AS fsyncs, coalesce(fsync_time, 0) AS fsync_time " +
+	postgresStatIoQuery17 = "SELECT backend_type, object, context, COALESCE(reads, 0) AS reads, COALESCE(read_time, 0) AS read_time, " +
+		"COALESCE(writes, 0) AS writes, COALESCE(write_time, 0) AS write_time, COALESCE(writebacks, 0) AS writebacks, " +
+		"COALESCE(writeback_time, 0) AS writeback_time, COALESCE(extends, 0) AS extends, COALESCE(extend_time, 0) AS extend_time, " +
+		"COALESCE(hits, 0) AS hits, COALESCE(evictions, 0) AS evictions, COALESCE(reuses, 0) AS reuses, " +
+		"COALESCE(fsyncs, 0) AS fsyncs, COALESCE(fsync_time, 0) AS fsync_time, " +
+		"COALESCE(reads, 0) * COALESCE(op_bytes, 0) AS read_bytes, " +
+		"COALESCE(writes, 0) * COALESCE(op_bytes, 0) AS write_bytes, " +
+		"COALESCE(extends, 0) * COALESCE(op_bytes, 0) AS extend_bytes " +
+		"FROM pg_stat_io"
+
+	postgresStatIoQueryLatest = "SELECT backend_type, object, context, COALESCE(reads, 0) AS reads, COALESCE(read_time, 0) AS read_time, " +
+		"COALESCE(writes, 0) AS writes, COALESCE(write_time, 0) AS write_time, COALESCE(writebacks, 0) AS writebacks, " +
+		"COALESCE(writeback_time, 0) AS writeback_time, COALESCE(extends, 0) AS extends, COALESCE(extend_time, 0) AS extend_time, " +
+		"COALESCE(hits, 0) AS hits, COALESCE(evictions, 0) AS evictions, COALESCE(reuses, 0) AS reuses, " +
+		"COALESCE(fsyncs, 0) AS fsyncs, COALESCE(fsync_time, 0) AS fsync_time, " +
+		"COALESCE(read_bytes, 0) AS read_bytes, COALESCE(write_bytes, 0) AS write_bytes, COALESCE(extend_bytes, 0) AS extend_bytes " +
 		"FROM pg_stat_io"
 )
 
@@ -34,90 +45,112 @@ type postgresStatIOCollector struct {
 	reuses        typedDesc
 	fsyncs        typedDesc
 	fsyncTime     typedDesc
+	readBytes     typedDesc
+	writeBytes    typedDesc
+	extendBytes   typedDesc
 	labelNames    []string
 }
 
 // NewPostgresStatIOCollector returns a new Collector exposing postgres pg_stat_io stats.
 func NewPostgresStatIOCollector(constLabels labels, settings model.CollectorSettings) (Collector, error) {
-	var labels = []string{"backend_type", "object", "context"}
+	var labelNames = []string{"backend_type", "object", "context"}
 
 	return &postgresStatIOCollector{
+		labelNames: labelNames,
 		reads: newBuiltinTypedDesc(
 			descOpts{"postgres", "stat_io", "reads", "Number of read operations, each of the size specified in op_bytes.", 0},
 			prometheus.GaugeValue,
-			labels, constLabels,
+			labelNames, constLabels,
 			settings.Filters,
 		),
 		readTime: newBuiltinTypedDesc(
 			descOpts{"postgres", "stat_io", "read_time", "Time spent in read operations in milliseconds (if track_io_timing is enabled, otherwise zero)", 0},
 			prometheus.GaugeValue,
-			labels, constLabels,
+			labelNames, constLabels,
 			settings.Filters,
 		),
 		writes: newBuiltinTypedDesc(
 			descOpts{"postgres", "stat_io", "writes", "Number of write operations, each of the size specified in op_bytes.", 0},
 			prometheus.GaugeValue,
-			labels, constLabels,
+			labelNames, constLabels,
 			settings.Filters,
 		),
 		writeTime: newBuiltinTypedDesc(
 			descOpts{"postgres", "stat_io", "write_time", "Time spent in write operations in milliseconds (if track_io_timing is enabled, otherwise zero)", 0},
 			prometheus.GaugeValue,
-			labels, constLabels,
+			labelNames, constLabels,
 			settings.Filters,
 		),
 		writebacks: newBuiltinTypedDesc(
 			descOpts{"postgres", "stat_io", "writebacks", "Number of units of size op_bytes which the process requested the kernel write out to permanent storage.", 0},
 			prometheus.GaugeValue,
-			labels, constLabels,
+			labelNames, constLabels,
 			settings.Filters,
 		),
 		writebackTime: newBuiltinTypedDesc(
 			descOpts{"postgres", "stat_io", "writeback_time", "Time spent in writeback operations in milliseconds (if track_io_timing is enabled, otherwise zero). ", 0},
 			prometheus.GaugeValue,
-			labels, constLabels,
+			labelNames, constLabels,
 			settings.Filters,
 		),
 		extends: newBuiltinTypedDesc(
 			descOpts{"postgres", "stat_io", "extends", "Number of relation extend operations, each of the size specified in op_bytes.", 0},
 			prometheus.GaugeValue,
-			labels, constLabels,
+			labelNames, constLabels,
 			settings.Filters,
 		),
 		extendTime: newBuiltinTypedDesc(
 			descOpts{"postgres", "stat_io", "extend_time", "Time spent in extend operations in milliseconds (if track_io_timing is enabled, otherwise zero)", 0},
 			prometheus.GaugeValue,
-			labels, constLabels,
+			labelNames, constLabels,
 			settings.Filters,
 		),
 		hits: newBuiltinTypedDesc(
 			descOpts{"postgres", "stat_io", "hits", "The number of times a desired block was found in a shared buffer.", 0},
 			prometheus.GaugeValue,
-			labels, constLabels,
+			labelNames, constLabels,
 			settings.Filters,
 		),
 		evictions: newBuiltinTypedDesc(
 			descOpts{"postgres", "stat_io", "evictions", "Number of times a block has been written out from a shared or local buffer in order to make it available for another use.", 0},
 			prometheus.GaugeValue,
-			labels, constLabels,
+			labelNames, constLabels,
 			settings.Filters,
 		),
 		reuses: newBuiltinTypedDesc(
 			descOpts{"postgres", "stat_io", "reuses", "The number of times an existing buffer in a size-limited ring buffer outside of shared buffers was reused as part of an I/O operation in the bulkread, bulkwrite, or vacuum contexts.", 0},
 			prometheus.GaugeValue,
-			labels, constLabels,
+			labelNames, constLabels,
 			settings.Filters,
 		),
 		fsyncs: newBuiltinTypedDesc(
 			descOpts{"postgres", "stat_io", "fsyncs", "Number of fsync calls. These are only tracked in context normal.", 0},
 			prometheus.GaugeValue,
-			labels, constLabels,
+			labelNames, constLabels,
 			settings.Filters,
 		),
 		fsyncTime: newBuiltinTypedDesc(
 			descOpts{"postgres", "stat_io", "fsync_time", "Time spent in fsync operations in milliseconds (if track_io_timing is enabled, otherwise zero)", 0},
 			prometheus.GaugeValue,
-			labels, constLabels,
+			labelNames, constLabels,
+			settings.Filters,
+		),
+		readBytes: newBuiltinTypedDesc(
+			descOpts{"postgres", "stat_io", "read_bytes", "Number of read, in bytes.", 0},
+			prometheus.GaugeValue,
+			labelNames, constLabels,
+			settings.Filters,
+		),
+		writeBytes: newBuiltinTypedDesc(
+			descOpts{"postgres", "stat_io", "write_bytes", "Number of write, in bytes.", 0},
+			prometheus.GaugeValue,
+			labelNames, constLabels,
+			settings.Filters,
+		),
+		extendBytes: newBuiltinTypedDesc(
+			descOpts{"postgres", "stat_io", "extend_bytes", "Number of relation extend, in bytes.", 0},
+			prometheus.GaugeValue,
+			labelNames, constLabels,
 			settings.Filters,
 		),
 	}, nil
@@ -138,11 +171,11 @@ func (c *postgresStatIOCollector) Update(config Config, ch chan<- prometheus.Met
 
 	// Collecting pg_stat_io since Postgres 16.
 	if config.serverVersionNum >= PostgresV16 {
-		res, err := conn.Query(postgresStatIoQuery)
+		res, err := conn.Query(selectStatIOQuery(config.serverVersionNum))
 		if err != nil {
 			log.Warnf("get pg_stat_io failed: %s; skip", err)
 		} else {
-			stats := parsePostgresStatIO(res, []string{"backend_type", "object", "context"})
+			stats := parsePostgresStatIO(res, c.labelNames)
 
 			for _, stat := range stats {
 				ch <- c.reads.newConstMetric(stat.Reads, stat.BackendType, stat.IoObject, stat.IoContext)
@@ -158,6 +191,9 @@ func (c *postgresStatIOCollector) Update(config Config, ch chan<- prometheus.Met
 				ch <- c.reuses.newConstMetric(stat.Reuses, stat.BackendType, stat.IoObject, stat.IoContext)
 				ch <- c.fsyncs.newConstMetric(stat.Fsyncs, stat.BackendType, stat.IoObject, stat.IoContext)
 				ch <- c.fsyncTime.newConstMetric(stat.FsyncTime, stat.BackendType, stat.IoObject, stat.IoContext)
+				ch <- c.readBytes.newConstMetric(stat.ReadBytes, stat.BackendType, stat.IoObject, stat.IoContext)
+				ch <- c.writeBytes.newConstMetric(stat.WriteBytes, stat.BackendType, stat.IoObject, stat.IoContext)
+				ch <- c.extendBytes.newConstMetric(stat.ExtendBytes, stat.BackendType, stat.IoObject, stat.IoContext)
 			}
 		}
 	}
@@ -178,12 +214,14 @@ type postgresStatIO struct {
 	WritebackTime float64
 	Extends       float64
 	ExtendTime    float64
-	OpBytes       float64
 	Hits          float64
 	Evictions     float64
 	Reuses        float64
 	Fsyncs        float64
 	FsyncTime     float64
+	ReadBytes     float64
+	WriteBytes    float64
+	ExtendBytes   float64
 }
 
 // parsePostgresStatIO parses PGResult and returns structs with stats values.
@@ -251,8 +289,6 @@ func parsePostgresStatIO(r *model.PGResult, labelNames []string) map[string]post
 				s.Extends = v
 			case "extend_time":
 				s.ExtendTime = v
-			case "op_bytes":
-				s.OpBytes = v
 			case "hits":
 				s.Hits = v
 			case "evictions":
@@ -261,6 +297,12 @@ func parsePostgresStatIO(r *model.PGResult, labelNames []string) map[string]post
 				s.Fsyncs = v
 			case "fsync_time":
 				s.FsyncTime = v
+			case "read_bytes":
+				s.ReadBytes = v
+			case "write_bytes":
+				s.WriteBytes = v
+			case "extend_bytes":
+				s.ExtendBytes = v
 			default:
 				continue
 			}
@@ -270,4 +312,14 @@ func parsePostgresStatIO(r *model.PGResult, labelNames []string) map[string]post
 	}
 
 	return stats
+}
+
+// selectStatIOQuery returns suitable stat_io query depending on passed version.
+func selectStatIOQuery(version int) string {
+	switch {
+	case version < PostgresV18:
+		return postgresStatIoQuery17
+	default:
+		return postgresStatIoQueryLatest
+	}
 }
