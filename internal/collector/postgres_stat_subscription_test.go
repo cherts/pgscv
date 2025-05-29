@@ -33,36 +33,36 @@ func Test_parsePostgresSubscriptionStat(t *testing.T) {
 			name: "normal output",
 			res: &model.PGResult{
 				Nrows: 1,
-				Ncols: 8,
+				Ncols: 7,
 				Colnames: []pgproto3.FieldDescription{
-					{Name: []byte("pid")}, {Name: []byte("subname")}, {Name: []byte("relname")}, {Name: []byte("worker_type")},
-					{Name: []byte("received")}, {Name: []byte("latest_end")},
+					{Name: []byte("subid")}, {Name: []byte("subname")}, {Name: []byte("relname")},
+					{Name: []byte("worker_type")}, {Name: []byte("lag_bytes")},
 					{Name: []byte("apply_error_count")}, {Name: []byte("sync_error_count")},
 				},
 				Rows: [][]sql.NullString{
 					{
-						{String: "123456", Valid: true}, {String: "test_sub1", Valid: true}, {String: "test_table_1", Valid: true}, {String: "parallel apply", Valid: true},
-						{String: "100", Valid: true}, {String: "200", Valid: true},
+						{String: "123456", Valid: true}, {String: "test_sub1", Valid: true}, {String: "test_table_1", Valid: true},
+						{String: "apply", Valid: true}, {String: "200", Valid: true},
 						{String: "1", Valid: true}, {String: "2", Valid: true},
 					},
 					{
-						{String: "654321", Valid: true}, {String: "test_sub2", Valid: true}, {String: "test_table_2", Valid: true}, {String: "table synchronization", Valid: true},
-						{String: "100", Valid: true}, {String: "200", Valid: true},
+						{String: "654321", Valid: true}, {String: "test_sub2", Valid: true}, {String: "test_table_2", Valid: true},
+						{String: "table synchronization", Valid: true}, {String: "200", Valid: true},
 						{String: "1", Valid: true}, {String: "2", Valid: true},
 					},
 				},
 			},
 			want: map[string]postgresSubscriptionStat{
 				"123456": {
-					Pid: "123456", SubName: "test_sub1", RelName: "test_table_1", WorkerType: "parallel apply",
+					Subid: "123456", SubName: "test_sub1", RelName: "test_table_1", WorkerType: "apply",
 					values: map[string]float64{
-						"received": 100, "latest_end": 200, "apply_error_count": 1, "sync_error_count": 2,
+						"lag_bytes": 200, "apply_error_count": 1, "sync_error_count": 2,
 					},
 				},
 				"654321": {
-					Pid: "654321", SubName: "test_sub2", RelName: "test_table_2", WorkerType: "table synchronization",
+					Subid: "654321", SubName: "test_sub2", RelName: "test_table_2", WorkerType: "table synchronization",
 					values: map[string]float64{
-						"received": 100, "latest_end": 200, "apply_error_count": 1, "sync_error_count": 2,
+						"lag_bytes": 200, "apply_error_count": 1, "sync_error_count": 2,
 					},
 				},
 			},
