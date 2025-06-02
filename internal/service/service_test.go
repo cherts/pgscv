@@ -6,6 +6,7 @@ import (
 	"github.com/cherts/pgscv/internal/model"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/stretchr/testify/assert"
+	"slices"
 )
 
 func TestRepository_addService(t *testing.T) {
@@ -42,12 +43,7 @@ func TestRepository_getServiceIDs(t *testing.T) {
 	assert.Equal(t, 3, len(ids))
 
 	contains := func(ss []string, s string) bool {
-		for _, val := range ss {
-			if val == s {
-				return true
-			}
-		}
-		return false
+		return slices.Contains(ss, s)
 	}
 
 	for _, v := range []string{s1.ServiceID, s2.ServiceID, s3.ServiceID} {

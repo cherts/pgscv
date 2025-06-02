@@ -1,7 +1,7 @@
 DOCKER_ACCOUNT = cherts
 APPNAME = pgscv
 APPOS = linux
-#APPOS = ${GOOS}
+APPOS = ${GOOS}
 
 TAG_COMMIT := $(shell git rev-list --abbrev-commit --tags --max-count=1)
 TAG := $(shell git describe --abbrev=0 --tags ${TAG_COMMIT} 2>/dev/null || true)
@@ -25,10 +25,12 @@ endif
 BRANCH=$(shell git rev-parse --abbrev-ref HEAD)
 
 LDFLAGS = -a -installsuffix cgo -ldflags "-X main.appName=${APPNAME} -X main.gitTag=${VERSION} -X main.gitCommit=${COMMIT} -X main.gitBranch=${BRANCH}"
+MODERNIZE_CMD = go run golang.org/x/tools/gopls/internal/analysis/modernize/cmd/modernize@v0.18.1
 
 .PHONY: help \
 		clean lint test race \
-		build docker-build docker-push go-update
+		build docker-build docker-push go-update \
+		modernize modernize-fix modernize-check
 
 .DEFAULT_GOAL := help
 
@@ -85,3 +87,13 @@ docker-push-test-runner: ## Push testing docker image to registry
 	$(eval VERSION := $(shell grep -E 'LABEL version' testing/docker-test-runner/Dockerfile |cut -d = -f2 |tr -d \"))
 	cd ./testing/docker-test-runner; \
 		docker push ${DOCKER_ACCOUNT}/pgscv-test-runner:${VERSION}
+
+modernize: modernize-fix
+
+modernize-fix:
+	@echo "Running gopls modernize with -fix..."
+	$(MODERNIZE_CMD) -test -fix ./...
+
+modernize-check:
+	@echo "Checking if code needs modernization..."
+	$(MODERNIZE_CMD) -test ./...

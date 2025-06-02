@@ -13,6 +13,7 @@ import (
 	"github.com/cherts/pgscv/internal/store"
 	"github.com/jackc/pgx/v4"
 	"github.com/prometheus/client_golang/prometheus"
+	"slices"
 )
 
 // labels is a local wrapper over prometheus.Labels which is a simple map[string]string.
@@ -358,7 +359,7 @@ func updateMultipleMetrics(row []sql.NullString, desc typedDesc, colnames []stri
 	for _, valueCols := range desc.labeledValues { // walk through all labeledValues pairs
 		for _, descColname := range valueCols { // walk through column names from labeledValues of metric descriptor
 
-			labelValues, labelValuesOK := append([]string{}, initialLabelValues...), false
+			labelValues, labelValuesOK := slices.Clone(initialLabelValues), false
 			value, valueOK := float64(0), false
 
 			// Sanity check. Can't imaging such case when this condition is satisfied, but who knows...

@@ -265,8 +265,8 @@ func parseDatabaseSettingsLine(line string) (dbSettings, error) {
 	s.name = strings.TrimSpace(parts[0])
 
 	// parsing database options
-	subparts := strings.Split(strings.TrimSpace(parts[1]), " ")
-	for _, p := range subparts {
+	subparts := strings.SplitSeq(strings.TrimSpace(parts[1]), " ")
+	for p := range subparts {
 		values := strings.Split(p, "=")
 		if len(values) < 2 {
 			log.Warnf("invalid input, '%s': too few values; skip", p)
