@@ -3,9 +3,9 @@ package log
 
 // Logger struct, defines user log functions
 var Logger struct {
-	Debugf func(string, ...interface{})
-	Infof  func(string, ...interface{})
-	Errorf func(string, ...interface{})
+	Debugf func(string, ...any)
+	Infof  func(string, ...any)
+	Errorf func(string, ...any)
 	Debug  func(msg string)
 }
 
@@ -18,7 +18,7 @@ func Debug(msg string) {
 }
 
 // Debugf prints formatted message with DEBUG severity
-func Debugf(format string, v ...interface{}) {
+func Debugf(format string, v ...any) {
 	if Logger.Debugf == nil {
 		return
 	}
@@ -26,7 +26,7 @@ func Debugf(format string, v ...interface{}) {
 }
 
 // Errorf prints formatted message with ERROR severity
-func Errorf(str string, v ...interface{}) {
+func Errorf(str string, v ...any) {
 	if Logger.Errorf == nil {
 		return
 	}
@@ -34,7 +34,7 @@ func Errorf(str string, v ...interface{}) {
 }
 
 // Infof prints formatted message with INFO severity
-func Infof(str string, v ...interface{}) {
+func Infof(str string, v ...any) {
 	if Logger.Infof == nil {
 		return
 	}

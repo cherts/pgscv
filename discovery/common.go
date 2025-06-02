@@ -6,7 +6,7 @@ import (
 )
 
 // Config abstract configuration SdConfig.config
-type Config interface{}
+type Config any
 
 // Service abstract service definition
 type Service struct {

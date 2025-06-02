@@ -17,6 +17,7 @@ import (
 	"github.com/cherts/pgscv/internal/service"
 	"github.com/jackc/pgx/v4"
 	"gopkg.in/yaml.v2"
+	"maps"
 )
 
 const (
@@ -43,7 +44,7 @@ type Config struct {
 	CollectTopIndex       int                      `yaml:"collect_top_index"`    // Limit elements on Indexes collector
 	CollectTopQuery       int                      `yaml:"collect_top_query"`    // Limit elements on Statements collector
 	SkipConnErrorMode     bool                     `yaml:"skip_conn_error_mode"` // Skipping connection errors and creating a Service instance.
-	DiscoveryConfig       *interface{}             `yaml:"discovery"`
+	DiscoveryConfig       *any                     `yaml:"discovery"`
 	DiscoveryServices     *map[string]sd.Discovery
 	ConnTimeout           int    `yaml:"conn_timeout"`
 	URLPrefix             string `yaml:"url_prefix"` // Url prefix
@@ -89,9 +90,7 @@ func NewConfig(configFilePath string) (*Config, error) {
 		if len(configFromEnv.ServicesConnsSettings) > 0 {
 			configFromFile.ServicesConnsSettings = mergeServicesConnsSettings(configFromFile.ServicesConnsSettings, configFromEnv.ServicesConnsSettings)
 		}
-		for key, value := range configFromEnv.Defaults {
-			configFromFile.Defaults[key] = value
-		}
+		maps.Copy(configFromFile.Defaults, configFromEnv.Defaults)
 		configFromFile.DisableCollectors = append(configFromFile.DisableCollectors, configFromEnv.DisableCollectors...)
 		configFromFile.CollectorsSettings = mergeCollectorsSettings(configFromFile.CollectorsSettings, configFromEnv.CollectorsSettings)
 
@@ -144,9 +143,7 @@ func mergeCollectorsSettings(dest, src model.CollectorsSettings) model.Collector
 	if dest == nil {
 		return src
 	}
-	for key, value := range src {
-		dest[key] = value
-	}
+	maps.Copy(dest, src)
 	return dest
 }
 
@@ -155,9 +152,7 @@ func mergeServicesConnsSettings(dest, src service.ConnsSettings) service.ConnsSe
 	if dest == nil {
 		return src
 	}
-	for key, value := range src {
-		dest[key] = value
-	}
+	maps.Copy(dest, src)
 
 	return dest
 }

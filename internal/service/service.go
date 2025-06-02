@@ -16,6 +16,7 @@ import (
 	"github.com/cherts/pgscv/internal/store"
 	"github.com/jackc/pgx/v4"
 	"github.com/prometheus/client_golang/prometheus"
+	"slices"
 )
 
 // Service struct describes service - the target from which should be collected metrics.
@@ -158,12 +159,7 @@ func (repo *Repository) GetServiceIDs() []string {
 }
 
 func (repo *Repository) serviceExists(serviceID string) bool {
-	for _, id := range repo.GetServiceIDs() {
-		if id == serviceID {
-			return true
-		}
-	}
-	return false
+	return slices.Contains(repo.GetServiceIDs(), serviceID)
 }
 
 // addServicesFromConfig reads info about services from the config file and fulfill the repo.
