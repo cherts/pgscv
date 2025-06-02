@@ -92,8 +92,10 @@ modernize: modernize-fix
 
 modernize-fix:
 	@echo "Running gopls modernize with -fix..."
+	go env -w GOFLAGS="-buildvcs=false"
 	$(MODERNIZE_CMD) -test -fix ./...
 
 modernize-check:
 	@echo "Checking if code needs modernization..."
+	go env -w GOFLAGS="-buildvcs=false"
 	$(MODERNIZE_CMD) -test ./...
