@@ -13,7 +13,11 @@ func TestPostgresStatSubscriptionCollector_Update(t *testing.T) {
 	var input = pipelineInput{
 		required: []string{},
 		optional: []string{
-			"postgres_stat_subscription_lag_bytes",
+			"postgres_stat_subscription_received_lsn",
+			"postgres_stat_subscription_reported_lsn",
+			"postgres_stat_subscription_msg_send_time",
+			"postgres_stat_subscription_msg_recv_time",
+			"postgres_stat_subscription_reported_time",
 			"postgres_stat_subscription_error_count",
 		},
 		collector: NewPostgresStatSubscriptionCollector,
@@ -32,37 +36,44 @@ func Test_parsePostgresSubscriptionStat(t *testing.T) {
 		{
 			name: "normal output",
 			res: &model.PGResult{
-				Nrows: 1,
-				Ncols: 7,
+				Nrows: 2,
+				Ncols: 11,
 				Colnames: []pgproto3.FieldDescription{
-					{Name: []byte("subid")}, {Name: []byte("subname")}, {Name: []byte("relname")},
-					{Name: []byte("worker_type")}, {Name: []byte("lag_bytes")},
+					{Name: []byte("subid")}, {Name: []byte("subname")}, {Name: []byte("pid")},
+					{Name: []byte("worker_type")}, {Name: []byte("received_lsn")}, {Name: []byte("reported_lsn")},
+					{Name: []byte("msg_send_time")}, {Name: []byte("msg_recv_time")}, {Name: []byte("reported_time")},
 					{Name: []byte("apply_error_count")}, {Name: []byte("sync_error_count")},
 				},
 				Rows: [][]sql.NullString{
 					{
-						{String: "123456", Valid: true}, {String: "test_sub1", Valid: true}, {String: "test_table_1", Valid: true},
-						{String: "apply", Valid: true}, {String: "200", Valid: true},
-						{String: "1", Valid: true}, {String: "2", Valid: true},
+						{String: "123456", Valid: true}, {String: "test_sub1", Valid: true}, {String: "123", Valid: true},
+						{String: "apply", Valid: true}, {String: "43245505613688", Valid: true}, {String: "43245505613688", Valid: true},
+						{String: "1749455313.132133", Valid: true}, {String: "1749455313.132133", Valid: true}, {String: "1749455313.132133", Valid: true},
+						{String: "0", Valid: true}, {String: "0", Valid: true},
 					},
 					{
-						{String: "654321", Valid: true}, {String: "test_sub2", Valid: true}, {String: "test_table_2", Valid: true},
-						{String: "table synchronization", Valid: true}, {String: "200", Valid: true},
-						{String: "1", Valid: true}, {String: "2", Valid: true},
+						{String: "654321", Valid: true}, {String: "test_sub2", Valid: true}, {String: "321", Valid: true},
+						{String: "table synchronization", Valid: true}, {String: "43245505613688", Valid: true}, {String: "43245505613688", Valid: true},
+						{String: "1749455313.132133", Valid: true}, {String: "1749455313.132133", Valid: true}, {String: "1749455313.132133", Valid: true},
+						{String: "0", Valid: true}, {String: "0", Valid: true},
 					},
 				},
 			},
 			want: map[string]postgresSubscriptionStat{
-				"123456": {
-					Subid: "123456", SubName: "test_sub1", RelName: "test_table_1", WorkerType: "apply",
+				"123": {
+					SubId: "123456", SubName: "test_sub1", WorkerType: "apply",
 					values: map[string]float64{
-						"lag_bytes": 200, "apply_error_count": 1, "sync_error_count": 2,
+						"pid": 123, "received_lsn": 43245505613688, "reported_lsn": 43245505613688,
+						"msg_send_time": 1749455313.132133, "msg_recv_time": 1749455313.132133, "reported_time": 1749455313.132133,
+						"apply_error_count": 0, "sync_error_count": 0,
 					},
 				},
-				"654321": {
-					Subid: "654321", SubName: "test_sub2", RelName: "test_table_2", WorkerType: "table synchronization",
+				"321": {
+					SubId: "654321", SubName: "test_sub2", WorkerType: "table synchronization",
 					values: map[string]float64{
-						"lag_bytes": 200, "apply_error_count": 1, "sync_error_count": 2,
+						"pid": 321, "received_lsn": 43245505613688, "reported_lsn": 43245505613688,
+						"msg_send_time": 1749455313.132133, "msg_recv_time": 1749455313.132133, "reported_time": 1749455313.132133,
+						"apply_error_count": 0, "sync_error_count": 0,
 					},
 				},
 			},
@@ -71,7 +82,7 @@ func Test_parsePostgresSubscriptionStat(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			got := parsePostgresSubscriptionStat(tc.res, []string{"subname", "relname", "worker_type"})
+			got := parsePostgresSubscriptionStat(tc.res, []string{"subid", "subname", "worker_type", "type"})
 			assert.EqualValues(t, tc.want, got)
 		})
 	}
