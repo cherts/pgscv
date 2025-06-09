@@ -45,13 +45,13 @@ const (
 
 // postgresStatSubscriptionCollector defines metric descriptors and stats store.
 type postgresStatSubscriptionCollector struct {
-	labelNames    []string
-	received_lsn  typedDesc
-	reported_lsn  typedDesc
-	msg_send_time typedDesc
-	msg_recv_time typedDesc
-	reported_time typedDesc
-	errorCount    typedDesc
+	labelNames   []string
+	receivedLsn  typedDesc
+	reportedLsn  typedDesc
+	msgSendtime  typedDesc
+	msgRecvtime  typedDesc
+	reportedTime typedDesc
+	errorCount   typedDesc
 }
 
 // NewPostgresStatSubscriptionCollector returns a new Collector exposing postgres pg_stat_subscription stats.
@@ -61,31 +61,31 @@ func NewPostgresStatSubscriptionCollector(constLabels labels, settings model.Col
 
 	return &postgresStatSubscriptionCollector{
 		labelNames: labelNames,
-		received_lsn: newBuiltinTypedDesc(
+		receivedLsn: newBuiltinTypedDesc(
 			descOpts{"postgres", "stat_subscription", "received_lsn", "Last write-ahead log location received.", 0},
 			prometheus.GaugeValue,
 			labelNames, constLabels,
 			settings.Filters,
 		),
-		reported_lsn: newBuiltinTypedDesc(
+		reportedLsn: newBuiltinTypedDesc(
 			descOpts{"postgres", "stat_subscription", "reported_lsn", "Last write-ahead log location reported to origin WAL sender.", 0},
 			prometheus.GaugeValue,
 			labelNames, constLabels,
 			settings.Filters,
 		),
-		msg_send_time: newBuiltinTypedDesc(
+		msgSendtime: newBuiltinTypedDesc(
 			descOpts{"postgres", "stat_subscription", "msg_send_time", "Send time of last message received from origin WAL sender.", 0},
 			prometheus.GaugeValue,
 			labelNames, constLabels,
 			settings.Filters,
 		),
-		msg_recv_time: newBuiltinTypedDesc(
+		msgRecvtime: newBuiltinTypedDesc(
 			descOpts{"postgres", "stat_subscription", "msg_recv_time", "Receipt time of last message received from origin WAL sender.", 0},
 			prometheus.GaugeValue,
 			labelNames, constLabels,
 			settings.Filters,
 		),
-		reported_time: newBuiltinTypedDesc(
+		reportedTime: newBuiltinTypedDesc(
 			descOpts{"postgres", "stat_subscription", "reported_time", "Time of last write-ahead log location reported to origin WAL sender.", 0},
 			prometheus.GaugeValue,
 			labelNames, constLabels,
@@ -123,25 +123,25 @@ func (c *postgresStatSubscriptionCollector) Update(config Config, ch chan<- prom
 			stats := parsePostgresSubscriptionStat(res, c.labelNames)
 			for _, stat := range stats {
 				if value, ok := stat.values["received_lsn"]; ok {
-					ch <- c.received_lsn.newConstMetric(value, stat.SubId, stat.SubName, stat.WorkerType)
+					ch <- c.receivedLsn.newConstMetric(value, stat.SubID, stat.SubName, stat.WorkerType)
 				}
 				if value, ok := stat.values["reported_lsn"]; ok {
-					ch <- c.reported_lsn.newConstMetric(value, stat.SubId, stat.SubName, stat.WorkerType)
+					ch <- c.reportedLsn.newConstMetric(value, stat.SubID, stat.SubName, stat.WorkerType)
 				}
 				if value, ok := stat.values["msg_send_time"]; ok {
-					ch <- c.msg_send_time.newConstMetric(value, stat.SubId, stat.SubName, stat.WorkerType)
+					ch <- c.msgSendtime.newConstMetric(value, stat.SubID, stat.SubName, stat.WorkerType)
 				}
 				if value, ok := stat.values["msg_recv_time"]; ok {
-					ch <- c.msg_recv_time.newConstMetric(value, stat.SubId, stat.SubName, stat.WorkerType)
+					ch <- c.msgRecvtime.newConstMetric(value, stat.SubID, stat.SubName, stat.WorkerType)
 				}
 				if value, ok := stat.values["reported_time"]; ok {
-					ch <- c.reported_time.newConstMetric(value, stat.SubId, stat.SubName, stat.WorkerType)
+					ch <- c.reportedTime.newConstMetric(value, stat.SubID, stat.SubName, stat.WorkerType)
 				}
 				if value, ok := stat.values["apply_error_count"]; ok {
-					ch <- c.errorCount.newConstMetric(value, stat.SubId, stat.SubName, stat.WorkerType, "apply")
+					ch <- c.errorCount.newConstMetric(value, stat.SubID, stat.SubName, stat.WorkerType, "apply")
 				}
 				if value, ok := stat.values["sync_error_count"]; ok {
-					ch <- c.errorCount.newConstMetric(value, stat.SubId, stat.SubName, stat.WorkerType, "sync")
+					ch <- c.errorCount.newConstMetric(value, stat.SubID, stat.SubName, stat.WorkerType, "sync")
 				}
 			}
 		}
@@ -152,7 +152,7 @@ func (c *postgresStatSubscriptionCollector) Update(config Config, ch chan<- prom
 
 // postgresSubscriptionStat represents per-subscription stats based on pg_stat_subscription.
 type postgresSubscriptionStat struct {
-	SubId      string // a subid
+	SubID      string // a subscription id
 	SubName    string // a subscription name
 	Pid        string // a pid
 	WorkerType string // a worker_type
@@ -176,7 +176,7 @@ func parsePostgresSubscriptionStat(r *model.PGResult, labelNames []string) map[s
 			case "subname":
 				stat.SubName = row[i].String
 			case "subid":
-				stat.SubId = row[i].String
+				stat.SubID = row[i].String
 			case "worker_type":
 				stat.WorkerType = row[i].String
 			}
@@ -211,8 +211,6 @@ func parsePostgresSubscriptionStat(r *model.PGResult, labelNames []string) map[s
 
 			// Run column-specific logic
 			switch string(colname.Name) {
-			case "pid":
-				s.values["pid"] = v
 			case "received_lsn":
 				s.values["received_lsn"] = v
 			case "reported_lsn":
