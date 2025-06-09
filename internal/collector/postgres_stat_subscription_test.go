@@ -63,7 +63,7 @@ func Test_parsePostgresSubscriptionStat(t *testing.T) {
 				"123": {
 					SubID: "123456", SubName: "test_sub1", Pid: "123", WorkerType: "apply",
 					values: map[string]float64{
-						"pid": 123, "received_lsn": 43245505613688, "reported_lsn": 43245505613688,
+						"received_lsn": 43245505613688, "reported_lsn": 43245505613688,
 						"msg_send_time": 1749455313.132133, "msg_recv_time": 1749455313.132133, "reported_time": 1749455313.132133,
 						"apply_error_count": 0, "sync_error_count": 0,
 					},
@@ -71,7 +71,7 @@ func Test_parsePostgresSubscriptionStat(t *testing.T) {
 				"321": {
 					SubID: "654321", SubName: "test_sub2", Pid: "321", WorkerType: "table synchronization",
 					values: map[string]float64{
-						"pid": 321, "received_lsn": 43245505613688, "reported_lsn": 43245505613688,
+						"received_lsn": 43245505613688, "reported_lsn": 43245505613688,
 						"msg_send_time": 1749455313.132133, "msg_recv_time": 1749455313.132133, "reported_time": 1749455313.132133,
 						"apply_error_count": 0, "sync_error_count": 0,
 					},
