@@ -37,7 +37,7 @@ func Test_parsePostgresSubscriptionStat(t *testing.T) {
 			name: "normal output",
 			res: &model.PGResult{
 				Nrows: 1,
-				Ncols: 11,
+				Ncols: 10,
 				Colnames: []pgproto3.FieldDescription{
 					{Name: []byte("subid")}, {Name: []byte("subname")}, {Name: []byte("pid")},
 					{Name: []byte("worker_type")}, {Name: []byte("received_lsn")}, {Name: []byte("reported_lsn")},
