@@ -3,18 +3,14 @@ package collector
 
 import (
 	"fmt"
+	"slices"
 	"strconv"
 	"strings"
 )
 
 // stringsContains returns true if array of strings contains specific string
 func stringsContains(ss []string, s string) bool {
-	for _, val := range ss {
-		if val == s {
-			return true
-		}
-	}
-	return false
+	return slices.Contains(ss, s)
 }
 
 // semverStringToInt parse valid semver version string and returns numeric representation.

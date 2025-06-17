@@ -11,6 +11,7 @@ import (
 	"github.com/cherts/pgscv/internal/log"
 	"github.com/cherts/pgscv/internal/model"
 	"github.com/prometheus/client_golang/prometheus"
+	"maps"
 )
 
 // Factories defines collector functions which used for collecting metrics.
@@ -73,6 +74,8 @@ func (f Factories) RegisterPostgresCollectors(disabled []string) {
 		"postgres/storage":           NewPostgresStorageCollector,
 		"postgres/stat_io":           NewPostgresStatIOCollector,
 		"postgres/stat_slru":         NewPostgresStatSlruCollector,
+		"postgres/stat_subscription": NewPostgresStatSubscriptionCollector,
+		"postgres/stat_ssl":          NewPostgresStatSslCollector,
 		"postgres/tables":            NewPostgresTablesCollector,
 		"postgres/wal":               NewPostgresWalCollector,
 		"postgres/custom":            NewPostgresCustomCollector,
@@ -164,9 +167,7 @@ func NewPgscvCollector(serviceID string, factories Factories, config Config) (*P
 	}
 	constLabels := labels{"service_id": serviceID, "host": pgConfig.Host, "port": strconv.FormatUint(uint64(pgConfig.Port), 10)}
 	if config.ConstLabels != nil {
-		for k, v := range *config.ConstLabels {
-			constLabels[k] = v
-		}
+		maps.Copy(constLabels, *config.ConstLabels)
 	}
 	for key := range factories {
 		settings := config.Settings[key]

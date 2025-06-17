@@ -114,7 +114,7 @@ func parseNetdevStats(r io.Reader) (map[string][]float64, error) {
 	scanner := bufio.NewScanner(r)
 
 	// Stats file /proc/net/dev has header consisting of two lines. Read the header and check content to make sure this is proper file.
-	for i := 0; i < 2; i++ {
+	for range 2 {
 		scanner.Scan()
 		parts := strings.Split(scanner.Text(), "|")
 		if len(parts) != 3 {

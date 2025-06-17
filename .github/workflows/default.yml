@@ -23,12 +23,14 @@ on:
 jobs:
   test:
     runs-on: ubuntu-22.04
-    container: cherts/pgscv-test-runner:1.0.7
+    container: cherts/pgscv-test-runner:1.0.8
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
       - name: Prepare test environment
         run: prepare-test-environment.sh
-      - name: Run test
+      - name: Check code modernization
+        run: make modernize-check
+      - name: Run tests
         run: make test

@@ -4,6 +4,13 @@
 PG_HOST="pgbouncer"
 # default port
 PG_PORT=5432
+# stop only this pgbench
+# ALL - stop all versions of pgbench using PG_VERSIONS array
+# PATRONI - stop pgbench for patroni
+# 9 - stop only pgbench for postgres v9
+# ...
+# 17 - stop only pgbench for postgres v17
+PG_BENCH_VERSION_RUN=${1:-"ALL"}
 
 # Don't edit this config
 SOURCE="${BASH_SOURCE[0]}"
@@ -55,7 +62,27 @@ PG_VERSIONS=(
 
 _logging "Starting script."
 
-for DATA in ${PG_VERSIONS[@]}; do
+PG_BENCHES_RUN=()
+if [[ "${PG_BENCH_VERSION_RUN}" == "ALL" ]]; then
+	PG_BENCHES_RUN=(${PG_VERSIONS[@]})
+	RUN_PGBENCH_PATRONI=1
+	_logging "Selected to stop for all versions of pgbench."
+elif [[ "${PG_BENCH_VERSION_RUN}" == "PATRONI" ]]; then
+	_logging "Selected to stop pgbench for patroni"
+	RUN_PGBENCH_PATRONI=1
+else
+	for DATA in ${PG_VERSIONS[@]}; do
+		PG_VER=$(echo "${DATA}" | awk -F',' '{print $1}')
+		PGREPACK_VER=$(echo "${DATA}" | awk -F',' '{print $2}')
+		if [[ "${PG_BENCH_VERSION_RUN}" == "${PG_VER}" ]]; then
+			PG_BENCHES_RUN=(${PG_VER},${PGREPACK_VER})
+			break
+		fi
+	done
+	_logging "Selected to stop pgbench version v${PG_VER}"
+fi
+
+for DATA in ${PG_BENCHES_RUN[@]}; do
 	PG_VER=$(echo "${DATA}" | awk -F',' '{print $1}')
 	PGREPACK_VER=$(echo "${DATA}" | awk -F',' '{print $2}')
 	STOP_FILE="${SCRIPT_DIR}/pgbench/stop_pgbench_${PG_HOST}${PG_VER}_${PG_PORT}"
@@ -63,15 +90,16 @@ for DATA in ${PG_VERSIONS[@]}; do
 	touch "${STOP_FILE}" >/dev/null 2>&1
 done
 
-STOP_FILE="${SCRIPT_DIR}/pgbench/stop_pgbench_haproxy_5000"
-_logging "Creating stop-file '${STOP_FILE}'"
-touch "${STOP_FILE}" >/dev/null 2>&1
+if [[ ${RUN_PGBENCH_PATRONI} -eq 1 ]]; then
+	STOP_FILE="${SCRIPT_DIR}/pgbench/stop_pgbench_haproxy_5000"
+	_logging "Creating stop-file '${STOP_FILE}'"
+	touch "${STOP_FILE}" >/dev/null 2>&1
+	STOP_FILE="${SCRIPT_DIR}/pgbench/stop_pgbench_haproxy_5001"
+	_logging "Creating stop-file '${STOP_FILE}'"
+	touch "${STOP_FILE}" >/dev/null 2>&1
+fi
 
-STOP_FILE="${SCRIPT_DIR}/pgbench/stop_pgbench_haproxy_5001"
-_logging "Creating stop-file '${STOP_FILE}'"
-touch "${STOP_FILE}" >/dev/null 2>&1
-
-_logging "All done."
+_logging "Wait for all containers running pgbench to complete, this may take up to 2 minutes."
 _duration "${DATE_START}"
 
 _logging "End script. Goodbye ;)"

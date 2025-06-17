@@ -55,3 +55,4 @@ deploy/demo-lab/postgres/pg15data/*
 deploy/demo-lab/postgres/pg16data/*
 deploy/demo-lab/postgres/pg17data/*
 deploy/demo-lab/victoriametrics/data/*
+deploy/demo-lab/vmagent/data/*

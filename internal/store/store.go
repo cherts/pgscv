@@ -70,7 +70,7 @@ func NewWithConfig(config *pgx.ConnConfig) (*DB, error) {
 /* public db methods */
 
 // Query is a wrapper on private query() method.
-func (db *DB) Query(query string, args ...interface{}) (*model.PGResult, error) {
+func (db *DB) Query(query string, args ...any) (*model.PGResult, error) {
 	return db.query(query, args...)
 }
 
@@ -83,7 +83,7 @@ func (db *DB) Conn() *pgx.Conn { return db.conn }
 /* private db methods */
 
 // Query method executes passed query and wraps result into model.PGResult struct.
-func (db *DB) query(query string, args ...interface{}) (*model.PGResult, error) {
+func (db *DB) query(query string, args ...any) (*model.PGResult, error) {
 	rows, err := db.Conn().Query(context.Background(), query, args...)
 	if err != nil {
 		return nil, err
@@ -113,7 +113,7 @@ func (db *DB) query(query string, args ...interface{}) (*model.PGResult, error) 
 	var rowsStore = make([][]sql.NullString, 0, 10)
 
 	for rows.Next() {
-		pointers := make([]interface{}, ncols)
+		pointers := make([]any, ncols)
 		values := make([]sql.NullString, ncols)
 
 		for i := range pointers {

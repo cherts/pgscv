@@ -571,7 +571,7 @@ func parsePatroniResponse(resp *apiPatroniResponse) (*patroniInfo, error) {
 
 // patroniHistoryUnit defines single item of Patroni history in the API response.
 // Basically this is array like [ int, int, string, string ].
-type patroniHistoryUnit []interface{}
+type patroniHistoryUnit []any
 
 // apiHistoryResponse defines the API response with complete history.
 type apiHistoryResponse []patroniHistoryUnit

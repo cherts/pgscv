@@ -47,12 +47,12 @@ func Debug(msg string) {
 }
 
 // Debugf prints formatted message with DEBUG severity
-func Debugf(format string, v ...interface{}) {
+func Debugf(format string, v ...any) {
 	Logger.Debug().Msgf(format, v...)
 }
 
 // Debugln concatenates arguments and prints them with DEBUG severity
-func Debugln(v ...interface{}) {
+func Debugln(v ...any) {
 	Logger.Debug().Msg(fmt.Sprint(v...))
 }
 
@@ -62,12 +62,12 @@ func Info(msg string) {
 }
 
 // Infof prints formatted message with INFO severity
-func Infof(format string, v ...interface{}) {
+func Infof(format string, v ...any) {
 	Logger.Info().Msgf(format, v...)
 }
 
 // Infoln concatenates arguments and prints them with INFO severity
-func Infoln(v ...interface{}) {
+func Infoln(v ...any) {
 	Logger.Info().Msg(fmt.Sprint(v...))
 }
 
@@ -77,12 +77,12 @@ func Warn(msg string) {
 }
 
 // Warnf prints formatted message with WARNING severity
-func Warnf(format string, v ...interface{}) {
+func Warnf(format string, v ...any) {
 	Logger.Warn().Msgf(format, v...)
 }
 
 // Warnln concatenates arguments and prints them with WARNING severity
-func Warnln(v ...interface{}) {
+func Warnln(v ...any) {
 	Logger.Warn().Msg(fmt.Sprint(v...))
 }
 
@@ -92,12 +92,12 @@ func Error(msg string) {
 }
 
 // Errorf prints formatted message with ERROR severity
-func Errorf(format string, v ...interface{}) {
+func Errorf(format string, v ...any) {
 	Logger.Error().Msgf(format, v...)
 }
 
 // Errorln concatenates arguments and prints them with ERROR severity
-func Errorln(v ...interface{}) {
+func Errorln(v ...any) {
 	Logger.Error().Msg(fmt.Sprint(v...))
 }
 
@@ -111,7 +111,7 @@ func KVError(kv KV, msg string) {
 }
 
 // KVErrorf prints formatted message with ERROR severity with attached KV map
-func KVErrorf(kv KV, format string, v ...interface{}) {
+func KVErrorf(kv KV, format string, v ...any) {
 	log := Logger.Error()
 	for k, v := range kv {
 		log.Str(k, v)
@@ -120,7 +120,7 @@ func KVErrorf(kv KV, format string, v ...interface{}) {
 }
 
 // KVErrorln concatenates arguments and prints them with ERROR severity with attached KV map
-func KVErrorln(kv KV, v ...interface{}) {
+func KVErrorln(kv KV, v ...any) {
 	log := Logger.Error()
 	for k, v := range kv {
 		log.Str(k, v)
