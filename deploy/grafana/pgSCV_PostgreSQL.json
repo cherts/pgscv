@@ -5120,7 +5120,7 @@
               },
               "editorMode": "code",
               "exemplar": true,
-              "expr": "sum by (backend_type) (rate(postgres_stat_io_write_bytes{instance=\"$instance\",service_id=\"$postgres\",backend_type!~\"checkpointer|client backend.*|background.*|autovacuum.*\"}[1m)])>0",
+              "expr": "sum by (backend_type) (rate(postgres_stat_io_write_bytes{instance=\"$instance\",service_id=\"$postgres\",backend_type!~\"checkpointer|client backend.*|background.*|autovacuum.*\"}[1m]))>0",
               "hide": false,
               "interval": "",
               "legendFormat": "Other",
