@@ -439,7 +439,7 @@
           },
           "editorMode": "code",
           "exemplar": false,
-          "expr": "sum(rate(postgres_log_messages_total{level!=\"log\",instance=\"$instance\",service_id=\"$postgres\"}[1m])) or on() vector(0)",
+          "expr": "sum(rate(postgres_log_messages_total{level!=\"log\",instance=\"$instance\",service_id=\"$postgres\"}[1m]))",
           "instant": false,
           "interval": "",
           "legendFormat": "response time",
@@ -1310,6 +1310,87 @@
         "type": "prometheus",
         "uid": "${DS_VICTORIAMETRICS}"
       },
+      "description": "Total number of SSL connections.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "#EAB839",
+                "value": 100
+              },
+              {
+                "color": "orange",
+                "value": 500
+              },
+              {
+                "color": "red",
+                "value": 1200
+              }
+            ]
+          },
+          "unit": "none"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 4,
+        "x": 12,
+        "y": 11
+      },
+      "id": 128,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "text": {},
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "11.5.0-219443",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_VICTORIAMETRICS}"
+          },
+          "editorMode": "code",
+          "exemplar": false,
+          "expr": "sum(postgres_stat_ssl_conn_number{instance=\"$instance\",service_id=\"$postgres\",user!~\"^$exclude$\"}) or on() vector(0)",
+          "instant": false,
+          "interval": "",
+          "legendFormat": "response time",
+          "refId": "A"
+        }
+      ],
+      "title": "SSL connections",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_VICTORIAMETRICS}"
+      },
       "description": "Number of times an error occurred during the initial table synchronization (use logical replication).",
       "fieldConfig": {
         "defaults": {
@@ -1337,7 +1418,7 @@
       "gridPos": {
         "h": 5,
         "w": 4,
-        "x": 12,
+        "x": 16,
         "y": 11
       },
       "id": 125,
@@ -1410,7 +1491,7 @@
       "gridPos": {
         "h": 5,
         "w": 4,
-        "x": 16,
+        "x": 20,
         "y": 11
       },
       "id": 124,
@@ -1510,8 +1591,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   }
                 ]
               },
@@ -1652,8 +1732,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   }
                 ]
               },
@@ -1750,8 +1829,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   }
                 ]
               },
@@ -1854,7 +1932,7 @@
             "h": 8,
             "w": 12,
             "x": 0,
-            "y": 197
+            "y": 209
           },
           "id": 11,
           "options": {
@@ -1939,8 +2017,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   }
                 ]
               },
@@ -2043,7 +2120,7 @@
             "h": 8,
             "w": 12,
             "x": 12,
-            "y": 197
+            "y": 209
           },
           "id": 92,
           "options": {
@@ -2230,7 +2307,7 @@
             "h": 8,
             "w": 12,
             "x": 0,
-            "y": 269
+            "y": 281
           },
           "id": 95,
           "options": {
@@ -2357,8 +2434,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   }
                 ]
               },
@@ -2431,7 +2507,7 @@
             "h": 8,
             "w": 9,
             "x": 0,
-            "y": 1038
+            "y": 1050
           },
           "id": 78,
           "options": {
@@ -2516,8 +2592,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   }
                 ]
               },
@@ -2545,7 +2620,7 @@
             "h": 8,
             "w": 9,
             "x": 9,
-            "y": 1038
+            "y": 1050
           },
           "id": 80,
           "options": {
@@ -2604,8 +2679,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   }
                 ]
               },
@@ -2617,7 +2691,7 @@
             "h": 8,
             "w": 6,
             "x": 18,
-            "y": 1038
+            "y": 1050
           },
           "id": 83,
           "options": {
@@ -2727,8 +2801,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   }
                 ]
               },
@@ -2740,7 +2813,7 @@
             "h": 8,
             "w": 12,
             "x": 0,
-            "y": 1039
+            "y": 1051
           },
           "id": 19,
           "options": {
@@ -2825,8 +2898,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   }
                 ]
               },
@@ -2838,7 +2910,7 @@
             "h": 8,
             "w": 12,
             "x": 12,
-            "y": 1039
+            "y": 1051
           },
           "id": 20,
           "options": {
@@ -2924,8 +2996,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   }
                 ]
               },
@@ -2937,7 +3008,7 @@
             "h": 8,
             "w": 12,
             "x": 0,
-            "y": 1159
+            "y": 1171
           },
           "id": 21,
           "options": {
@@ -3023,8 +3094,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   }
                 ]
               },
@@ -3036,7 +3106,7 @@
             "h": 8,
             "w": 12,
             "x": 12,
-            "y": 1159
+            "y": 1171
           },
           "id": 22,
           "options": {
@@ -3147,7 +3217,7 @@
             "h": 8,
             "w": 12,
             "x": 0,
-            "y": 3336
+            "y": 3348
           },
           "id": 27,
           "options": {
@@ -3242,7 +3312,7 @@
             "h": 8,
             "w": 12,
             "x": 12,
-            "y": 3336
+            "y": 3348
           },
           "id": 28,
           "options": {
@@ -3337,7 +3407,7 @@
             "h": 8,
             "w": 12,
             "x": 0,
-            "y": 3344
+            "y": 3356
           },
           "id": 26,
           "options": {
@@ -3449,7 +3519,7 @@
             "h": 8,
             "w": 12,
             "x": 12,
-            "y": 3344
+            "y": 3356
           },
           "id": 29,
           "options": {
@@ -3549,8 +3619,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   }
                 ]
               },
@@ -3646,8 +3715,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   }
                 ]
               },
@@ -4002,8 +4070,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   }
                 ]
               },
@@ -4031,7 +4098,7 @@
             "h": 8,
             "w": 9,
             "x": 0,
-            "y": 23
+            "y": 35
           },
           "id": 33,
           "options": {
@@ -4115,8 +4182,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   }
                 ]
               },
@@ -4167,7 +4233,7 @@
             "h": 8,
             "w": 9,
             "x": 9,
-            "y": 23
+            "y": 35
           },
           "id": 35,
           "options": {
@@ -4240,8 +4306,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   }
                 ]
               },
@@ -4253,7 +4318,7 @@
             "h": 8,
             "w": 6,
             "x": 18,
-            "y": 23
+            "y": 35
           },
           "id": 87,
           "options": {
@@ -4376,8 +4441,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   }
                 ]
               },
@@ -4389,7 +4453,7 @@
             "h": 8,
             "w": 12,
             "x": 0,
-            "y": 88
+            "y": 100
           },
           "id": 34,
           "options": {
@@ -4473,8 +4537,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   }
                 ]
               },
@@ -4486,7 +4549,7 @@
             "h": 8,
             "w": 12,
             "x": 12,
-            "y": 88
+            "y": 100
           },
           "id": 42,
           "options": {
@@ -4556,8 +4619,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   }
                 ]
               },
@@ -4582,7 +4644,7 @@
             "h": 8,
             "w": 24,
             "x": 0,
-            "y": 96
+            "y": 108
           },
           "id": 85,
           "options": {
@@ -4705,8 +4767,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   }
                 ]
               },
@@ -4791,7 +4852,7 @@
             "h": 8,
             "w": 9,
             "x": 0,
-            "y": 25
+            "y": 37
           },
           "id": 46,
           "options": {
@@ -4890,8 +4951,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   }
                 ]
               },
@@ -4903,7 +4963,7 @@
             "h": 8,
             "w": 9,
             "x": 9,
-            "y": 25
+            "y": 37
           },
           "id": 47,
           "options": {
@@ -4961,8 +5021,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   }
                 ]
               },
@@ -4974,7 +5033,7 @@
             "h": 8,
             "w": 6,
             "x": 18,
-            "y": 25
+            "y": 37
           },
           "id": 86,
           "options": {
@@ -5083,8 +5142,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   }
                 ]
               },
@@ -5142,7 +5200,7 @@
             "h": 8,
             "w": 24,
             "x": 0,
-            "y": 65
+            "y": 77
           },
           "id": 48,
           "options": {
@@ -5228,8 +5286,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   }
                 ]
               },
@@ -5287,7 +5344,7 @@
             "h": 8,
             "w": 24,
             "x": 0,
-            "y": 73
+            "y": 85
           },
           "id": 88,
           "options": {
@@ -5386,8 +5443,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   }
                 ]
               },
@@ -5430,7 +5486,7 @@
             "h": 8,
             "w": 9,
             "x": 0,
-            "y": 106
+            "y": 118
           },
           "id": 52,
           "options": {
@@ -5513,8 +5569,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   }
                 ]
               },
@@ -5602,7 +5657,7 @@
             "h": 8,
             "w": 9,
             "x": 9,
-            "y": 106
+            "y": 118
           },
           "id": 53,
           "options": {
@@ -5686,8 +5741,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   }
                 ]
               },
@@ -5699,7 +5753,7 @@
             "h": 8,
             "w": 6,
             "x": 18,
-            "y": 106
+            "y": 118
           },
           "id": 122,
           "options": {
@@ -5822,8 +5876,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   }
                 ]
               },
@@ -5835,7 +5888,7 @@
             "h": 8,
             "w": 12,
             "x": 0,
-            "y": 2005
+            "y": 2017
           },
           "id": 102,
           "options": {
@@ -5976,8 +6029,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   }
                 ]
               },
@@ -5989,7 +6041,7 @@
             "h": 8,
             "w": 12,
             "x": 12,
-            "y": 2005
+            "y": 2017
           },
           "id": 104,
           "options": {
@@ -6130,8 +6182,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   }
                 ]
               },
@@ -6143,7 +6194,7 @@
             "h": 8,
             "w": 12,
             "x": 0,
-            "y": 2013
+            "y": 2025
           },
           "id": 107,
           "options": {
@@ -6285,8 +6336,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   }
                 ]
               },
@@ -6298,7 +6348,7 @@
             "h": 8,
             "w": 12,
             "x": 12,
-            "y": 2013
+            "y": 2025
           },
           "id": 108,
           "options": {
@@ -6440,8 +6490,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   }
                 ]
               },
@@ -6453,7 +6502,7 @@
             "h": 8,
             "w": 12,
             "x": 0,
-            "y": 2021
+            "y": 2033
           },
           "id": 109,
           "options": {
@@ -6594,8 +6643,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   }
                 ]
               },
@@ -6607,7 +6655,7 @@
             "h": 8,
             "w": 12,
             "x": 12,
-            "y": 2021
+            "y": 2033
           },
           "id": 119,
           "options": {
@@ -6748,8 +6796,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   }
                 ]
               },
@@ -6761,7 +6808,7 @@
             "h": 8,
             "w": 12,
             "x": 0,
-            "y": 2029
+            "y": 2041
           },
           "id": 105,
           "options": {
@@ -6902,8 +6949,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   }
                 ]
               },
@@ -6915,7 +6961,7 @@
             "h": 8,
             "w": 12,
             "x": 12,
-            "y": 2029
+            "y": 2041
           },
           "id": 106,
           "options": {
@@ -7056,8 +7102,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   }
                 ]
               },
@@ -7069,7 +7114,7 @@
             "h": 8,
             "w": 12,
             "x": 0,
-            "y": 2037
+            "y": 2049
           },
           "id": 120,
           "options": {
@@ -7210,8 +7255,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   }
                 ]
               },
@@ -7223,7 +7267,7 @@
             "h": 8,
             "w": 12,
             "x": 12,
-            "y": 2037
+            "y": 2049
           },
           "id": 110,
           "options": {
@@ -7378,8 +7422,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   }
                 ]
               },
@@ -7391,7 +7434,7 @@
             "h": 8,
             "w": 12,
             "x": 0,
-            "y": 120
+            "y": 132
           },
           "id": 117,
           "options": {
@@ -7476,8 +7519,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   }
                 ]
               },
@@ -7489,7 +7531,7 @@
             "h": 8,
             "w": 12,
             "x": 12,
-            "y": 120
+            "y": 132
           },
           "id": 118,
           "options": {
@@ -7574,8 +7616,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   }
                 ]
               },
@@ -7587,7 +7628,7 @@
             "h": 8,
             "w": 12,
             "x": 0,
-            "y": 128
+            "y": 140
           },
           "id": 112,
           "options": {
@@ -7672,8 +7713,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   }
                 ]
               },
@@ -7685,7 +7725,7 @@
             "h": 8,
             "w": 12,
             "x": 12,
-            "y": 128
+            "y": 140
           },
           "id": 113,
           "options": {
@@ -7770,8 +7810,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   }
                 ]
               },
@@ -7783,7 +7822,7 @@
             "h": 8,
             "w": 12,
             "x": 0,
-            "y": 136
+            "y": 148
           },
           "id": 114,
           "options": {
@@ -7868,8 +7907,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   }
                 ]
               },
@@ -7881,7 +7919,7 @@
             "h": 8,
             "w": 12,
             "x": 12,
-            "y": 136
+            "y": 148
           },
           "id": 115,
           "options": {
@@ -7966,8 +8004,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   }
                 ]
               },
@@ -7979,7 +8016,7 @@
             "h": 8,
             "w": 12,
             "x": 0,
-            "y": 144
+            "y": 156
           },
           "id": 116,
           "options": {
@@ -8079,8 +8116,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   }
                 ]
               },
@@ -8092,7 +8128,7 @@
             "h": 8,
             "w": 12,
             "x": 0,
-            "y": 29
+            "y": 41
           },
           "id": 65,
           "options": {
@@ -8200,8 +8236,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   }
                 ]
               },
@@ -8213,7 +8248,7 @@
             "h": 8,
             "w": 12,
             "x": 12,
-            "y": 29
+            "y": 41
           },
           "id": 66,
           "options": {
@@ -8299,8 +8334,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   }
                 ]
               },
@@ -8312,7 +8346,7 @@
             "h": 8,
             "w": 12,
             "x": 0,
-            "y": 37
+            "y": 49
           },
           "id": 69,
           "options": {
@@ -8398,8 +8432,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   }
                 ]
               },
@@ -8411,7 +8444,7 @@
             "h": 8,
             "w": 12,
             "x": 12,
-            "y": 37
+            "y": 49
           },
           "id": 70,
           "options": {
@@ -8497,8 +8530,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   }
                 ]
               },
@@ -8510,7 +8542,7 @@
             "h": 8,
             "w": 12,
             "x": 0,
-            "y": 45
+            "y": 57
           },
           "id": 67,
           "options": {
@@ -8596,8 +8628,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   }
                 ]
               },
@@ -8609,7 +8640,7 @@
             "h": 8,
             "w": 12,
             "x": 12,
-            "y": 45
+            "y": 57
           },
           "id": 68,
           "options": {
@@ -8695,8 +8726,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   }
                 ]
               },
@@ -8708,7 +8738,7 @@
             "h": 8,
             "w": 12,
             "x": 0,
-            "y": 53
+            "y": 65
           },
           "id": 123,
           "options": {
@@ -8808,8 +8838,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   }
                 ]
               },
@@ -8821,7 +8850,7 @@
             "h": 8,
             "w": 12,
             "x": 0,
-            "y": 202
+            "y": 214
           },
           "id": 57,
           "options": {
@@ -8907,8 +8936,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   }
                 ]
               },
@@ -8920,7 +8948,7 @@
             "h": 8,
             "w": 12,
             "x": 12,
-            "y": 202
+            "y": 214
           },
           "id": 60,
           "options": {
@@ -9006,8 +9034,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   }
                 ]
               },
@@ -9019,7 +9046,7 @@
             "h": 8,
             "w": 12,
             "x": 0,
-            "y": 210
+            "y": 222
           },
           "id": 89,
           "options": {
@@ -9105,8 +9132,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   }
                 ]
               },
@@ -9118,7 +9144,7 @@
             "h": 8,
             "w": 12,
             "x": 12,
-            "y": 210
+            "y": 222
           },
           "id": 59,
           "options": {
@@ -9215,7 +9241,7 @@
             "h": 8,
             "w": 12,
             "x": 0,
-            "y": 218
+            "y": 230
           },
           "id": 58,
           "options": {
@@ -9311,7 +9337,7 @@
             "h": 8,
             "w": 12,
             "x": 12,
-            "y": 218
+            "y": 230
           },
           "id": 61,
           "options": {
@@ -9407,7 +9433,7 @@
             "h": 8,
             "w": 12,
             "x": 0,
-            "y": 226
+            "y": 238
           },
           "id": 94,
           "options": {
@@ -9495,7 +9521,7 @@
             "h": 8,
             "w": 12,
             "x": 12,
-            "y": 226
+            "y": 238
           },
           "id": 93,
           "options": {
@@ -9696,6 +9722,6 @@
   "timezone": "",
   "title": "pgSCV: PostgreSQL",
   "uid": "N6PwjKeGz",
-  "version": 36,
+  "version": 37,
   "weekStart": ""
 }
