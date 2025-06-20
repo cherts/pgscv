@@ -185,8 +185,8 @@ github.com/xhit/go-str2duration/v2 v2.1.0 h1:lxklc02Drh6ynqX+DdPyp5pCKLUQpRT8bp8
 github.com/xhit/go-str2duration/v2 v2.1.0/go.mod h1:ohY8p+0f07DiV6Em5LKB0s2YpLtXVyJfNt1+BlmyAsU=
 github.com/yandex-cloud/go-genproto v0.11.0 h1:TOyaUQxRE+xRuZqk48GVIPxUsIaD9z/6A0rCZifDhOw=
 github.com/yandex-cloud/go-genproto v0.11.0/go.mod h1:0LDD/IZLIUIV4iPH+YcF+jysO3jkSvADFGm4dCAuwQo=
-github.com/yandex-cloud/go-sdk v0.9.0 h1:4AE3ZBU56GzawSDjGVhEc+W0K4/3Wqi5NQN4GRUpY+g=
-github.com/yandex-cloud/go-sdk v0.9.0/go.mod h1:077X1GFe/cdnjvw9Qf1waZ4afnyLc7riK1d99ae4stw=
+github.com/yandex-cloud/go-sdk v0.10.0 h1:nONW/GnB9Ag7/QHBbE3mF8ezY8lh2PURSIQg1P3I3eM=
+github.com/yandex-cloud/go-sdk v0.10.0/go.mod h1:EhU0oPSak721Yof4CuS/zZ5PMjI2fbHJTUZFhsA+L6w=
 github.com/yuin/goldmark v1.4.13/go.mod h1:6yULJ656Px+3vBD8DxQVa3kxgyrAnzto9xy5taEt/CY=
 github.com/zenazn/goji v0.9.0/go.mod h1:7S9M489iMyHBNxwZnk9/EHS098H4/F6TATF2mIxtB1Q=
 go.opentelemetry.io/auto/sdk v1.1.0 h1:cH53jehLUN6UFLY71z+NDOiNJqDdPRaXzTel0sJySYA=
