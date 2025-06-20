@@ -3,11 +3,14 @@ package service
 
 import (
 	"fmt"
-	"github.com/prometheus/client_golang/prometheus/collectors"
 	"regexp"
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/prometheus/client_golang/prometheus/collectors"
+
+	"slices"
 
 	"github.com/cherts/pgscv/internal/collector"
 	"github.com/cherts/pgscv/internal/http"
@@ -16,7 +19,6 @@ import (
 	"github.com/cherts/pgscv/internal/store"
 	"github.com/jackc/pgx/v4"
 	"github.com/prometheus/client_golang/prometheus"
-	"slices"
 )
 
 // Service struct describes service - the target from which should be collected metrics.
@@ -190,8 +192,12 @@ func (repo *Repository) addServicesFromConfig(config Config) {
 			if cs.ServiceType == model.ServiceTypePatroni {
 				err := attemptRequest(cs.BaseURL)
 				if err != nil {
-					log.Warnf("%s: %s, skip", cs.BaseURL, err)
-					return
+					if config.SkipConnErrorMode {
+						log.Warnf("%s: %s", cs.BaseURL, err)
+					} else {
+						log.Warnf("%s: %s, skip", cs.BaseURL, err)
+						return
+					}
 				}
 				msg = fmt.Sprintf("service [%s] available through: %s", k, cs.BaseURL)
 			} else {
