@@ -10,7 +10,7 @@ import (
 )
 
 const (
-	postgresStatSubscriptionQuery14 = "SELECT subid, subname, COALESCE(s1.pid, 0) AS pid, " +
+	postgresStatSubscriptionQuery14 = "SELECT subid, subname, COALESCE(pid, 0) AS pid, " +
 		"COALESCE(NULL::text, 'unknown') AS worker_type, " +
 		"COALESCE(received_lsn - '0/0', 0) AS received_lsn, " +
 		"COALESCE(latest_end_lsn - '0/0', 0) AS reported_lsn, " +
