@@ -87,6 +87,8 @@ services:
 #  - postgres/storage
 #  - postgres/stat_io
 #  - postgres/stat_slru
+#  - postgres/stat_subscription
+#  - postgres/stat_ssl
 #  - postgres/tables
 #  - postgres/wal
 #  - postgres/custom
