@@ -12,29 +12,34 @@ import (
 
 const (
 	postgresWalQuery96 = "SELECT pg_is_in_recovery()::int AS recovery, " +
+		"(CASE pg_is_in_recovery() WHEN 'f' THEN FALSE::int ELSE pg_is_xlog_replay_paused()::int END) AS recovery_paused, " +
 		"(CASE pg_is_in_recovery() WHEN 't' THEN pg_last_xlog_receive_location() ELSE pg_current_xlog_location() END) - '0/00000000' AS wal_written"
 
 	postgresWalQuery13 = "SELECT pg_is_in_recovery()::int AS recovery, " +
+		"(CASE pg_is_in_recovery() WHEN 'f' THEN FALSE::int ELSE pg_is_wal_replay_paused()::int END) AS recovery_paused, " +
 		"(CASE pg_is_in_recovery() WHEN 't' THEN pg_last_wal_receive_lsn() ELSE pg_current_wal_lsn() END) - '0/00000000' AS wal_written"
 
-	postgresWalQueryLatest = "SELECT pg_is_in_recovery()::int AS recovery, wal_records, wal_fpi, " +
+	postgresWalQueryLatest = "SELECT pg_is_in_recovery()::int AS recovery, " +
+		"(CASE pg_is_in_recovery() WHEN 'f' THEN FALSE::int ELSE pg_is_wal_replay_paused()::int END) AS recovery_paused, " +
+		"wal_records, wal_fpi, " +
 		"(CASE pg_is_in_recovery() WHEN 't' THEN pg_last_wal_receive_lsn() - '0/00000000' ELSE pg_current_wal_lsn() - '0/00000000' END) AS wal_written, " +
 		"wal_bytes, wal_buffers_full, wal_write, wal_sync, wal_write_time, wal_sync_time, extract('epoch' from stats_reset) as reset_time " +
 		"FROM pg_stat_wal"
 )
 
 type postgresWalCollector struct {
-	recovery     typedDesc
-	records      typedDesc
-	fpi          typedDesc
-	bytes        typedDesc
-	writtenBytes typedDesc // based on pg_current_wal_lsn()
-	buffersFull  typedDesc
-	writes       typedDesc
-	syncs        typedDesc
-	secondsAll   typedDesc
-	seconds      typedDesc
-	resetUnix    typedDesc
+	recovery       typedDesc
+	recoveryPaused typedDesc
+	records        typedDesc
+	fpi            typedDesc
+	bytes          typedDesc
+	writtenBytes   typedDesc // based on pg_current_wal_lsn()
+	buffersFull    typedDesc
+	writes         typedDesc
+	syncs          typedDesc
+	secondsAll     typedDesc
+	seconds        typedDesc
+	resetUnix      typedDesc
 }
 
 // NewPostgresWalCollector returns a new Collector exposing postgres WAL stats.
@@ -43,6 +48,12 @@ func NewPostgresWalCollector(constLabels labels, settings model.CollectorSetting
 	return &postgresWalCollector{
 		recovery: newBuiltinTypedDesc(
 			descOpts{"postgres", "recovery", "info", "Current recovery state, 0 - not in recovery; 1 - in recovery.", 0},
+			prometheus.GaugeValue,
+			nil, constLabels,
+			settings.Filters,
+		),
+		recoveryPaused: newBuiltinTypedDesc(
+			descOpts{"postgres", "recovery", "pause", "Current recovery pause state, 0 - recovery pause is not requested; 1 - recovery pause is requested.", 0},
 			prometheus.GaugeValue,
 			nil, constLabels,
 			settings.Filters,
@@ -130,6 +141,8 @@ func (c *postgresWalCollector) Update(config Config, ch chan<- prometheus.Metric
 		switch k {
 		case "recovery":
 			ch <- c.recovery.newConstMetric(v)
+		case "recovery_paused":
+			ch <- c.recoveryPaused.newConstMetric(v)
 		case "wal_records":
 			ch <- c.records.newConstMetric(v)
 		case "wal_fpi":

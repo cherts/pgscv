@@ -2,21 +2,19 @@ package collector
 
 import (
 	"database/sql"
-	"github.com/jackc/pgproto3/v2"
-	"github.com/cherts/pgscv/internal/model"
-	"github.com/stretchr/testify/assert"
 	"testing"
+
+	"github.com/cherts/pgscv/internal/model"
+	"github.com/jackc/pgproto3/v2"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestPostgresWalCollector_Update(t *testing.T) {
 	var input = pipelineInput{
 		required: []string{
 			"postgres_recovery_info",
+			"postgres_recovery_pause",
 			"postgres_wal_written_bytes_total",
-		},
-		// TODO: wait until Postgres 14 has been released, update Postgres version on pgscv-testing docker image
-		//   and move these metrics to 'required' slice.
-		optional: []string{
 			"postgres_wal_records_total",
 			"postgres_wal_fpi_total",
 			"postgres_wal_bytes_total",
@@ -46,14 +44,14 @@ func Test_parsePostgresWalStats(t *testing.T) {
 				Nrows: 1,
 				Ncols: 11,
 				Colnames: []pgproto3.FieldDescription{
-					{Name: []byte("recovery")},
+					{Name: []byte("recovery")}, {Name: []byte("recovery_paused")},
 					{Name: []byte("wal_records")}, {Name: []byte("wal_fpi")}, {Name: []byte("wal_bytes")}, {Name: []byte("wal_written")},
 					{Name: []byte("wal_buffers_full")}, {Name: []byte("wal_write")}, {Name: []byte("wal_sync")},
 					{Name: []byte("wal_write_time")}, {Name: []byte("wal_sync_time")}, {Name: []byte("reset_time")},
 				},
 				Rows: [][]sql.NullString{
 					{
-						{String: "0", Valid: true},
+						{String: "0", Valid: true}, {String: "0", Valid: true},
 						{String: "58452", Valid: true}, {String: "4712", Valid: true}, {String: "587241", Valid: true}, {String: "8746951", Valid: true},
 						{String: "1234", Valid: true}, {String: "48541", Valid: true}, {String: "8541", Valid: true},
 						{String: "874215", Valid: true}, {String: "48736", Valid: true}, {String: "123456789", Valid: true},
@@ -61,7 +59,7 @@ func Test_parsePostgresWalStats(t *testing.T) {
 				},
 			},
 			want: map[string]float64{
-				"recovery":    0,
+				"recovery": 0, "recovery_paused": 0,
 				"wal_records": 58452, "wal_fpi": 4712, "wal_bytes": 587241, "wal_written": 8746951,
 				"wal_buffers_full": 1234, "wal_write": 48541, "wal_sync": 8541,
 				"wal_write_time": 874215, "wal_sync_time": 48736, "wal_all_time": 922951, "reset_time": 123456789,
@@ -73,11 +71,11 @@ func Test_parsePostgresWalStats(t *testing.T) {
 				Nrows: 1,
 				Ncols: 2,
 				Colnames: []pgproto3.FieldDescription{
-					{Name: []byte("recovery")}, {Name: []byte("wal_written")},
+					{Name: []byte("recovery")}, {Name: []byte("recovery_paused")}, {Name: []byte("wal_written")},
 				},
-				Rows: [][]sql.NullString{{{String: "0", Valid: true}, {String: "123456789", Valid: true}}},
+				Rows: [][]sql.NullString{{{String: "0", Valid: true}, {String: "0", Valid: true}, {String: "123456789", Valid: true}}},
 			},
-			want: map[string]float64{"recovery": 0, "wal_written": 123456789},
+			want: map[string]float64{"recovery": 0, "recovery_paused": 0, "wal_written": 123456789},
 		},
 	}
 
