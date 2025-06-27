@@ -142,7 +142,7 @@ func (c *postgresWalCollector) Update(config Config, ch chan<- prometheus.Metric
 		return err
 	}
 
-	stats := parsePostgresWalStats(res, config)
+	stats := parsePostgresWalStats(res)
 
 	for k, v := range stats {
 		switch k {
@@ -181,7 +181,7 @@ func (c *postgresWalCollector) Update(config Config, ch chan<- prometheus.Metric
 }
 
 // parsePostgresWalStats parses PGResult and returns struct with data values
-func parsePostgresWalStats(r *model.PGResult, config Config) map[string]float64 {
+func parsePostgresWalStats(r *model.PGResult) map[string]float64 {
 	log.Debug("parse postgres WAL stats")
 
 	stats := map[string]float64{}
@@ -205,13 +205,11 @@ func parsePostgresWalStats(r *model.PGResult, config Config) map[string]float64 
 		}
 	}
 
-	if config.serverVersionNum < PostgresV18 {
-		// Count total time spent on WAL buffers processing.
-		wTime, ok1 := stats["wal_write_time"]
-		sTime, ok2 := stats["wal_sync_time"]
-		if ok1 && ok2 {
-			stats["wal_all_time"] = wTime + sTime
-		}
+	// Count total time spent on WAL buffers processing.
+	wTime, ok1 := stats["wal_write_time"]
+	sTime, ok2 := stats["wal_sync_time"]
+	if ok1 && ok2 {
+		stats["wal_all_time"] = wTime + sTime
 	}
 
 	return stats
