@@ -123,7 +123,9 @@ func Test_selectWalQuery(t *testing.T) {
 		{version: 100000, want: postgresWalQuery13},
 		{version: 100005, want: postgresWalQuery13},
 		{version: 130005, want: postgresWalQuery13},
-		{version: 140005, want: postgresWalQueryLatest},
+		{version: 140005, want: postgresWalQuery17},
+		{version: 170005, want: postgresWalQuery17},
+		{version: 180000, want: postgresWalQueryLatest},
 	}
 
 	for _, tc := range testcases {
