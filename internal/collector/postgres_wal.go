@@ -19,11 +19,18 @@ const (
 		"(CASE pg_is_in_recovery() WHEN 'f' THEN FALSE::int ELSE pg_is_wal_replay_paused()::int END) AS recovery_paused, " +
 		"(CASE pg_is_in_recovery() WHEN 't' THEN pg_last_wal_receive_lsn() ELSE pg_current_wal_lsn() END) - '0/00000000' AS wal_written"
 
-	postgresWalQueryLatest = "SELECT pg_is_in_recovery()::int AS recovery, " +
+	postgresWalQuery17 = "SELECT pg_is_in_recovery()::int AS recovery, " +
 		"(CASE pg_is_in_recovery() WHEN 'f' THEN FALSE::int ELSE pg_is_wal_replay_paused()::int END) AS recovery_paused, " +
 		"wal_records, wal_fpi, " +
 		"(CASE pg_is_in_recovery() WHEN 't' THEN pg_last_wal_receive_lsn() - '0/00000000' ELSE pg_current_wal_lsn() - '0/00000000' END) AS wal_written, " +
 		"wal_bytes, wal_buffers_full, wal_write, wal_sync, wal_write_time, wal_sync_time, extract('epoch' from stats_reset) as reset_time " +
+		"FROM pg_stat_wal"
+
+	postgresWalQueryLatest = "SELECT pg_is_in_recovery()::int AS recovery, " +
+		"(CASE pg_is_in_recovery() WHEN 'f' THEN FALSE::int ELSE pg_is_wal_replay_paused()::int END) AS recovery_paused, " +
+		"wal_records, wal_fpi, " +
+		"(CASE pg_is_in_recovery() WHEN 't' THEN pg_last_wal_receive_lsn() - '0/00000000' ELSE pg_current_wal_lsn() - '0/00000000' END) AS wal_written, " +
+		"wal_bytes, wal_buffers_full, extract('epoch' from stats_reset) as reset_time " +
 		"FROM pg_stat_wal"
 )
 
@@ -135,7 +142,7 @@ func (c *postgresWalCollector) Update(config Config, ch chan<- prometheus.Metric
 		return err
 	}
 
-	stats := parsePostgresWalStats(res)
+	stats := parsePostgresWalStats(res, config)
 
 	for k, v := range stats {
 		switch k {
@@ -174,7 +181,7 @@ func (c *postgresWalCollector) Update(config Config, ch chan<- prometheus.Metric
 }
 
 // parsePostgresWalStats parses PGResult and returns struct with data values
-func parsePostgresWalStats(r *model.PGResult) map[string]float64 {
+func parsePostgresWalStats(r *model.PGResult, config Config) map[string]float64 {
 	log.Debug("parse postgres WAL stats")
 
 	stats := map[string]float64{}
@@ -198,11 +205,13 @@ func parsePostgresWalStats(r *model.PGResult) map[string]float64 {
 		}
 	}
 
-	// Count total time spent on WAL buffers processing.
-	wTime, ok1 := stats["wal_write_time"]
-	sTime, ok2 := stats["wal_sync_time"]
-	if ok1 && ok2 {
-		stats["wal_all_time"] = wTime + sTime
+	if config.serverVersionNum < PostgresV18 {
+		// Count total time spent on WAL buffers processing.
+		wTime, ok1 := stats["wal_write_time"]
+		sTime, ok2 := stats["wal_sync_time"]
+		if ok1 && ok2 {
+			stats["wal_all_time"] = wTime + sTime
+		}
 	}
 
 	return stats
@@ -215,6 +224,8 @@ func selectWalQuery(version int) string {
 		return postgresWalQuery96
 	case version < PostgresV14:
 		return postgresWalQuery13
+	case version < PostgresV18:
+		return postgresWalQuery17
 	default:
 		return postgresWalQueryLatest
 	}

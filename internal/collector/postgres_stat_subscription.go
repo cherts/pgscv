@@ -35,11 +35,11 @@ const (
 		"COALESCE(s1.worker_type, 'unknown') AS worker_type, " +
 		"COALESCE(received_lsn - '0/0', 0) AS received_lsn, " +
 		"COALESCE(latest_end_lsn - '0/0', 0) AS reported_lsn, " +
-		"COALESCE(EXTRACT(EPOCH FROM last_msg_send_time), 0) AS msg_send_time," +
+		"COALESCE(EXTRACT(EPOCH FROM last_msg_send_time), 0) AS msg_send_time, " +
 		"COALESCE(EXTRACT(EPOCH FROM last_msg_receipt_time), 0) AS msg_recv_time, " +
 		"COALESCE(EXTRACT(EPOCH FROM latest_end_time), 0) AS reported_time, " +
 		"s2.apply_error_count, s2.sync_error_count " +
-		"FROM pg_stat_subscription s1 JOIN pg_stat_subscription_stats s2 ON s1.subid = s2.subid" +
+		"FROM pg_stat_subscription s1 JOIN pg_stat_subscription_stats s2 ON s1.subid = s2.subid " +
 		"WHERE s1.relid ISNULL;"
 )
 
