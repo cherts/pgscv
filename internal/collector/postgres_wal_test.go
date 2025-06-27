@@ -19,11 +19,13 @@ func TestPostgresWalCollector_Update(t *testing.T) {
 			"postgres_wal_fpi_total",
 			"postgres_wal_bytes_total",
 			"postgres_wal_buffers_full_total",
+			"postgres_wal_stats_reset_time",
+		},
+		optional: []string{
 			"postgres_wal_write_total",
 			"postgres_wal_sync_total",
-			"postgres_wal_seconds_all_total",
 			"postgres_wal_seconds_total",
-			"postgres_wal_stats_reset_time",
+			"postgres_wal_seconds_all_total",
 		},
 		collector: NewPostgresWalCollector,
 		service:   model.ServiceTypePostgresql,
@@ -38,6 +40,30 @@ func Test_parsePostgresWalStats(t *testing.T) {
 		res  *model.PGResult
 		want map[string]float64
 	}{
+		{
+			name: "pg18",
+			res: &model.PGResult{
+				Nrows: 1,
+				Ncols: 7,
+				Colnames: []pgproto3.FieldDescription{
+					{Name: []byte("recovery")}, {Name: []byte("recovery_paused")},
+					{Name: []byte("wal_records")}, {Name: []byte("wal_fpi")}, {Name: []byte("wal_bytes")}, {Name: []byte("wal_written")},
+					{Name: []byte("wal_buffers_full")}, {Name: []byte("reset_time")},
+				},
+				Rows: [][]sql.NullString{
+					{
+						{String: "0", Valid: true}, {String: "0", Valid: true},
+						{String: "58452", Valid: true}, {String: "4712", Valid: true}, {String: "587241", Valid: true}, {String: "8746951", Valid: true},
+						{String: "1234", Valid: true}, {String: "123456789", Valid: true},
+					},
+				},
+			},
+			want: map[string]float64{
+				"recovery": 0, "recovery_paused": 0,
+				"wal_records": 58452, "wal_fpi": 4712, "wal_bytes": 587241, "wal_written": 8746951,
+				"wal_buffers_full": 1234, "reset_time": 123456789,
+			},
+		},
 		{
 			name: "pg14",
 			res: &model.PGResult{
@@ -97,7 +123,9 @@ func Test_selectWalQuery(t *testing.T) {
 		{version: 100000, want: postgresWalQuery13},
 		{version: 100005, want: postgresWalQuery13},
 		{version: 130005, want: postgresWalQuery13},
-		{version: 140005, want: postgresWalQueryLatest},
+		{version: 140005, want: postgresWalQuery17},
+		{version: 170005, want: postgresWalQuery17},
+		{version: 180000, want: postgresWalQueryLatest},
 	}
 
 	for _, tc := range testcases {
