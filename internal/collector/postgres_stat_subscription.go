@@ -49,11 +49,11 @@ const (
 		"COALESCE(EXTRACT(EPOCH FROM last_msg_send_time), 0) AS msg_send_time, " +
 		"COALESCE(EXTRACT(EPOCH FROM last_msg_receipt_time), 0) AS msg_recv_time, " +
 		"COALESCE(EXTRACT(EPOCH FROM latest_end_time), 0) AS reported_time, " +
-		"s2.apply_error_count, s2.sync_error_count " +
+		"s2.apply_error_count, s2.sync_error_count, " +
 		"s2.confl_insert_exists, s2.confl_update_origin_differs, " +
 		"s2.confl_update_exists, s2.confl_update_missing, " +
 		"s2.confl_delete_origin_differs, s2.confl_delete_missing, " +
-		"s2.confl_multiple_unique_conflicts, " +
+		"s2.confl_multiple_unique_conflicts " +
 		"FROM pg_stat_subscription s1 JOIN pg_stat_subscription_stats s2 ON s1.subid = s2.subid " +
 		"WHERE s1.relid ISNULL;"
 )
