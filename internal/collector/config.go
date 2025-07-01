@@ -94,11 +94,11 @@ func newPostgresServiceConfig(connStr string, connTimeout int) (postgresServiceC
 	var setting string
 
 	// Get role connection limit.
-	err = conn.Conn().QueryRow(context.Background(), "SELECT rolconnlimit FROM pg_roles WHERE rolname = user").Scan(&setting)
+	err = conn.Conn().QueryRow(context.Background(), "SELECT rolconnlimit FROM pg_roles WHERE rolname = USER").Scan(&setting)
 	if err != nil {
 		return config, fmt.Errorf("failed to get rolconnlimit setting from pg_roles, %s, please check user grants", err)
 	}
-	rolConnLimit, err := strconv.ParseInt(setting, 10, 64)
+	rolConnLimit, err := strconv.ParseInt(setting, 10, 32)
 	if err != nil {
 		return config, err
 	}
