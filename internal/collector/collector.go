@@ -2,16 +2,15 @@
 package collector
 
 import (
+	"maps"
 	"strconv"
 	"sync"
-
-	"github.com/jackc/pgx/v4"
 
 	"github.com/cherts/pgscv/internal/filter"
 	"github.com/cherts/pgscv/internal/log"
 	"github.com/cherts/pgscv/internal/model"
+	"github.com/jackc/pgx/v4"
 	"github.com/prometheus/client_golang/prometheus"
-	"maps"
 )
 
 // Factories defines collector functions which used for collecting metrics.
