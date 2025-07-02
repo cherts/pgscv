@@ -20,7 +20,7 @@ func TestMeminfoCollector_Update(t *testing.T) {
 	fmt.Printf("Total: %v, Free: %v, UsedPercent: %f%%\n", vInfo.Total, vInfo.Free, vInfo.UsedPercent)
 	fmt.Printf("SwapTotal: %d, SwapFree: %d, SwapCached: %d\n", vInfo.SwapTotal, vInfo.SwapFree, vInfo.SwapCached)
 	data, _ := json.MarshalIndent(vInfo, "", "")
-	var jsonMap map[string]interface{}
+	var jsonMap map[string]any
 	if err := json.Unmarshal([]byte(data), &jsonMap); err != nil {
 		fmt.Println("Error reading JSON:", err)
 	}

@@ -60,7 +60,7 @@ func (c *meminfoCollector) Update(_ Config, ch chan<- prometheus.Metric) error {
 		return fmt.Errorf("failed convert VirtualMemory data: %s", err)
 	}
 
-	var memInfoJSONMap map[string]interface{}
+	var memInfoJSONMap map[string]any
 	if err := json.Unmarshal([]byte(memInfoData), &memInfoJSONMap); err != nil {
 		return fmt.Errorf("failed to read VirtualMemory json data: %s", err)
 	}
