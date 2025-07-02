@@ -33,5 +33,5 @@ func Test_getFilesystemStats(t *testing.T) {
 	got, err := disk.Usage(path)
 	assert.NoError(t, err)
 	assert.NotNil(t, got)
-	assert.Greater(t, got.Path, path)
+	assert.Equalf(t, got.Path, path, "error %v", err)
 }
