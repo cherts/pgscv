@@ -49,12 +49,11 @@ require (
 	github.com/power-devops/perfstat v0.0.0-20240221224432-82ca36839d55 // indirect
 	github.com/prometheus/client_model v0.6.2 // indirect
 	github.com/prometheus/common v0.65.0 // indirect
+	github.com/prometheus/procfs v0.17.0 // indirect
 	github.com/tklauser/go-sysconf v0.3.15 // indirect
 	github.com/tklauser/numcpus v0.10.0 // indirect
 	github.com/xhit/go-str2duration/v2 v2.1.0 // indirect
 	github.com/yusufpapurcu/wmi v1.2.4 // indirect
-	github.com/prometheus/procfs v0.17.0 // indirect
-	github.com/xhit/go-str2duration/v2 v2.1.0 // indirect
 	golang.org/x/text v0.27.0 // indirect
 	google.golang.org/genproto v0.0.0-20250707201910-8d1bb00bc6a7 // indirect
 	google.golang.org/genproto/googleapis/api v0.0.0-20250707201910-8d1bb00bc6a7 // indirect
