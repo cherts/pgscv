@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/cherts/pgscv/discovery/factory"
 	sdlog "github.com/cherts/pgscv/discovery/log"
+	"github.com/cherts/pgscv/internal/cache"
 	"os"
 	"os/signal"
 	"syscall"
@@ -51,6 +52,10 @@ func main() {
 			log.Errorln("instantiate service discovery failed: ", err)
 			os.Exit(1)
 		}
+	}
+
+	if config.CacheConfig != nil {
+		config.CacheConfig.Cache = cache.GetCacheClient(*config.CacheConfig, gitCommit)
 	}
 
 	if err := config.Validate(); err != nil {

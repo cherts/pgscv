@@ -38,7 +38,6 @@ func Start(ctx context.Context, config *Config) error {
 		NoTrackMode:        config.NoTrackMode,
 		ConnDefaults:       config.Defaults,
 		ConnsSettings:      config.ServicesConnsSettings,
-		DatabasesRE:        config.DatabasesRE,
 		DisabledCollectors: config.DisableCollectors,
 		CollectorsSettings: config.CollectorsSettings,
 		CollectTopTable:    config.CollectTopTable,
@@ -48,6 +47,7 @@ func Start(ctx context.Context, config *Config) error {
 		ConnTimeout:        config.ConnTimeout,
 		ThrottlingInterval: config.ThrottlingInterval,
 		ConcurrencyLimit:   config.ConcurrencyLimit,
+		CacheConfig:        config.CacheConfig,
 	}
 
 	if len(config.ServicesConnsSettings) == 0 && config.DiscoveryServices == nil {
@@ -136,6 +136,7 @@ func subscribeYandex(ds *discovery.Discovery, config *Config, serviceRepo *servi
 				TargetLabels:       &targetLabels,
 				ConnTimeout:        config.ConnTimeout,
 				ConcurrencyLimit:   config.ConcurrencyLimit,
+				CacheConfig:        config.CacheConfig,
 			}
 			var cs = make(service.ConnsSettings, len(services))
 			for serviceID, svc := range services {
@@ -168,6 +169,7 @@ func subscribeYandex(ds *discovery.Discovery, config *Config, serviceRepo *servi
 
 // getMetricsHandler return http handler function to /metrics endpoint
 func getMetricsHandler(repository *service.Repository, throttlingInterval *int) func(w net_http.ResponseWriter, r *net_http.Request) {
+
 	throttle := struct {
 		sync.RWMutex
 		lastScrapeTime map[string]time.Time

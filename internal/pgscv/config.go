@@ -3,6 +3,7 @@ package pgscv
 
 import (
 	"fmt"
+	"github.com/cherts/pgscv/internal/cache"
 	"io/fs"
 	"os"
 	"path/filepath"
@@ -15,7 +16,7 @@ import (
 	"github.com/cherts/pgscv/internal/log"
 	"github.com/cherts/pgscv/internal/model"
 	"github.com/cherts/pgscv/internal/service"
-	"github.com/jackc/pgx/v4"
+	"github.com/jackc/pgx/v5"
 	"gopkg.in/yaml.v2"
 	"maps"
 )
@@ -31,14 +32,12 @@ const (
 
 // Config defines application's configuration.
 type Config struct {
-	NoTrackMode           bool                     `yaml:"no_track_mode"`      // controls tracking sensitive information (query texts, etc)
-	ListenAddress         string                   `yaml:"listen_address"`     // Network address and port where the application should listen on
-	ServicesConnsSettings service.ConnsSettings    `yaml:"services"`           // All connections settings for exact services
-	Defaults              map[string]string        `yaml:"defaults"`           // Defaults
-	DisableCollectors     []string                 `yaml:"disable_collectors"` // List of collectors which should be disabled. DEPRECATED in favor collectors settings
-	CollectorsSettings    model.CollectorsSettings `yaml:"collectors"`         // Collectors settings propagated from main YAML configuration
-	Databases             string                   `yaml:"databases"`          // Regular expression string specifies databases from which metrics should be collected
-	DatabasesRE           *regexp.Regexp           // Regular expression object compiled from Databases
+	NoTrackMode           bool                     `yaml:"no_track_mode"`        // controls tracking sensitive information (query texts, etc)
+	ListenAddress         string                   `yaml:"listen_address"`       // Network address and port where the application should listen on
+	ServicesConnsSettings service.ConnsSettings    `yaml:"services"`             // All connections settings for exact services
+	Defaults              map[string]string        `yaml:"defaults"`             // Defaults
+	DisableCollectors     []string                 `yaml:"disable_collectors"`   // List of collectors which should be disabled. DEPRECATED in favor collectors settings
+	CollectorsSettings    model.CollectorsSettings `yaml:"collectors"`           // Collectors settings propagated from main YAML configuration
 	AuthConfig            http.AuthConfig          `yaml:"authentication"`       // TLS and Basic auth configuration
 	CollectTopTable       int                      `yaml:"collect_top_table"`    // Limit elements on Table collector
 	CollectTopIndex       int                      `yaml:"collect_top_index"`    // Limit elements on Indexes collector
@@ -46,10 +45,11 @@ type Config struct {
 	SkipConnErrorMode     bool                     `yaml:"skip_conn_error_mode"` // Skipping connection errors and creating a Service instance.
 	DiscoveryConfig       *any                     `yaml:"discovery"`
 	DiscoveryServices     *map[string]sd.Discovery
-	ConnTimeout           int    `yaml:"conn_timeout"`
-	URLPrefix             string `yaml:"url_prefix"` // Url prefix
-	ThrottlingInterval    *int   `yaml:"throttling_interval"`
-	ConcurrencyLimit      *int   `yaml:"concurrency_limit"`
+	ConnTimeout           int           `yaml:"conn_timeout"`
+	URLPrefix             string        `yaml:"url_prefix"` // Url prefix
+	ThrottlingInterval    *int          `yaml:"throttling_interval"`
+	ConcurrencyLimit      *int          `yaml:"concurrency_limit"`
+	CacheConfig           *cache.Config `yaml:"cache"`
 }
 
 // NewConfig creates new config based on config file or return default config if config file is not specified.
@@ -94,15 +94,6 @@ func NewConfig(configFilePath string) (*Config, error) {
 		configFromFile.DisableCollectors = append(configFromFile.DisableCollectors, configFromEnv.DisableCollectors...)
 		configFromFile.CollectorsSettings = mergeCollectorsSettings(configFromFile.CollectorsSettings, configFromEnv.CollectorsSettings)
 
-		if configFromEnv.Databases != "" {
-			// If set environment variable PGSCV_DATABASES and 'databases' settings from file is empty, then use PGSCV_DATABASES
-			if configFromFile.Databases == "" {
-				configFromFile.Databases = configFromEnv.Databases
-			} else {
-				// If set environment variable PGSCV_DATABASES and 'databases' settings from file is not empty, then use 'databases' settings from file
-				log.Debug("PGSCV_DATABASES environment setting was ignored, the settings from configuration file were used.")
-			}
-		}
 		// Set AuthConfig settings
 		if configFromEnv.AuthConfig != (http.AuthConfig{}) {
 			configFromFile.AuthConfig = configFromEnv.AuthConfig
@@ -242,15 +233,8 @@ func (c *Config) Validate() error {
 		}
 	}
 
-	// Create 'databases' regexp object for builtin metrics.
-	re, err := newDatabasesRegexp(c.Databases)
-	if err != nil {
-		return err
-	}
-	c.DatabasesRE = re
-
 	// Validate collector settings.
-	err = validateCollectorSettings(c.CollectorsSettings)
+	err := validateCollectorSettings(c.CollectorsSettings)
 	if err != nil {
 		return err
 	}
@@ -298,6 +282,13 @@ func (c *Config) Validate() error {
 		log.Infof("ThrottlingInterval: %d seconds throttling interval set for scrape metrics", *c.ThrottlingInterval)
 	}
 
+	if c.CacheConfig != nil {
+		err = c.CacheConfig.Validate()
+		if err != nil {
+			return err
+		}
+	}
+
 	return nil
 }
 
@@ -324,12 +315,6 @@ func validateCollectorSettings(cs model.CollectorsSettings) error {
 
 			if !re2.MatchString(ssName) {
 				return fmt.Errorf("invalid subsystem name: %s", ssName)
-			}
-
-			// Validate databases regexp.
-			_, err := regexp.Compile(subsys.Databases)
-			if err != nil {
-				return fmt.Errorf("databases invalid regular expression specified: %s", err)
 			}
 
 			// Query must be specified if any metrics.
@@ -425,8 +410,6 @@ func newConfigFromEnv() (*Config, error) {
 			config.ListenAddress = value
 		case "PGSCV_NO_TRACK_MODE":
 			config.NoTrackMode = toBool(value)
-		case "PGSCV_DATABASES":
-			config.Databases = value
 		case "PGSCV_DISABLE_COLLECTORS":
 			config.DisableCollectors = strings.Split(strings.Replace(value, " ", "", -1), ",")
 		case "PGSCV_AUTH_USERNAME":
@@ -492,13 +475,4 @@ func toBool(s string) bool {
 	default:
 		return false
 	}
-}
-
-// newDatabasesRegexp creates new regexp depending on passed string.
-func newDatabasesRegexp(s string) (*regexp.Regexp, error) {
-	if s == "" {
-		s = ".+"
-	}
-
-	return regexp.Compile(s)
 }

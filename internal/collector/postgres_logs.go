@@ -107,7 +107,7 @@ func NewPostgresLogsCollector(constLabels labels, settings model.CollectorSettin
 }
 
 // Update method generates metrics based on collected log messages.
-func (c *postgresLogsCollector) Update(config Config, ch chan<- prometheus.Metric) error {
+func (c *postgresLogsCollector) Update(_ context.Context, config Config, ch chan<- prometheus.Metric) error {
 	if !config.localService {
 		log.Debugln("[postgres log collector]: skip collecting metrics from remote services")
 		return nil

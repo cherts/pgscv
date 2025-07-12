@@ -1,11 +1,12 @@
 package collector
 
 import (
+	"context"
 	"strconv"
+	"sync"
 
 	"github.com/cherts/pgscv/internal/log"
 	"github.com/cherts/pgscv/internal/model"
-	"github.com/cherts/pgscv/internal/store"
 	"github.com/prometheus/client_golang/prometheus"
 )
 
@@ -39,7 +40,7 @@ const (
 		"COALESCE(EXTRACT(EPOCH FROM last_msg_receipt_time), 0) AS msg_recv_time, " +
 		"COALESCE(EXTRACT(EPOCH FROM latest_end_time), 0) AS reported_time, " +
 		"s2.apply_error_count, s2.sync_error_count " +
-		"FROM pg_stat_subscription s1 JOIN pg_stat_subscription_stats s2 ON s1.subid = s2.subid" +
+		"FROM pg_stat_subscription s1 JOIN pg_stat_subscription_stats s2 ON s1.subid = s2.subid " +
 		"WHERE s1.relid ISNULL;"
 )
 
@@ -101,49 +102,54 @@ func NewPostgresStatSubscriptionCollector(constLabels labels, settings model.Col
 }
 
 // Update method collects statistics, parse it and produces metrics that are sent to Prometheus.
-func (c *postgresStatSubscriptionCollector) Update(config Config, ch chan<- prometheus.Metric) error {
+func (c *postgresStatSubscriptionCollector) Update(ctx context.Context, config Config, ch chan<- prometheus.Metric) error {
 	if config.serverVersionNum < PostgresV10 {
 		log.Debugln("[postgres stat_subscription collector]: pg_stat_subscription view are not available, required Postgres 10 or newer")
 		return nil
 	}
-
-	conn, err := store.New(config.ConnString, config.ConnTimeout)
-	if err != nil {
-		return err
-	}
-	defer conn.Close()
-
 	// Collecting pg_stat_subscription since Postgres 10.
-	if config.serverVersionNum >= PostgresV10 {
-		res, err := conn.Query(selectSubscriptionQuery(config.serverVersionNum))
+
+	conn := config.DB
+
+	wg := &sync.WaitGroup{}
+	defer wg.Wait()
+	var err error
+
+	query := selectSubscriptionQuery(config.serverVersionNum)
+	cacheKey, res := getFromCache(config.CacheConfig, config.ConnString, collectorPostgresStatSubscription, query)
+	if res == nil {
+		res, err = conn.Query(ctx, query)
 		if err != nil {
 			log.Warnf("get pg_stat_subscription failed: %s; skip", err)
-		} else {
-			// Parse pg_stat_subscription stats.
-			stats := parsePostgresSubscriptionStat(res, c.labelNames)
-			for _, stat := range stats {
-				if value, ok := stat.values["received_lsn"]; ok {
-					ch <- c.receivedLsn.newConstMetric(value, stat.SubID, stat.SubName, stat.WorkerType)
-				}
-				if value, ok := stat.values["reported_lsn"]; ok {
-					ch <- c.reportedLsn.newConstMetric(value, stat.SubID, stat.SubName, stat.WorkerType)
-				}
-				if value, ok := stat.values["msg_send_time"]; ok {
-					ch <- c.msgSendtime.newConstMetric(value, stat.SubID, stat.SubName, stat.WorkerType)
-				}
-				if value, ok := stat.values["msg_recv_time"]; ok {
-					ch <- c.msgRecvtime.newConstMetric(value, stat.SubID, stat.SubName, stat.WorkerType)
-				}
-				if value, ok := stat.values["reported_time"]; ok {
-					ch <- c.reportedTime.newConstMetric(value, stat.SubID, stat.SubName, stat.WorkerType)
-				}
-				if value, ok := stat.values["apply_error_count"]; ok {
-					ch <- c.errorCount.newConstMetric(value, stat.SubID, stat.SubName, stat.WorkerType, "apply")
-				}
-				if value, ok := stat.values["sync_error_count"]; ok {
-					ch <- c.errorCount.newConstMetric(value, stat.SubID, stat.SubName, stat.WorkerType, "sync")
-				}
-			}
+
+			return err
+		}
+		saveToCache(collectorPostgresStatSubscription, wg, config.CacheConfig, cacheKey, res)
+	}
+
+	// Parse pg_stat_subscription stats.
+	stats := parsePostgresSubscriptionStat(res, c.labelNames)
+	for _, stat := range stats {
+		if value, ok := stat.values["received_lsn"]; ok {
+			ch <- c.receivedLsn.newConstMetric(value, stat.SubID, stat.SubName, stat.WorkerType)
+		}
+		if value, ok := stat.values["reported_lsn"]; ok {
+			ch <- c.reportedLsn.newConstMetric(value, stat.SubID, stat.SubName, stat.WorkerType)
+		}
+		if value, ok := stat.values["msg_send_time"]; ok {
+			ch <- c.msgSendtime.newConstMetric(value, stat.SubID, stat.SubName, stat.WorkerType)
+		}
+		if value, ok := stat.values["msg_recv_time"]; ok {
+			ch <- c.msgRecvtime.newConstMetric(value, stat.SubID, stat.SubName, stat.WorkerType)
+		}
+		if value, ok := stat.values["reported_time"]; ok {
+			ch <- c.reportedTime.newConstMetric(value, stat.SubID, stat.SubName, stat.WorkerType)
+		}
+		if value, ok := stat.values["apply_error_count"]; ok {
+			ch <- c.errorCount.newConstMetric(value, stat.SubID, stat.SubName, stat.WorkerType, "apply")
+		}
+		if value, ok := stat.values["sync_error_count"]; ok {
+			ch <- c.errorCount.newConstMetric(value, stat.SubID, stat.SubName, stat.WorkerType, "sync")
 		}
 	}
 
