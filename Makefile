@@ -36,13 +36,13 @@ MODERNIZE_CMD = go run golang.org/x/tools/gopls/internal/analysis/modernize/cmd/
 
 help: ## Display this help screen
 	@echo "Makefile available targets:"
-	@grep -h -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  * \033[36m%-15s\033[0m %s\n", $$1, $$2}'
+	@grep -h -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  * \033[36m%-25s\033[0m %s\n", $$1, $$2}'
 
 clean: ## Clean
 	rm -f ./bin/${APPNAME} ./bin/${APPNAME}.tar.gz ./bin/${APPNAME}.version ./bin/${APPNAME}.sha256
 	rm -rf ./bin
 
-go-update: # Update go mod
+go-update: ## Update go mod
 	go mod tidy -compat=1.23
 	go get -u ./cmd
 	go mod download
@@ -88,14 +88,14 @@ docker-push-test-runner: ## Push testing docker image to registry
 	cd ./testing/docker-test-runner; \
 		docker push ${DOCKER_ACCOUNT}/pgscv-test-runner:${VERSION}
 
-modernize: modernize-fix
+modernize: modernize-fix ## Run gopls modernize check and fix
 
-modernize-fix:
+modernize-fix: ## Run gopls modernize fix
 	@echo "Running gopls modernize with -fix..."
 	go env -w GOFLAGS="-buildvcs=false"
 	$(MODERNIZE_CMD) -test -fix ./...
 
-modernize-check:
+modernize-check: ## Run gopls modernize only check
 	@echo "Checking if code needs modernization..."
 	go env -w GOFLAGS="-buildvcs=false"
 	$(MODERNIZE_CMD) -test ./...
