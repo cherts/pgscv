@@ -18,9 +18,21 @@ const (
 		"COALESCE(EXTRACT(EPOCH FROM AGE(now(), stats_reset)), 0) as bgwr_stats_age_seconds " +
 		"FROM pg_stat_bgwriter"
 
-	postgresBgwriterQueryLatest = "WITH ckpt AS (" +
+	postgresBgwriterQuery17 = "WITH ckpt AS (" +
 		"SELECT num_timed AS checkpoints_timed, num_requested AS checkpoints_req, restartpoints_timed, restartpoints_req, " +
 		"restartpoints_done, write_time AS checkpoint_write_time, sync_time AS checkpoint_sync_time, buffers_written AS buffers_checkpoint, " +
+		"COALESCE(EXTRACT(EPOCH FROM AGE(now(), stats_reset)), 0) as ckpt_stats_age_seconds FROM pg_stat_checkpointer), " +
+		"bgwr AS (" +
+		"SELECT buffers_clean, maxwritten_clean, buffers_alloc, " +
+		"COALESCE(EXTRACT(EPOCH FROM age(now(), stats_reset)), 0) as bgwr_stats_age_seconds FROM pg_stat_bgwriter), " +
+		"stat_io AS (" +
+		"SELECT SUM(writes) AS buffers_backend, SUM(fsyncs) AS buffers_backend_fsync FROM pg_stat_io WHERE backend_type='background writer') " +
+		"SELECT ckpt.*, bgwr.*, stat_io.* FROM ckpt, bgwr, stat_io"
+
+	postgresBgwriterQueryLatest = "WITH ckpt AS (" +
+		"SELECT num_timed AS checkpoints_timed, num_requested AS checkpoints_req, num_done AS checkpoints_done, " +
+		"restartpoints_timed, restartpoints_req, restartpoints_done, write_time AS checkpoint_write_time, " +
+		"sync_time AS checkpoint_sync_time, buffers_written AS buffers_checkpoint, slru_written AS buffers_slru, " +
 		"COALESCE(EXTRACT(EPOCH FROM AGE(now(), stats_reset)), 0) as ckpt_stats_age_seconds FROM pg_stat_checkpointer), " +
 		"bgwr AS (" +
 		"SELECT buffers_clean, maxwritten_clean, buffers_alloc, " +
@@ -142,6 +154,9 @@ func (c *postgresBgwriterCollector) Update(config Config, ch chan<- prometheus.M
 		case "checkpoints":
 			ch <- desc.newConstMetric(stats.ckptTimed, "timed")
 			ch <- desc.newConstMetric(stats.ckptReq, "req")
+			if config.serverVersionNum >= PostgresV18 {
+				ch <- desc.newConstMetric(stats.ckptDone, "done")
+			}
 		case "checkpoints_all":
 			ch <- desc.newConstMetric(stats.ckptTimed + stats.ckptReq)
 		case "checkpoint_time":
@@ -155,6 +170,9 @@ func (c *postgresBgwriterCollector) Update(config Config, ch chan<- prometheus.M
 			ch <- desc.newConstMetric(stats.ckptBuffers*blockSize, "checkpointer")
 			ch <- desc.newConstMetric(stats.bgwrBuffers*blockSize, "bgwriter")
 			ch <- desc.newConstMetric(stats.backendBuffers*blockSize, "backend")
+			if config.serverVersionNum >= PostgresV18 {
+				ch <- desc.newConstMetric(stats.slruBuffers*blockSize, "slru")
+			}
 		case "buffers_backend_fsync":
 			ch <- desc.newConstMetric(stats.backendFsync)
 		case "alloc_bytes":
@@ -182,6 +200,7 @@ func (c *postgresBgwriterCollector) Update(config Config, ch chan<- prometheus.M
 type postgresBgwriterStat struct {
 	ckptTimed              float64
 	ckptReq                float64
+	ckptDone               float64
 	ckptWriteTime          float64
 	ckptSyncTime           float64
 	ckptBuffers            float64
@@ -192,6 +211,7 @@ type postgresBgwriterStat struct {
 	bgwrBuffers            float64
 	bgwrMaxWritten         float64
 	backendBuffers         float64
+	slruBuffers            float64
 	backendFsync           float64
 	backendAllocated       float64
 	bgwrStatsAgeSeconds    float64
@@ -223,6 +243,8 @@ func parsePostgresBgwriterStats(r *model.PGResult) postgresBgwriterStat {
 				stats.ckptTimed = v
 			case "checkpoints_req":
 				stats.ckptReq = v
+			case "checkpoints_done":
+				stats.ckptDone = v
 			case "checkpoint_write_time":
 				stats.ckptWriteTime = v
 			case "checkpoint_sync_time":
@@ -235,6 +257,8 @@ func parsePostgresBgwriterStats(r *model.PGResult) postgresBgwriterStat {
 				stats.bgwrMaxWritten = v
 			case "buffers_backend":
 				stats.backendBuffers = v
+			case "buffers_slru":
+				stats.slruBuffers = v
 			case "buffers_backend_fsync":
 				stats.backendFsync = v
 			case "buffers_alloc":
@@ -263,6 +287,8 @@ func selectBgwriterQuery(version int) string {
 	switch {
 	case version < PostgresV17:
 		return postgresBgwriterQuery16
+	case version < PostgresV18:
+		return postgresBgwriterQuery17
 	default:
 		return postgresBgwriterQueryLatest
 	}
