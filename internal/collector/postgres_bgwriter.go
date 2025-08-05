@@ -154,7 +154,9 @@ func (c *postgresBgwriterCollector) Update(config Config, ch chan<- prometheus.M
 		case "checkpoints":
 			ch <- desc.newConstMetric(stats.ckptTimed, "timed")
 			ch <- desc.newConstMetric(stats.ckptReq, "req")
-			ch <- desc.newConstMetric(stats.ckptDone, "done")
+			if config.serverVersionNum >= PostgresV18 {
+				ch <- desc.newConstMetric(stats.ckptDone, "done")
+			}
 		case "checkpoints_all":
 			ch <- desc.newConstMetric(stats.ckptTimed + stats.ckptReq)
 		case "checkpoint_time":
@@ -168,7 +170,9 @@ func (c *postgresBgwriterCollector) Update(config Config, ch chan<- prometheus.M
 			ch <- desc.newConstMetric(stats.ckptBuffers*blockSize, "checkpointer")
 			ch <- desc.newConstMetric(stats.bgwrBuffers*blockSize, "bgwriter")
 			ch <- desc.newConstMetric(stats.backendBuffers*blockSize, "backend")
-			ch <- desc.newConstMetric(stats.slruBuffers*blockSize, "slru")
+			if config.serverVersionNum >= PostgresV18 {
+				ch <- desc.newConstMetric(stats.slruBuffers*blockSize, "slru")
+			}
 		case "buffers_backend_fsync":
 			ch <- desc.newConstMetric(stats.backendFsync)
 		case "alloc_bytes":
