@@ -12,5 +12,6 @@ FROM alpine:3.22.0 AS dist
 COPY --from=build /app/bin/pgscv /bin/pgscv
 #COPY docker_entrypoint.sh /bin/
 EXPOSE 9890
+#EXPOSE 6060
 ENTRYPOINT ["/bin/pgscv"]
 #ENTRYPOINT ["/bin/docker_entrypoint.sh"]
