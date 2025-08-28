@@ -9,7 +9,7 @@ require (
 	github.com/nxadm/tail v1.4.11
 	github.com/prometheus/client_golang v1.23.0
 	github.com/rs/zerolog v1.34.0
-	github.com/stretchr/testify v1.11.0
+	github.com/stretchr/testify v1.11.1
 	golang.org/x/crypto v0.41.0 // indirect
 	golang.org/x/net v0.43.0
 	golang.org/x/sys v0.35.0 // indirect
