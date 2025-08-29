@@ -19,6 +19,7 @@ func TestPostgresStatSubscriptionCollector_Update(t *testing.T) {
 			"postgres_stat_subscription_msg_recv_time",
 			"postgres_stat_subscription_reported_time",
 			"postgres_stat_subscription_error_count",
+			"postgres_stat_subscription_confl_count",
 		},
 		collector: NewPostgresStatSubscriptionCollector,
 		service:   model.ServiceTypePostgresql,
@@ -98,7 +99,7 @@ func Test_selectSubscriptionQuery(t *testing.T) {
 		{version: 130000, want: postgresStatSubscriptionQuery14},
 		{version: 150000, want: postgresStatSubscriptionQuery16},
 		{version: 160000, want: postgresStatSubscriptionQuery16},
-		{version: 170000, want: postgresStatSubscriptionQueryLatest},
+		{version: 170000, want: postgresStatSubscriptionQuery17},
 		{version: 180000, want: postgresStatSubscriptionQueryLatest},
 	}
 

@@ -7,6 +7,7 @@ import (
 	"github.com/cherts/pgscv/discovery/factory"
 	sdlog "github.com/cherts/pgscv/discovery/log"
 	"github.com/cherts/pgscv/internal/cache"
+
 	"os"
 	"os/signal"
 	"syscall"
@@ -14,6 +15,7 @@ import (
 	"github.com/alecthomas/kingpin/v2"
 	"github.com/cherts/pgscv/internal/log"
 	"github.com/cherts/pgscv/internal/pgscv"
+	//_ "net/http/pprof"
 )
 
 var (
@@ -39,6 +41,10 @@ func main() {
 	}
 
 	log.Infoln("starting ", appName, " ", gitTag, " ", gitCommit, "-", gitBranch)
+
+	//go func() {
+	//	log.Infoln(http.ListenAndServe(":6060", nil))
+	//}()
 
 	config, err := pgscv.NewConfig(*configFile)
 	if err != nil {
@@ -81,6 +87,7 @@ func main() {
 
 func listenSignals() error {
 	c := make(chan os.Signal, 1)
+	defer signal.Stop(c)
 	signal.Notify(c, syscall.SIGINT, syscall.SIGTERM)
 	return fmt.Errorf("%s", <-c)
 }

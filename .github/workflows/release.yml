@@ -10,10 +10,10 @@ on:
 jobs:
   test:
     runs-on: ubuntu-22.04
-    container: cherts/pgscv-test-runner:1.0.8
+    container: cherts/pgscv-test-runner:1.0.9
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       - name: Prepare test environment
         run: prepare-test-environment.sh
       - name: Run test
@@ -24,7 +24,7 @@ jobs:
     needs: test
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           fetch-depth: 0
       - name: Build image
@@ -39,13 +39,13 @@ jobs:
     needs: build
     steps:
       - name: Run checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           fetch-depth: 0
       - name: Run setup Go
         uses: actions/setup-go@v5
         with:
-          go-version: 1.23
+          go-version: 1.24
       - name: Run GoReleaser
         uses: goreleaser/goreleaser-action@v6
         with:

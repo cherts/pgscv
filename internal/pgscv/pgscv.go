@@ -184,7 +184,7 @@ func getMetricsHandler(repository *service.Repository, throttlingInterval *int) 
 			t, ok := throttle.lastScrapeTime[target]
 			throttle.RUnlock()
 			if ok {
-				if time.Now().Sub(t) < time.Duration(*throttlingInterval)*time.Second {
+				if time.Since(t) < time.Duration(*throttlingInterval)*time.Second {
 					w.WriteHeader(http.StatusOK)
 					log.Warnf("Skip scraping, method: %s, proto: %s, request_uri: %s, user_agent: %s, remote_addr: %s", r.Method, r.Proto, r.RequestURI, r.UserAgent(), r.RemoteAddr)
 					return

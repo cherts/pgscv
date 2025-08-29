@@ -45,7 +45,7 @@ const (
 		"conflicts, temp_files, temp_bytes, deadlocks, checksum_failures, COALESCE(EXTRACT(EPOCH from checksum_last_failure), 0) AS last_checksum_failure_unixtime, " +
 		"blk_read_time, blk_write_time, " +
 		"session_time, active_time, idle_in_transaction_time, sessions, sessions_abandoned, sessions_fatal, sessions_killed, " +
-		"parallel_workers_to_launch, parallel_workers_launched " +
+		"parallel_workers_to_launch, parallel_workers_launched, " +
 		"pg_database_size(datname) as size_bytes, " +
 		"COALESCE(EXTRACT(EPOCH FROM AGE(now(), stats_reset)), 0) as stats_age_seconds " +
 		"FROM pg_stat_database WHERE datname IN (SELECT datname FROM pg_database WHERE datallowconn AND NOT datistemplate) " +

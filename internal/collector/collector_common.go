@@ -4,6 +4,7 @@ package collector
 import (
 	"context"
 	"database/sql"
+	"slices"
 	"strconv"
 	"strings"
 
@@ -12,7 +13,6 @@ import (
 	"github.com/cherts/pgscv/internal/model"
 	"github.com/cherts/pgscv/internal/store"
 	"github.com/prometheus/client_golang/prometheus"
-	"slices"
 )
 
 // labels is a local wrapper over prometheus.Labels which is a simple map[string]string.

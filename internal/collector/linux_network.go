@@ -74,28 +74,27 @@ func parseInterfaceAddresses(addresses []net.Addr) map[string]int {
 }
 
 func isPrivate(address string) (bool, error) {
-	networks := []string{
-		"127.0.0.0/8",    // IPv4 loopback
-		"10.0.0.0/8",     // RFC1918
-		"172.16.0.0/12",  // RFC1918
-		"192.168.0.0/16", // RFC1918
-		"::1/128",        // IPv6 loopback
-		"fe80::/10",      // IPv6 link-local
-		"fc00::/7",       // IPv6 unique-local
+	ip6networks := []string{
+		"::1/128",   // IPv6 loopback
+		"fe80::/10", // IPv6 link-local
+		"fc00::/7",  // IPv6 unique-local
 	}
 
-	for _, cidr := range networks {
+	address = strings.Split(address, "/")[0]
+	ip := net.ParseIP(address)
+	if ip == nil {
+		return false, fmt.Errorf("invalid ip address: %s", address)
+	}
+
+	if ip.IsLoopback() || ip.IsLinkLocalMulticast() || ip.IsLinkLocalUnicast() || ip.IsPrivate() {
+		return true, nil
+	}
+
+	for _, cidr := range ip6networks {
 		_, conv, err := net.ParseCIDR(cidr)
 		if err != nil {
 			return false, err
 		}
-
-		address = strings.Split(address, "/")[0]
-		ip := net.ParseIP(address)
-		if ip == nil {
-			return false, fmt.Errorf("invalid ip address: %s", address)
-		}
-
 		if conv.Contains(ip) {
 			return true, nil
 		}

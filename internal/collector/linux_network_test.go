@@ -1,9 +1,10 @@
 package collector
 
 import (
-	"github.com/stretchr/testify/assert"
 	"net"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestNetworkCollector_Update(t *testing.T) {
@@ -60,6 +61,7 @@ func Test_isPrivate(t *testing.T) {
 		{in: "invalid", valid: false, want: false},
 		{in: "1.1", valid: false, want: false},
 		{in: "1:1", valid: false, want: false},
+		{in: "169.254.67.118", valid: true, want: true},
 	}
 
 	for _, tc := range testcases {

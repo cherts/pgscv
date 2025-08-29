@@ -172,8 +172,10 @@ func Test_selectStatementsQuery(t *testing.T) {
 		{version: PostgresV12, want: fmt.Sprintf(postgresStatementsQuery12TopK, "p.query", "example"), topK: 100},
 		{version: PostgresV13, want: fmt.Sprintf(postgresStatementsQuery16, "p.query", "example"), topK: 0},
 		{version: PostgresV13, want: fmt.Sprintf(postgresStatementsQuery16TopK, "p.query", "example"), topK: 100},
-		{version: PostgresV17, want: fmt.Sprintf(postgresStatementsQueryLatest, "p.query", "example"), topK: 0},
-		{version: PostgresV17, want: fmt.Sprintf(postgresStatementsQueryLatestTopK, "p.query", "example"), topK: 100},
+		{version: PostgresV17, want: fmt.Sprintf(postgresStatementsQuery17, "p.query", "example"), topK: 0},
+		{version: PostgresV17, want: fmt.Sprintf(postgresStatementsQuery17TopK, "p.query", "example"), topK: 100},
+		{version: PostgresV18, want: fmt.Sprintf(postgresStatementsQueryLatest, "p.query", "example"), topK: 0},
+		{version: PostgresV18, want: fmt.Sprintf(postgresStatementsQueryLatestTopK, "p.query", "example"), topK: 100},
 	}
 
 	for _, tc := range testcases {
