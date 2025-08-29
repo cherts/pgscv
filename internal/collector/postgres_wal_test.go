@@ -45,10 +45,10 @@ func Test_parsePostgresWalStats(t *testing.T) {
 			res: &model.PGResult{
 				Nrows: 1,
 				Ncols: 7,
-				Colnames: []pgproto3.FieldDescription{
-					{Name: []byte("recovery")}, {Name: []byte("recovery_paused")},
-					{Name: []byte("wal_records")}, {Name: []byte("wal_fpi")}, {Name: []byte("wal_bytes")}, {Name: []byte("wal_written")},
-					{Name: []byte("wal_buffers_full")}, {Name: []byte("reset_time")},
+				Colnames: []pgconn.FieldDescription{
+					{Name: "recovery"}, {Name: "recovery_paused"},
+					{Name: "wal_records"}, {Name: "wal_fpi"}, {Name: "wal_bytes"}, {Name: "wal_written"},
+					{Name: "wal_buffers_full"}, {Name: "reset_time"},
 				},
 				Rows: [][]sql.NullString{
 					{
