@@ -7,7 +7,7 @@ import (
 	"time"
 )
 
-// InMemoryCache - кеш в памяти
+// InMemoryCache - in memory cache
 type InMemoryCache struct {
 	items map[string]*model.PGResult
 	mu    sync.RWMutex
