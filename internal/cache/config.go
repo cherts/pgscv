@@ -29,7 +29,7 @@ type Config struct {
 
 // CollectorConfig custom ttl for collectors
 type CollectorConfig struct {
-	TTL string `yaml:"ttl" validate:"required,ttl"` // Индивидуальный TTL для коллектора
+	TTL string `yaml:"ttl" validate:"required,ttl"`
 }
 
 // Cache abstract interface
@@ -40,15 +40,9 @@ type Cache interface {
 	Hash(args ...any) string
 }
 
-// Validate Config struct
-func (c *Config) Validate() error {
-	validate := validator.New()
-	registerCustomValidators(validate)
-	err := validate.Struct(c)
-	if err != nil {
-		return err
-	}
-	return nil
+// RegisterValidators Config struct
+func RegisterValidators(v *validator.Validate) {
+	registerCustomValidators(v)
 }
 
 func registerCustomValidators(v *validator.Validate) {
@@ -106,14 +100,14 @@ func ttlSeconds(ttl string) (int32, error) {
 	}
 
 	if duration, err := time.ParseDuration(ttl); err == nil {
-		if duration.Seconds() > math.MaxInt32 {
-			return 0, fmt.Errorf("TTL must be between 0 and math.MaxInt32 seconds")
+		if duration.Seconds() > math.MaxInt32 || duration.Seconds() < 1 {
+			return 0, fmt.Errorf("TTL must be between 1 and math.MaxInt32 seconds")
 		}
 		return int32(duration.Seconds()), nil
 	}
 	if seconds, err := strconv.Atoi(ttl); err == nil {
-		if seconds > math.MaxInt32 {
-			return 0, fmt.Errorf("TTL must be between 0 and math.MaxInt32 seconds")
+		if seconds > math.MaxInt32 || seconds < 1 {
+			return 0, fmt.Errorf("TTL must be between 1 and math.MaxInt32 seconds")
 		}
 		return int32(seconds), nil // #nosec G109 G115
 	}

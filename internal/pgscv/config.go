@@ -3,31 +3,30 @@ package pgscv
 
 import (
 	"fmt"
+	sd "github.com/cherts/pgscv/discovery"
 	"github.com/cherts/pgscv/internal/cache"
+	"github.com/cherts/pgscv/internal/http"
+	"github.com/cherts/pgscv/internal/log"
+	"github.com/cherts/pgscv/internal/model"
+	"github.com/cherts/pgscv/internal/service"
+	"github.com/go-playground/validator/v10"
+	"github.com/jackc/pgx/v5"
+	"gopkg.in/yaml.v2"
 	"io/fs"
+	"maps"
 	"os"
 	"path/filepath"
 	"regexp"
 	"strconv"
 	"strings"
-
-	sd "github.com/cherts/pgscv/discovery"
-	"github.com/cherts/pgscv/internal/http"
-	"github.com/cherts/pgscv/internal/log"
-	"github.com/cherts/pgscv/internal/model"
-	"github.com/cherts/pgscv/internal/service"
-	"github.com/jackc/pgx/v5"
-	"gopkg.in/yaml.v2"
-	"maps"
 )
 
 const (
-	defaultListenAddress          = "127.0.0.1:9890"
-	defaultPostgresUsername       = "pgscv"
-	defaultPostgresDbname         = "postgres"
-	defaultPgbouncerUsername      = "pgscv"
-	defaultPgbouncerDbname        = "pgbouncer"
-	defaultThrottlingInterval int = 0 // seconds
+	defaultListenAddress     = "127.0.0.1:9890"
+	defaultPostgresUsername  = "pgscv"
+	defaultPostgresDbname    = "postgres"
+	defaultPgbouncerUsername = "pgscv"
+	defaultPgbouncerDbname   = "pgbouncer"
 )
 
 // Config defines application's configuration.
@@ -47,9 +46,15 @@ type Config struct {
 	DiscoveryServices     *map[string]sd.Discovery
 	ConnTimeout           int           `yaml:"conn_timeout"`
 	URLPrefix             string        `yaml:"url_prefix"` // Url prefix
-	ThrottlingInterval    *int          `yaml:"throttling_interval"`
 	ConcurrencyLimit      *int          `yaml:"concurrency_limit"`
-	CacheConfig           *cache.Config `yaml:"cache"`
+	CacheConfig           *cache.Config `yaml:"cache" validate:"omitempty"`
+	PoolerConfig          *PoolConfig   `yaml:"pooler" validate:"omitempty,pool_config"`
+}
+
+type PoolConfig struct {
+	MaxConns     *int32 `yaml:"max_conns" validate:"omitempty"`
+	MinConns     *int32 `yaml:"min_conns" validate:"omitempty"`
+	MinIdleConns *int32 `yaml:"min_idle_conns" validate:"omitempty"`
 }
 
 // NewConfig creates new config based on config file or return default config if config file is not specified.
@@ -116,9 +121,6 @@ func NewConfig(configFilePath string) (*Config, error) {
 		}
 		if configFromEnv.URLPrefix != "" {
 			configFromFile.URLPrefix = configFromEnv.URLPrefix
-		}
-		if configFromEnv.ThrottlingInterval != nil {
-			configFromFile.ThrottlingInterval = configFromEnv.ThrottlingInterval
 		}
 		if configFromEnv.ConcurrencyLimit != nil {
 			configFromFile.ConcurrencyLimit = configFromEnv.ConcurrencyLimit
@@ -273,22 +275,13 @@ func (c *Config) Validate() error {
 		log.Infof("ConnTimeout: %d seconds timeout set for connecting to DB", c.ConnTimeout)
 	}
 
-	if c.ThrottlingInterval == nil {
-		throttlingInterval := defaultThrottlingInterval
-		c.ThrottlingInterval = &throttlingInterval
-	}
+	validate := validator.New()
+	registerCustomValidators(validate)
 
-	if *c.ThrottlingInterval > 0 {
-		log.Infof("ThrottlingInterval: %d seconds throttling interval set for scrape metrics", *c.ThrottlingInterval)
+	err = validate.Struct(c)
+	if err != nil {
+		return err
 	}
-
-	if c.CacheConfig != nil {
-		err = c.CacheConfig.Validate()
-		if err != nil {
-			return err
-		}
-	}
-
 	return nil
 }
 
@@ -349,7 +342,6 @@ func validateCollectorSettings(cs model.CollectorsSettings) error {
 			}
 		}
 	}
-
 	return nil
 }
 
@@ -448,19 +440,44 @@ func newConfigFromEnv() (*Config, error) {
 			config.ConnTimeout = timeout
 		case "PGSCV_URL_PREFIX":
 			config.URLPrefix = value
-		case "PGSCV_THROTTLING_INTERVAL":
-			throttlingInterval, err := strconv.Atoi(value)
-			if err != nil {
-				return nil, fmt.Errorf("invalid setting PGSCV_THROTTLING_INTERVAL, value '%s': %s", value, err)
-			}
-			config.ThrottlingInterval = &throttlingInterval
 		case "PGSCV_CONCURRENCY_LIMIT":
 			concurrencyLimit, err := strconv.Atoi(value)
 			if err != nil {
 				return nil, fmt.Errorf("invalid setting PGSCV_CONCURRENCY_LIMIT, value '%s', allowed only digits", value)
 			}
 			config.ConcurrencyLimit = &concurrencyLimit
+		case "PGSCV_POOLER_MAX_CONNS":
+			maxConns, err := strconv.ParseInt(value, 10, 32)
+			if err != nil {
+				return nil, fmt.Errorf("invalid setting PGSCV_POOLER_MAX_CONNS, value '%s', allowed only digits", value)
+			}
+			if config.PoolerConfig == nil {
+				config.PoolerConfig = &PoolConfig{}
+			}
+			maxConns32 := int32(maxConns)
+			config.PoolerConfig.MaxConns = &maxConns32
+		case "PGSCV_POOLER_MIN_CONNS":
+			minConns, err := strconv.ParseInt(value, 10, 32)
+			if err != nil {
+				return nil, fmt.Errorf("invalid setting PGSCV_POOLER_MIN_CONNS, value '%s', allowed only digits", value)
+			}
+			if config.PoolerConfig == nil {
+				config.PoolerConfig = &PoolConfig{}
+			}
+			minConns32 := int32(minConns)
+			config.PoolerConfig.MinConns = &minConns32
+		case "PGSCV_POOLER_MIN_IDLE_CONNS":
+			minIdleConns, err := strconv.ParseInt(value, 10, 32)
+			if err != nil {
+				return nil, fmt.Errorf("invalid setting PGSCV_POOLER_MIN_IDLE_CONNS, value '%s', allowed only digits", value)
+			}
+			if config.PoolerConfig == nil {
+				config.PoolerConfig = &PoolConfig{}
+			}
+			minIdleConns32 := int32(minIdleConns)
+			config.PoolerConfig.MinIdleConns = &minIdleConns32
 		}
+
 	}
 	return config, nil
 }

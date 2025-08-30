@@ -56,12 +56,18 @@ type Config struct {
 	SkipConnErrorMode  bool
 	ConstLabels        *map[string]*map[string]string
 	TargetLabels       *map[string]*map[string]string
-	ConnTimeout        int  // in seconds
-	ThrottlingInterval *int // in seconds, default 25
+	ConnTimeout        int // in seconds
 	ConcurrencyLimit   *int
 	CacheConfig        *cache.Config
 	CacheKey           string
 	Pool               *pgxpool.Pool
+	PoolerConfig       *PoolConfig
+}
+
+type PoolConfig struct {
+	MaxConns     *int32
+	MinConns     *int32
+	MinIdleConns *int32
 }
 
 // Collector is an interface for prometheus.Collector.
@@ -213,6 +219,18 @@ func (repo *Repository) addServicesFromConfig(config Config) {
 				}
 				if config.ConnTimeout > 0 {
 					pgconfig.ConnConfig.ConnectTimeout = time.Duration(config.ConnTimeout) * time.Second
+				}
+
+				if config.PoolerConfig != nil {
+					if config.PoolerConfig != nil {
+						pgconfig.MinConns = *config.PoolerConfig.MinConns
+					}
+					if config.PoolerConfig.MaxConns != nil {
+						pgconfig.MaxConns = *config.PoolerConfig.MaxConns
+					}
+					if config.PoolerConfig.MinIdleConns != nil {
+						pgconfig.MinIdleConns = *config.PoolerConfig.MinIdleConns
+					}
 				}
 
 				// Check connection using created *ConnConfig, go next if connection failed.

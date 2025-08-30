@@ -9,7 +9,7 @@ import (
 	"time"
 )
 
-// MemcachedCache - клиент для Memcached
+// MemcachedCache client
 type MemcachedCache struct {
 	client    *memcache.Client
 	gitCommit string
