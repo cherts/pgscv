@@ -23,7 +23,6 @@ type meminfoCollector struct {
 	re            *regexp.Regexp
 	subsysFilters filter.Filters
 	constLabels   labels
-	memused       typedDesc
 	swapused      typedDesc
 }
 
@@ -33,12 +32,6 @@ func NewMeminfoCollector(constLabels labels, settings model.CollectorSettings) (
 		re:            regexp.MustCompile(`\((.*)\)`),
 		subsysFilters: settings.Filters,
 		constLabels:   constLabels,
-		memused: newBuiltinTypedDesc(
-			descOpts{"node", "memory", "MemUsed", "Memory information composite field MemUsed.", 0},
-			prometheus.GaugeValue,
-			nil, constLabels,
-			settings.Filters,
-		),
 		swapused: newBuiltinTypedDesc(
 			descOpts{"node", "memory", "SwapUsed", "Memory information composite field SwapUsed.", 0},
 			prometheus.GaugeValue,
@@ -78,23 +71,12 @@ func (c *meminfoCollector) Update(_ Config, ch chan<- prometheus.Metric) error {
 		ch <- desc.newConstMetric(value.(float64))
 	}
 
-	total := memInfo.Used + memInfo.Free + memInfo.Buffers + memInfo.Cached
-	switch runtime.GOOS {
-	case "windows":
-		total = memInfo.Used + memInfo.Available
-	case "darwin", "openbsd":
-		total = memInfo.Used + memInfo.Free + memInfo.Cached + memInfo.Inactive
-	case "freebsd":
-		total = memInfo.Used + memInfo.Free + memInfo.Cached + memInfo.Inactive + memInfo.Laundry
-	}
-
 	swapInfo, err := mem.SwapMemory()
 	if err != nil {
 		return fmt.Errorf("failed get SwapMemory: %s", err)
 	}
 
 	// MemUsed and SwapUsed are composite metrics and not present in /proc/meminfo.
-	ch <- c.memused.newConstMetric(float64(total))
 	ch <- c.swapused.newConstMetric(float64(swapInfo.Total) - float64(swapInfo.Free))
 
 	if runtime.GOOS == "linux" {

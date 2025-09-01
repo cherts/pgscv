@@ -40,7 +40,7 @@ func TestMeminfoCollector_Update(t *testing.T) {
 		var input = pipelineInput{
 			required: []string{
 				// memInfo
-				"node_memory_total", "node_memory_free", "node_memory_available", "node_memory_active", "node_memory_MemUsed",
+				"node_memory_total", "node_memory_free", "node_memory_available", "node_memory_active",
 				"node_memory_buffers", "node_memory_cached", "node_memory_active",
 				"node_memory_swapCached", "node_memory_swapTotal", "node_memory_swapFree",
 				// vmstat
