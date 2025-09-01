@@ -112,6 +112,7 @@ _logging "Run pgbouncer..."
 su - postgres -c "/usr/sbin/pgbouncer -d /etc/pgbouncer/pgbouncer.ini"
 
 # run memcached
+_logging "Run memcached..."
 memcached -d -u root
 
 # check services availability
