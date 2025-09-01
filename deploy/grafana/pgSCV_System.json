@@ -750,7 +750,7 @@
                 "uid": "${DS_VICTORIAMETRICS-PGSCV}"
               },
               "editorMode": "code",
-              "expr": "sum by (device) (rate(node_disk_io_time_seconds_total{instance=\"$instance\"}[1m])) / on() group_left() rate(node_uptime_up_seconds_total{instance=\"$instance\"}[1m]) * 100",
+              "expr": "sum by (device) (rate(node_disk_io_time_seconds_total{instance=\"$instance\"}[1m])) / on() group_left() rate(node_uptime_seconds{instance=\"$instance\"}[1m]) * 100",
               "instant": false,
               "legendFormat": "__auto",
               "range": true,
