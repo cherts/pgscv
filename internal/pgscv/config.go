@@ -51,7 +51,7 @@ type Config struct {
 	PoolerConfig          *PoolConfig   `yaml:"pooler" validate:"omitempty,pool_config"`
 }
 
-// PgxPool defines pgpool configuration.
+// PoolConfig defines pgxPool configuration.
 type PoolConfig struct {
 	MaxConns     *int32 `yaml:"max_conns" validate:"omitempty"`
 	MinConns     *int32 `yaml:"min_conns" validate:"omitempty"`

@@ -64,7 +64,7 @@ type Config struct {
 	PoolerConfig       *PoolConfig
 }
 
-// PgxPool defines pgpool configuration.
+// PoolConfig defines pgxPool configuration.
 type PoolConfig struct {
 	MaxConns     *int32
 	MinConns     *int32
