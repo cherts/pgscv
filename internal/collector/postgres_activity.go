@@ -172,7 +172,7 @@ func (c *postgresActivityCollector) Update(ctx context.Context, config Config, c
 	stats := parsePostgresActivityStats(res, c.re)
 
 	// get pg_prepared_xacts stats
-	var count int
+	var count int64
 	cacheKey, res = getFromCache(config.CacheConfig, config.ConnString, collectorPostgresActivity, postgresPreparedXactQuery)
 	if res == nil {
 		res, err = conn.Query(ctx, postgresPreparedXactQuery)
@@ -182,7 +182,7 @@ func (c *postgresActivityCollector) Update(ctx context.Context, config Config, c
 		saveToCache(collectorPostgresActivity, wg, config.CacheConfig, cacheKey, res)
 	}
 	if len(res.Rows) == 1 && len(res.Rows[0]) == 1 {
-		err = res.Rows[0][0].Scan(&count)
+		count, err = strconv.ParseInt(res.Rows[0][0].String, 10, 64)
 		if err != nil {
 			log.Warnf("query pg_prepared_xacts failed: %s; skip", err)
 		} else {
@@ -201,7 +201,7 @@ func (c *postgresActivityCollector) Update(ctx context.Context, config Config, c
 		saveToCache(collectorPostgresActivity, wg, config.CacheConfig, cacheKey, res)
 	}
 	if len(res.Rows) == 1 && len(res.Rows[0]) == 1 {
-		err = res.Rows[0][0].Scan(&startTime)
+		startTime, err = strconv.ParseFloat(res.Rows[0][0].String, 32)
 		if err != nil {
 			log.Warnf("query postmaster start time failed: %s; skip", err)
 		} else {
