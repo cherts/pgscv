@@ -6,6 +6,7 @@ import (
 	"github.com/bradfitz/gomemcache/memcache"
 	"github.com/cherts/pgscv/internal/model"
 	"math"
+	"strings"
 	"time"
 )
 
@@ -17,8 +18,12 @@ type MemcachedCache struct {
 
 // NewMemcachedCache return pointer to MemcachedCache struct
 func NewMemcachedCache(addr string, gitCommit string) *MemcachedCache {
+	servers := make([]string, 0)
+	for _, server := range strings.Split(addr, ",") {
+		servers = append(servers, strings.Trim(server, " "))
+	}
 	return &MemcachedCache{
-		client:    memcache.New(addr),
+		client:    memcache.New(servers...),
 		gitCommit: gitCommit,
 	}
 }

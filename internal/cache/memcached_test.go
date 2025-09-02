@@ -191,7 +191,7 @@ func TestMemcachedCache_MultipleServers(t *testing.T) {
 		t.Skip("Memcached not available. Skipping multiple servers test.")
 	}
 
-	cache := NewMemcachedCache("localhost:11211,127.0.0.1:11211", "test-commit")
+	cache := NewMemcachedCache("localhost:11211 ,  127.0.0.1:11211 ", "test-commit")
 
 	testData := &model.PGResult{
 		Nrows: 1,

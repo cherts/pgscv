@@ -55,6 +55,7 @@ func registerCustomValidators(v *validator.Validate) {
 		for s := range strings.SplitSeq(servers, ",") {
 			parts := make([]string, 0, 2)
 			for p := range strings.SplitSeq(s, ":") {
+				p = strings.Trim(p, " ")
 				parts = append(parts, p)
 			}
 			if len(parts) != 2 {
