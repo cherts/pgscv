@@ -19,7 +19,7 @@ type MemcachedCache struct {
 // NewMemcachedCache return pointer to MemcachedCache struct
 func NewMemcachedCache(addr string, gitCommit string) *MemcachedCache {
 	servers := make([]string, 0)
-	for _, server := range strings.Split(addr, ",") {
+	for server := range strings.SplitSeq(addr, ",") {
 		servers = append(servers, strings.Trim(server, " "))
 	}
 	return &MemcachedCache{
