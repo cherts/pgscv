@@ -63,6 +63,10 @@ type postgresServiceConfig struct {
 	// pgStatStatementsSchema defines the schema name where pg_stat_statements is installed
 	pgStatStatementsSchema string
 	rolConnLimit           int
+	// pgStatTuple defines is pgstattuple available  for queries
+	pgStatTuple bool
+	// pgStatTupleSchema defines the schema name where pgstattuple is installed
+	pgStatTupleSchema string
 }
 
 func newPostgresServiceConfig(connStr string, connTimeout int) (postgresServiceConfig, error) {
@@ -181,6 +185,11 @@ func newPostgresServiceConfig(connStr string, connTimeout int) (postgresServiceC
 
 	config.pgStatStatements = exists
 	config.pgStatStatementsSchema = schema
+
+	schema = extensionInstalledSchema(conn, "pgstattuple")
+	config.pgStatTuple = schema != ""
+	config.pgStatTupleSchema = schema
+
 	return config, nil
 }
 
@@ -227,19 +236,16 @@ func discoverPgStatStatements(conn *store.DB) (bool, string, error) {
 	var setting string
 	err := conn.Conn().QueryRow(context.Background(), "SELECT setting FROM pg_settings WHERE name = 'shared_preload_libraries'").Scan(&setting)
 	if err != nil {
-		conn.Close()
 		return false, "", err
 	}
 
 	// If pg_stat_statements is not enabled globally, no reason to continue.
 	if !strings.Contains(setting, "pg_stat_statements") {
-		conn.Close()
 		return false, "", nil
 	}
 
 	// Check for pg_stat_statements in default database specified in connection string.
 	if schema := extensionInstalledSchema(conn, "pg_stat_statements"); schema != "" {
-		conn.Close()
 		return true, schema, nil
 	}
 	return false, "", nil
