@@ -248,7 +248,7 @@ func (c *Config) Validate() error {
 		return err
 	}
 	c.DatabasesRE = re
-	log.Infoln("Option 'databases' is depricated and removed in next major release.")
+	log.Infoln("Option 'databases' is deprecated and removed in next major release.")
 
 	// Validate collector settings.
 	err = validateCollectorSettings(c.CollectorsSettings)
@@ -296,7 +296,7 @@ func (c *Config) Validate() error {
 	}
 
 	if *c.ThrottlingInterval > 0 {
-		log.Infoln("Option 'throttling_interval' is depricated and removed in next major release.")
+		log.Infoln("Option 'throttling_interval' is deprecated and removed in next major release.")
 		log.Infof("ThrottlingInterval: %d seconds throttling interval set for scrape metrics", *c.ThrottlingInterval)
 	}
 
