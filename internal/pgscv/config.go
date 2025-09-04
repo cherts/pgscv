@@ -4,13 +4,12 @@ package pgscv
 import (
 	"fmt"
 	"io/fs"
+	"maps"
 	"os"
 	"path/filepath"
 	"regexp"
 	"strconv"
 	"strings"
-
-	"maps"
 
 	sd "github.com/cherts/pgscv/discovery"
 	"github.com/cherts/pgscv/internal/http"
