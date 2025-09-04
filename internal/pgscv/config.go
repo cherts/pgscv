@@ -10,6 +10,8 @@ import (
 	"strconv"
 	"strings"
 
+	"maps"
+
 	sd "github.com/cherts/pgscv/discovery"
 	"github.com/cherts/pgscv/internal/http"
 	"github.com/cherts/pgscv/internal/log"
@@ -17,7 +19,6 @@ import (
 	"github.com/cherts/pgscv/internal/service"
 	"github.com/jackc/pgx/v4"
 	"gopkg.in/yaml.v2"
-	"maps"
 )
 
 const (
@@ -248,6 +249,7 @@ func (c *Config) Validate() error {
 		return err
 	}
 	c.DatabasesRE = re
+	log.Infoln("Option 'databases' is depricated and removed in next major release.")
 
 	// Validate collector settings.
 	err = validateCollectorSettings(c.CollectorsSettings)
@@ -295,6 +297,7 @@ func (c *Config) Validate() error {
 	}
 
 	if *c.ThrottlingInterval > 0 {
+		log.Infoln("Option 'throttling_interval' is depricated and removed in next major release.")
 		log.Infof("ThrottlingInterval: %d seconds throttling interval set for scrape metrics", *c.ThrottlingInterval)
 	}
 
