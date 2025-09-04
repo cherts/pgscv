@@ -19,7 +19,7 @@ require (
 	github.com/go-playground/validator/v10 v10.27.0
 	github.com/golang-jwt/jwt/v4 v4.5.2
 	github.com/jackc/pgx/v5 v5.7.5
-	github.com/yandex-cloud/go-genproto v0.19.0
+	github.com/yandex-cloud/go-genproto v0.20.0
 	github.com/yandex-cloud/go-sdk v0.15.0
 )
 
