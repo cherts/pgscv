@@ -49,6 +49,20 @@
 #            db:
 #            exclude_name:
 #            exclude_db:
+#  cluster1:
+#    type: postgres
+#    config:
+#      conninfo: "postgres://postgres:postgres@127.0.0.1:7432/postgres"
+#      #password_from_env: PGPASSWORD
+#      #db: ".*"
+#      #exclude_db: "postgres"
+#      # target_labels:
+#      #  - name: folder_id
+#      #    value: "b1000000000000"
+#      #  - name: __scrape_timeout__
+#      #    value: 1m
+#      #  - name: __scrape_interval__
+#      #    value: 2m
 services:
   "postgres:5432":
     service_type: "postgres"
