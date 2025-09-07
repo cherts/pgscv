@@ -162,3 +162,12 @@ func Test_isDataTypeSupported(t *testing.T) {
 		assert.Equal(t, tc.want, isDataTypeSupported(tc.t))
 	}
 }
+
+func Test_ListDatabases(t *testing.T) {
+	conn := NewTest(t)
+
+	databases, err := Databases(context.Background(), conn)
+	assert.NoError(t, err)
+	assert.Greater(t, len(databases), 0)
+	conn.Close()
+}
