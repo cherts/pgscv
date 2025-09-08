@@ -11,6 +11,13 @@ type clusterDSN struct {
 	labels    []Label
 }
 
+type subscriber struct {
+	AddService     discovery.AddServiceFunc
+	RemoveService  discovery.RemoveServiceFunc
+	SyncedVersion  map[engineIdx]version
+	syncedServices map[string]discovery.Service
+}
+
 func syncSubscriberServices(
 	provider string,
 	subscribers *map[string]subscriber,
