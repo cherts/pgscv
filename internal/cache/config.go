@@ -4,6 +4,7 @@ package cache
 import (
 	"fmt"
 	"github.com/cherts/pgscv/internal/model"
+	"github.com/cherts/pgscv/internal/validators"
 	"github.com/go-playground/validator/v10"
 	"math"
 	"strconv"
@@ -15,7 +16,6 @@ const (
 	cacheInMemory             = "in-memory"
 	cacheMemcached            = "memcached"
 	memcachedServersValidator = "memcached_servers"
-	ttlValidator              = "ttl"
 )
 
 // Config is part of global pgSCV config
@@ -69,22 +69,7 @@ func registerCustomValidators(v *validator.Validate) {
 		return true
 	})
 
-	_ = v.RegisterValidation(ttlValidator, func(fl validator.FieldLevel) bool {
-		ttlStr := fl.Field().String()
-
-		if ttlStr == "" {
-			return false
-		}
-
-		duration, err := time.ParseDuration(ttlStr)
-		if err != nil {
-			if seconds, err := strconv.Atoi(ttlStr); err == nil {
-				return seconds > 0
-			}
-			return false
-		}
-		return duration > 0
-	})
+	_ = v.RegisterValidation(validators.TTLValidator, validators.TTLValidatorFunc)
 }
 
 func (c *Config) getTTLSeconds() (int32, error) {

@@ -24,12 +24,6 @@ type Cluster struct {
 	ExcludeDb   *string `yaml:"exclude_db" json:"exclude_db"`
 }
 
-// Label struct describe targets labels
-type Label struct {
-	Name  string `yaml:"name" json:"name"`
-	Value string `yaml:"value" json:"value"`
-}
-
 // YandexConfig AuthorizedKey - path to json file, Password - password for
 // databases, Clusters - array of structures with matching rules
 type YandexConfig struct {

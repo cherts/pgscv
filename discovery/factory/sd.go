@@ -29,6 +29,8 @@ func Instantiate(discoveryConfig discovery.Config) (*map[string]discovery.Discov
 			services[id] = service.NewYandexDiscovery()
 		case discovery.Postgres:
 			services[id] = service.NewPostgresDiscovery()
+		case discovery.Script:
+			services[id] = service.NewScriptDiscovery()
 		default:
 			err := fmt.Errorf("[SD] Unknown service discovery type '%s'", srv.Type)
 			log.Debug(err.Error())
