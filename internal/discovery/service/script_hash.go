@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/cherts/pgscv/internal/log"
 	"os"
+	"slices"
 	"sync"
 )
 
@@ -68,14 +69,7 @@ func (s *ScriptDiscovery) validateScriptHash() error {
 		return fmt.Errorf("script hash changed, execution blocked")
 	}
 
-	isTrusted := false
-	for _, trustedHash := range trustedScriptHashes {
-		if trustedHash == currentHash {
-			isTrusted = true
-
-			break
-		}
-	}
+	isTrusted := slices.Contains(trustedScriptHashes, currentHash)
 
 	if !isTrusted {
 		log.Warnf("[Script SD] Untrusted script hash for %s: %s. Script will be executed but consider adding this hash to trusted list.",
