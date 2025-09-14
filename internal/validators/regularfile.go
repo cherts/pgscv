@@ -8,10 +8,13 @@ import (
 	"github.com/go-playground/validator/v10"
 )
 
-const (
-	RegularFileValidator = "regular_file"
-)
-
+// RegularFileValidatorFunc validates that a string path points to a regular file (not a directory, symlink, etc).
+//
+// Parameters:
+//   - fl: FieldLevel containing the field to validate
+//
+// Returns:
+//   - bool: true if the path points to a regular file, false otherwise
 func RegularFileValidatorFunc(fl validator.FieldLevel) bool {
 	f := fl.Field().String()
 	if f == "" {

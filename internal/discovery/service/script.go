@@ -5,11 +5,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/cherts/pgscv/discovery"
-	"github.com/cherts/pgscv/discovery/log"
-	"github.com/cherts/pgscv/internal/discovery/script/response"
-	"github.com/jackc/pgx/v5"
-	"gopkg.in/yaml.v2"
 	"maps"
 	"net"
 	"os"
@@ -19,20 +14,36 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/jackc/pgx/v5"
+	"gopkg.in/yaml.v2"
+
+	"github.com/cherts/pgscv/discovery"
+	"github.com/cherts/pgscv/discovery/log"
+	"github.com/cherts/pgscv/internal/discovery/script/response"
 )
 
-// ScriptDiscovery is main struct for Script discoverer
+// ScriptDiscovery is the main struct for script-based service discovery.
+// It implements the Discovery interface and manages service discovery through external scripts.
 type ScriptDiscovery struct {
 	sync.RWMutex
-	config      scriptConfig
-	subscribers map[string]subscriber
+	config      scriptConfig          // Configuration for script discovery
+	subscribers map[string]subscriber // Map of subscribers and their callback functions
 }
 
+// NewScriptDiscovery creates and returns a new instance of ScriptDiscovery.
 func NewScriptDiscovery() *ScriptDiscovery {
 	return &ScriptDiscovery{subscribers: make(map[string]subscriber)}
 }
 
-// Init implementation Init method of Discovery interface
+// Init initializes the script discovery configuration.
+// It validates and processes the discovery configuration.
+//
+// Parameters:
+//   - c: discovery configuration
+//
+// Returns:
+//   - error: if configuration validation or processing fails
 func (s *ScriptDiscovery) Init(c discovery.Config) error {
 	log.Debug("[Script SD] Init discovery config...")
 
@@ -46,7 +57,15 @@ func (s *ScriptDiscovery) Init(c discovery.Config) error {
 	return nil
 }
 
-// Start implementation Start method of Discovery interface
+// Start begins the script discovery process, running in a loop until the context is cancelled.
+// It periodically syncs services and handles context cancellation.
+//
+// Parameters:
+//   - ctx: context for cancellation and timeout
+//   - errCh: channel for sending errors encountered during discovery
+//
+// Returns:
+//   - error: if the discovery process fails to start
 func (s *ScriptDiscovery) Start(ctx context.Context, errCh chan<- error) error {
 	s.RLock()
 	refreshInterval := s.config.refreshIntervalDuration
@@ -70,7 +89,15 @@ func (s *ScriptDiscovery) Start(ctx context.Context, errCh chan<- error) error {
 	}
 }
 
-// Subscribe implementation Subscribe method of Discovery interface
+// Subscribe registers a subscriber with callback functions for service addition and removal.
+//
+// Parameters:
+//   - subscriberID: unique identifier for the subscriber
+//   - addService: function to call when a new service is discovered
+//   - removeService: function to call when a service is removed
+//
+// Returns:
+//   - error: if subscription fails
 func (s *ScriptDiscovery) Subscribe(subscriberID string, addService discovery.AddServiceFunc, removeService discovery.RemoveServiceFunc) error {
 	s.Lock()
 	defer s.Unlock()
@@ -85,7 +112,13 @@ func (s *ScriptDiscovery) Subscribe(subscriberID string, addService discovery.Ad
 	return nil
 }
 
-// Unsubscribe implementation Unsubscribe method of Discovery interface
+// Unsubscribe removes a subscriber and cleans up its associated services.
+//
+// Parameters:
+//   - subscriberID: identifier of the subscriber to remove
+//
+// Returns:
+//   - error: if unsubscription fails
 func (s *ScriptDiscovery) Unsubscribe(subscriberID string) error {
 	s.Lock()
 	defer s.Unlock()
@@ -107,6 +140,13 @@ func (s *ScriptDiscovery) Unsubscribe(subscriberID string) error {
 	return err
 }
 
+// sync performs a synchronization cycle by fetching services from the script and updating subscribers.
+//
+// Parameters:
+//   - ctx: context for cancellation and timeout
+//
+// Returns:
+//   - error: if synchronization fails
 func (s *ScriptDiscovery) sync(ctx context.Context) error {
 	s.Lock()
 	defer s.Unlock()
@@ -125,9 +165,17 @@ func (s *ScriptDiscovery) sync(ctx context.Context) error {
 	return nil
 }
 
-// preserve environment consistency
+// envLock ensures environment variable operations are thread-safe
 var envLock sync.Mutex
 
+// getServices executes the discovery script and processes its output to get service information.
+//
+// Parameters:
+//   - ctx: context for cancellation and timeout
+//
+// Returns:
+//   - *map[string]clusterDSN: map of service IDs to cluster DSN information
+//   - error: if script execution or processing fails
 func (s *ScriptDiscovery) getServices(ctx context.Context) (*map[string]clusterDSN, error) {
 	envLock.Lock()
 
@@ -173,6 +221,14 @@ func (s *ScriptDiscovery) getServices(ctx context.Context) (*map[string]clusterD
 	return &ret, nil
 }
 
+// fillSvcResponse processes a ScriptResponse and constructs a complete DSN from its components.
+// It handles environment variable resolution and proper DSN formatting.
+//
+// Parameters:
+//   - svc: pointer to ScriptResponse to process
+//
+// Returns:
+//   - error: if DSN construction fails
 func fillSvcResponse(svc *response.ScriptResponse) error {
 	var (
 		dbConfig *pgx.ConnConfig
@@ -244,11 +300,20 @@ func fillSvcResponse(svc *response.ScriptResponse) error {
 	return nil
 }
 
+// getScriptResponse executes the discovery script and parses its output.
+//
+// Parameters:
+//   - ctx: context for cancellation and timeout
+//
+// Returns:
+//   - *[]response.ScriptResponse: slice of parsed script responses
+//   - error: if script execution or parsing fails
 func (s *ScriptDiscovery) getScriptResponse(ctx context.Context) (*[]response.ScriptResponse, error) {
 	execCtx, execCancel := context.WithTimeout(ctx, s.config.executionTimeoutDuration)
 	defer execCancel()
 
-	cmd := exec.CommandContext(execCtx, s.config.scriptPath, s.config.Args...)
+	//  G204 (CWE-78): Subprocess launched with a potential tainted input or cmd arguments (Confidence: HIGH, Severity: MEDIUM)
+	cmd := exec.CommandContext(execCtx, s.config.scriptPath, s.config.Args...) // #nosec G204
 
 	var stderr bytes.Buffer
 
@@ -289,6 +354,10 @@ func (s *ScriptDiscovery) getScriptResponse(ctx context.Context) (*[]response.Sc
 	return services, nil
 }
 
+// restoreEnv restores environment variables to their original values after script execution.
+//
+// Parameters:
+//   - oldEnvValues: map of environment variable names to their original values
 func (s *ScriptDiscovery) restoreEnv(oldEnvValues map[string]*string) {
 	for envName, oldEnvValue := range oldEnvValues {
 		if oldEnvValue == nil {
@@ -306,6 +375,11 @@ func (s *ScriptDiscovery) restoreEnv(oldEnvValues map[string]*string) {
 	}
 }
 
+// oldEnvValues stores current environment values and sets new ones for script execution.
+//
+// Returns:
+//   - map[string]*string: map of original environment values
+//   - error: if environment manipulation fails
 func (s *ScriptDiscovery) oldEnvValues() (map[string]*string, error) {
 	oldEnvValues := make(map[string]*string, len(s.config.Env))
 	for _, env := range s.config.Env {
@@ -325,6 +399,14 @@ func (s *ScriptDiscovery) oldEnvValues() (map[string]*string, error) {
 	return oldEnvValues, nil
 }
 
+// ensureConfigScript validates and processes the script discovery configuration.
+//
+// Parameters:
+//   - config: discovery configuration
+//
+// Returns:
+//   - *scriptConfig: processed script configuration
+//   - error: if configuration validation fails
 func ensureConfigScript(config discovery.Config) (*scriptConfig, error) {
 	c := &scriptConfig{}
 

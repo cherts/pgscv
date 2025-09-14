@@ -12,8 +12,13 @@ type Label struct {
 	Value string `yaml:"value" json:"value"`
 }
 
+// Env represents an environment variable configuration.
+// It defines a name-value pair that will be set in the environment when running discovery.
 type Env struct {
-	Name  string `json:"name" yaml:"name" validate:"required,env_name"`
+	// Name is the environment variable name. Must be a valid environment variable name
+	// (starting with letter/underscore, containing only letters, numbers, and underscores).
+	Name string `json:"name" yaml:"name" validate:"required,env_name"`
+	// Value is the environment variable value that will.
 	Value string `json:"value" yaml:"value" validate:"required"`
 }
 

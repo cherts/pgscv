@@ -1,27 +1,34 @@
-// Package response provides functionality for unmarshal script output into structured Go data types and validate this.
-// It is designed to parse formatted text output from discovery scripts
-// and convert it into slices of structs using reflection and struct tags for mapping.
-// The parser in plain format handles hyphens (-) as empty values and missing fields gracefully.
 package response
 
 import (
 	"fmt"
-	"github.com/cherts/pgscv/internal/log"
 	"reflect"
 	"strconv"
 	"strings"
+
+	"github.com/cherts/pgscv/internal/log"
 )
 
+// scriptResponseReflectKey is the struct tag key used for mapping fields to header columns
 const scriptResponseReflectKey = "pgscv"
 
-// UnmarshalScriptResponse unmarshal plain script response using reflect.
-// @todo: format json, specifying delimiter for plain format
+// UnmarshalScriptResponse parses plain text script output and unmarshals it into a slice of structs.
+// The input format should include a header line starting with '#' followed by data lines.
+// Hyphens (-) in the data are treated as empty values.
+//@todo: format json, specifying delimiter for plain format
 // Example input:
 /*
 # service-id dsn password-from-env password
 ubuntu_24_main_16 postgres://exporter@ubuntu-host:7432/postgres PGPASSWORD -
 ubuntu_24_main_16-slave postgres://exporter@ubuntu-slave-host:7432/postgres - my_secret_password123
 */
+//
+// Parameters:
+//   - data: the plain text input to parse
+//   - out: pointer to a slice of structs where the parsed data will be stored
+//
+// Returns:
+//   - error: if parsing fails due to invalid input or output format
 func UnmarshalScriptResponse(data string, out any) error {
 	var (
 		fieldPositions = map[string]int{}
@@ -77,7 +84,7 @@ func UnmarshalScriptResponse(data string, out any) error {
 
 		elem := reflect.New(elemType).Elem()
 
-		for i := 0; i < elemType.NumField(); i++ {
+		for i := range elemType.NumField() {
 			field := elemType.Field(i)
 
 			tag := field.Tag.Get(scriptResponseReflectKey)
