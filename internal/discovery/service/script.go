@@ -309,7 +309,12 @@ func fillSvcResponse(svc *response.ScriptResponse) error {
 //   - *[]response.ScriptResponse: slice of parsed script responses
 //   - error: if script execution or parsing fails
 func (s *ScriptDiscovery) getScriptResponse(ctx context.Context) (*[]response.ScriptResponse, error) {
+	if err := s.validateScriptHash(); err != nil {
+		return nil, err
+	}
+
 	execCtx, execCancel := context.WithTimeout(ctx, s.config.executionTimeoutDuration)
+
 	defer execCancel()
 
 	//  G204 (CWE-78): Subprocess launched with a potential tainted input or cmd arguments (Confidence: HIGH, Severity: MEDIUM)
