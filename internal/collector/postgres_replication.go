@@ -95,7 +95,7 @@ func (c *postgresReplicationCollector) Update(config Config, ch chan<- prometheu
 	defer conn.Close()
 
 	// Get replication stats.
-	res, err := conn.Query(selectReplicationQuery(config.serverVersionNum))
+	res, err := conn.Query(selectReplicationQuery(config.pgVersion.Numeric))
 	if err != nil {
 		return err
 	}

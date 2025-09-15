@@ -43,7 +43,7 @@ func (c *postgresConflictsCollector) Update(config Config, ch chan<- prometheus.
 	}
 	defer conn.Close()
 
-	res, err := conn.Query(selectDatabaseConflictsQuery(config.serverVersionNum))
+	res, err := conn.Query(selectDatabaseConflictsQuery(config.pgVersion.Numeric))
 	if err != nil {
 		return err
 	}

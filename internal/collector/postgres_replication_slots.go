@@ -50,7 +50,7 @@ func (c *postgresReplicationSlotCollector) Update(config Config, ch chan<- prome
 	}
 	defer conn.Close()
 
-	res, err := conn.Query(selectReplicationSlotQuery(config.serverVersionNum))
+	res, err := conn.Query(selectReplicationSlotQuery(config.pgVersion.Numeric))
 	if err != nil {
 		return err
 	}

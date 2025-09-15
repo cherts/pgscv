@@ -107,7 +107,7 @@ func (c *postgresStorageCollector) Update(config Config, ch chan<- prometheus.Me
 	// Following directory listing functions are available since:
 	// - pg_ls_dir(), pg_ls_waldir() since Postgres 10
 	// - pg_ls_tmpdir() since Postgres 12
-	if config.serverVersionNum < PostgresV10 {
+	if config.pgVersion.Numeric < PostgresV10 {
 		log.Debugln("[postgres storage collector]: some server-side functions are not available, required Postgres 10 or newer")
 		return nil
 	}
@@ -119,7 +119,7 @@ func (c *postgresStorageCollector) Update(config Config, ch chan<- prometheus.Me
 	defer conn.Close()
 
 	// Collecting in-flight temp only since Postgres 12.
-	if config.serverVersionNum >= PostgresV12 {
+	if config.pgVersion.Numeric >= PostgresV12 {
 		res, err := conn.Query(postgresTempFilesInflightQuery)
 		if err != nil {
 			log.Warnf("get in-flight temp files failed: %s; skip", err)
@@ -140,7 +140,7 @@ func (c *postgresStorageCollector) Update(config Config, ch chan<- prometheus.Me
 	if !config.localService {
 		// Collect a limited set of Wal metrics
 		log.Debugln("[postgres storage collector]: collecting limited WAL, Log and Temp file metrics from remote services")
-		dirstats, err := newPostgresStat(conn, config.loggingCollector, config.serverVersionNum)
+		dirstats, err := newPostgresStat(conn, config.loggingCollector, config.pgVersion.Numeric)
 		if err != nil {
 			return err
 		}
@@ -155,7 +155,7 @@ func (c *postgresStorageCollector) Update(config Config, ch chan<- prometheus.Me
 		}
 
 		// Temp directory
-		if config.serverVersionNum >= PostgresV12 {
+		if config.pgVersion.Numeric >= PostgresV12 {
 			ch <- c.tmpfilesBytes.newConstMetric(dirstats.tmpfilesSizeBytes, "temp", "temp", "temp")
 		}
 
@@ -164,7 +164,7 @@ func (c *postgresStorageCollector) Update(config Config, ch chan<- prometheus.Me
 	}
 
 	// Collecting other server-directories stats (DATADIR and tablespaces, WALDIR, LOGDIR, TEMPDIR).
-	dirstats, tblspcStats, err := newPostgresDirStat(conn, config.dataDirectory, config.loggingCollector, config.serverVersionNum)
+	dirstats, tblspcStats, err := newPostgresDirStat(conn, config.dataDirectory, config.loggingCollector, config.pgVersion.Numeric)
 	if err != nil {
 		return err
 	}
@@ -187,7 +187,7 @@ func (c *postgresStorageCollector) Update(config Config, ch chan<- prometheus.Me
 	}
 
 	// Temp directory
-	if config.serverVersionNum >= PostgresV12 {
+	if config.pgVersion.Numeric >= PostgresV12 {
 		ch <- c.tmpfilesBytes.newConstMetric(dirstats.tmpfilesSizeBytes, "temp", "temp", "temp")
 	}
 

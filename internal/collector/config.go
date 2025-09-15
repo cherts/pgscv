@@ -50,8 +50,8 @@ type postgresServiceConfig struct {
 	blockSize uint64
 	// walSegmentSize defines size of WAL segment Postgres operates.
 	walSegmentSize uint64
-	// serverVersionNum defines version of Postgres in XXYYZZ format.
-	serverVersionNum int
+	// pgVersion defines Postgres version, build details and vendor information.
+	pgVersion PostgresVersion
 	// dataDirectory defines filesystem path where Postgres' data files and directories resides.
 	dataDirectory string
 	// loggingCollector defines value of 'logging_collector' GUC.
@@ -66,6 +66,20 @@ type postgresServiceConfig struct {
 	pgStatStatementsSchema string
 	// rolConnLimit defines connection limit for the role used by the collector.
 	rolConnLimit int
+}
+
+// PostgresVersion - Identifying information about the PostgreSQL server version and build details
+type PostgresVersion struct {
+	Full    string `json:"full"`    // e.g. "PostgreSQL 16.9 on x86_64-pc-linux-gnu, compiled by gcc (Ubuntu 11.4.0-1ubuntu1~22.04) 11.4.0, 64-bit"
+	Short   string `json:"short"`   // e.g. "16.9.0"
+	Numeric int    `json:"numeric"` // e.g. 160009
+
+	// For collectors use only, to avoid calling functions that don't work
+	IsAwsAurora bool // Amazon Aurora
+	IsCitus     bool // Citus extension (e.g. with Azure CosmosDB for PostgreSQL)
+	IsEPAS      bool // EnterpriseDB Advanced Server
+	IsYandex    bool // Yandex.Cloud Managed Service for PostgreSQL
+	IsPGPRO     bool // Postgres Professional
 }
 
 func newPostgresServiceConfig(connStr string, connTimeout int) (postgresServiceConfig, error) {
@@ -107,9 +121,9 @@ func newPostgresServiceConfig(connStr string, connTimeout int) (postgresServiceC
 	config.rolConnLimit = int(rolConnLimit)
 
 	// Get Postgres block size.
-	err = conn.Conn().QueryRow(context.Background(), "SELECT setting FROM pg_settings WHERE name = 'block_size'").Scan(&setting)
+	err = conn.Conn().QueryRow(context.Background(), "SELECT setting FROM pg_catalog.pg_settings WHERE name = 'block_size'").Scan(&setting)
 	if err != nil {
-		return config, fmt.Errorf("failed to get block_size setting from pg_settings, %s, please check user grants", err)
+		return config, fmt.Errorf("failed to get block_size setting from pg_catalog.pg_settings, %s, please check user grants", err)
 	}
 	bsize, err := strconv.ParseUint(setting, 10, 64)
 	if err != nil {
@@ -119,9 +133,9 @@ func newPostgresServiceConfig(connStr string, connTimeout int) (postgresServiceC
 	config.blockSize = bsize
 
 	// Get Postgres WAL segment size.
-	err = conn.Conn().QueryRow(context.Background(), "SELECT setting FROM pg_settings WHERE name = 'wal_segment_size'").Scan(&setting)
+	err = conn.Conn().QueryRow(context.Background(), "SELECT setting FROM pg_catalog.pg_settings WHERE name = 'wal_segment_size'").Scan(&setting)
 	if err != nil {
-		return config, fmt.Errorf("failed to get wal_segment_size setting from pg_settings, %s, please check user grants", err)
+		return config, fmt.Errorf("failed to get wal_segment_size setting from pg_catalog.pg_settings, %s, please check user grants", err)
 	}
 	walSegSize, err := strconv.ParseUint(setting, 10, 64)
 	if err != nil {
@@ -131,9 +145,9 @@ func newPostgresServiceConfig(connStr string, connTimeout int) (postgresServiceC
 	config.walSegmentSize = walSegSize
 
 	// Get Postgres server version
-	err = conn.Conn().QueryRow(context.Background(), "SELECT setting FROM pg_settings WHERE name = 'server_version_num'").Scan(&setting)
+	err = conn.Conn().QueryRow(context.Background(), "SELECT setting FROM pg_catalog.pg_settings WHERE name = 'server_version_num'").Scan(&setting)
 	if err != nil {
-		return config, fmt.Errorf("failed to get server_version_num setting from pg_settings, %s, please check user grants", err)
+		return config, fmt.Errorf("failed to get server_version_num setting from pg_catalog.pg_settings, %s, please check user grants", err)
 	}
 	version, err := strconv.Atoi(setting)
 	if err != nil {
@@ -144,7 +158,32 @@ func newPostgresServiceConfig(connStr string, connTimeout int) (postgresServiceC
 		log.Warnf("Postgres version is too old, some collectors functions won't work. Minimal required version is %s.", PostgresVMinStr)
 	}
 
-	config.serverVersionNum = version
+	config.pgVersion.Numeric = version
+
+	err = conn.Conn().QueryRow(context.Background(), "SELECT setting FROM pg_catalog.pg_settings WHERE name = 'server_version'").Scan(&setting)
+	if err != nil {
+		return config, fmt.Errorf("failed to get server_version setting from pg_catalog.pg_settings, %s, please check user grants", err)
+	}
+	config.pgVersion.Short = setting
+
+	err = conn.Conn().QueryRow(context.Background(), "SELECT pg_catalog.version()").Scan(&config.pgVersion.Full)
+	if err != nil {
+		return config, fmt.Errorf("failed to get pg_catalog.version(), %s, please check user grants", err)
+	}
+	config.pgVersion.IsEPAS = strings.Contains(config.pgVersion.Full, "EnterpriseDB Advanced Server")
+	config.pgVersion.IsYandex = strings.Contains(config.pgVersion.Full, "yandex")
+
+	isAwsAurora, err := GetIsAwsAurora(conn)
+	if err != nil {
+		return config, fmt.Errorf("failed to get AWS Aurora version, %s, please check user grants", err)
+	}
+	config.pgVersion.IsAwsAurora = isAwsAurora
+
+	isCitus, err := GetIsCitus(conn)
+	if err != nil {
+		return config, fmt.Errorf("failed to get Citus extension, %s, please check user grants", err)
+	}
+	config.pgVersion.IsCitus = isCitus
 
 	// Get Postgres data directory
 	err = conn.Conn().QueryRow(context.Background(), "SELECT setting FROM pg_settings WHERE name = 'data_directory'").Scan(&setting)
@@ -300,4 +339,20 @@ func extensionInstalledSchema(db *store.DB, name string) string {
 	}
 
 	return schema
+}
+
+func GetIsAwsAurora(db *store.DB) (bool, error) {
+	var isAurora bool
+	err := db.Conn().
+		QueryRow(context.Background(), "SELECT pg_catalog.count(1) = 1 FROM pg_catalog.pg_settings WHERE name = 'rds.extensions' AND setting LIKE '%aurora_stat_utils%'").
+		Scan(&isAurora)
+	return isAurora, err
+}
+
+func GetIsCitus(db *store.DB) (bool, error) {
+	var isCitus bool
+	err := db.Conn().
+		QueryRow(context.Background(), "SELECT pg_catalog.count(1) = 1 FROM pg_catalog.pg_extension WHERE extname = 'citus'").
+		Scan(&isCitus)
+	return isCitus, err
 }

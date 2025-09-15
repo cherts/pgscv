@@ -137,7 +137,7 @@ func (c *postgresWalCollector) Update(config Config, ch chan<- prometheus.Metric
 	defer conn.Close()
 
 	// Get WAL usage stats.
-	res, err := conn.Query(selectWalQuery(config.serverVersionNum))
+	res, err := conn.Query(selectWalQuery(config.pgVersion.Numeric))
 	if err != nil {
 		return err
 	}

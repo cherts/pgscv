@@ -239,7 +239,7 @@ func (c *postgresDatabasesCollector) Update(config Config, ch chan<- prometheus.
 	}
 	defer conn.Close()
 
-	res, err := conn.Query(selectDatabasesQuery(config.serverVersionNum))
+	res, err := conn.Query(selectDatabasesQuery(config.pgVersion.Numeric))
 	if err != nil {
 		return err
 	}
@@ -274,12 +274,12 @@ func (c *postgresDatabasesCollector) Update(config Config, ch chan<- prometheus.
 		ch <- c.sizes.newConstMetric(stat.sizebytes, stat.database)
 		ch <- c.statsage.newConstMetric(stat.statsage, stat.database)
 
-		if config.serverVersionNum >= PostgresV12 {
+		if config.pgVersion.Numeric >= PostgresV12 {
 			ch <- c.csumfails.newConstMetric(stat.csumfails, stat.database)
 			ch <- c.csumlastfailunixts.newConstMetric(stat.csumlastfailunixts, stat.database)
 		}
 
-		if config.serverVersionNum >= PostgresV14 {
+		if config.pgVersion.Numeric >= PostgresV14 {
 			ch <- c.sessionalltime.newConstMetric(stat.sessiontime, stat.database)
 			ch <- c.sessiontime.newConstMetric(stat.activetime, stat.database, "active")
 			ch <- c.sessiontime.newConstMetric(stat.idletxtime, stat.database, "idle_in_transaction")
@@ -291,7 +291,7 @@ func (c *postgresDatabasesCollector) Update(config Config, ch chan<- prometheus.
 			ch <- c.sessions.newConstMetric(stat.sessions-(stat.sessabandoned+stat.sessfatal+stat.sesskilled), stat.database, "normal")
 		}
 
-		if config.serverVersionNum >= PostgresV18 {
+		if config.pgVersion.Numeric >= PostgresV18 {
 			ch <- c.parallelWorkers.newConstMetric(stat.prlworkplan, stat.database, "planned")
 			ch <- c.parallelWorkers.newConstMetric(stat.prlworkfact, stat.database, "fact")
 		}
