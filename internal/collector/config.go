@@ -54,16 +54,18 @@ type postgresServiceConfig struct {
 	serverVersionNum int
 	// dataDirectory defines filesystem path where Postgres' data files and directories resides.
 	dataDirectory string
-	// loggingCollector defines value of 'logging_collector' and 'log_destination' GUC.
+	// loggingCollector defines value of 'logging_collector' GUC.
 	loggingCollector bool
-	logDestination   string
-	// pgStatStatements defines is pg_stat_statements available in shared_preload_libraries and available for queries
+	// logDestination defines value of 'log_destination' GUC.
+	logDestination string
+	// pgStatStatements defines is pg_stat_statements available in shared_preload_libraries and available for queries.
 	pgStatStatements bool
-	// pgStatStatementsDatabase defines the database name where pg_stat_statements is available
+	// pgStatStatementsDatabase defines the database name where pg_stat_statements is available.
 	pgStatStatementsDatabase string
-	// pgStatStatementsSchema defines the schema name where pg_stat_statements is installed
+	// pgStatStatementsSchema defines the schema name where pg_stat_statements is installed.
 	pgStatStatementsSchema string
-	rolConnLimit           int
+	// rolConnLimit defines connection limit for the role used by the collector.
+	rolConnLimit int
 }
 
 func newPostgresServiceConfig(connStr string, connTimeout int) (postgresServiceConfig, error) {
