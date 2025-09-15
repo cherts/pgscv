@@ -42,6 +42,16 @@ const (
 		"COALESCE(EXTRACT(EPOCH FROM replay_lag), 0) AS replay_lag_seconds, " +
 		"COALESCE(EXTRACT(EPOCH FROM write_lag+flush_lag+replay_lag), 0) AS total_lag_seconds " +
 		"FROM pg_stat_replication"
+
+	// Query for Aurora Postgres versions
+	// See https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/aurora_replica_status.html
+	postgresAuroraReplicationQueryLatest = "SELECT server_id AS pid, server_id AS client_addr, " +
+		"server_id AS application_name, " +
+		"CASE WHEN 'MASTER_SESSION_ID' = session_id THEN 'writer' ELSE 'reader' END AS state, " +
+		"highest_lsn_rcvd - durable_lsn AS total_lag_bytes, " +
+		"(replica_lag_in_msec / 1000)::int AS replay_lag_seconds, " +
+		"(replica_lag_in_msec / 1000)::int AS total_lag_seconds " +
+		"FROM pg_catalog.aurora_replica_status() WHERE server_id = pg_catalog.aurora_db_instance_identifier()"
 )
 
 type postgresReplicationCollector struct {
@@ -95,7 +105,7 @@ func (c *postgresReplicationCollector) Update(config Config, ch chan<- prometheu
 	defer conn.Close()
 
 	// Get replication stats.
-	res, err := conn.Query(selectReplicationQuery(config.pgVersion.Numeric))
+	res, err := conn.Query(selectReplicationQuery(config.pgVersion))
 	if err != nil {
 		return err
 	}
@@ -233,9 +243,12 @@ func parsePostgresReplicationStats(r *model.PGResult, labelNames []string) map[s
 }
 
 // selectReplicationQuery returns suitable replication query depending on passed version.
-func selectReplicationQuery(version int) string {
+func selectReplicationQuery(version PostgresVersion) string {
+	if version.IsAwsAurora {
+		return postgresAuroraReplicationQueryLatest
+	}
 	switch {
-	case version < PostgresV10:
+	case version.Numeric < PostgresV10:
 		return postgresReplicationQuery96
 	default:
 		return postgresReplicationQueryLatest

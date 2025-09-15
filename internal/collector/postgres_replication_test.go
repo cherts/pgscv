@@ -2,10 +2,11 @@ package collector
 
 import (
 	"database/sql"
-	"github.com/jackc/pgproto3/v2"
-	"github.com/cherts/pgscv/internal/model"
-	"github.com/stretchr/testify/assert"
 	"testing"
+
+	"github.com/cherts/pgscv/internal/model"
+	"github.com/jackc/pgproto3/v2"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestPostgresReplicationCollector_Update(t *testing.T) {
@@ -36,7 +37,7 @@ func Test_parsePostgresReplicationStats(t *testing.T) {
 				Nrows: 1,
 				Ncols: 14,
 				Colnames: []pgproto3.FieldDescription{
-					{Name: []byte("pid")}, {Name: []byte("client_addr")},{Name: []byte("client_port")}, {Name: []byte("user")}, {Name: []byte("application_name")}, {Name: []byte("state")},
+					{Name: []byte("pid")}, {Name: []byte("client_addr")}, {Name: []byte("client_port")}, {Name: []byte("user")}, {Name: []byte("application_name")}, {Name: []byte("state")},
 					{Name: []byte("pending_lag_bytes")}, {Name: []byte("write_lag_bytes")}, {Name: []byte("flush_lag_bytes")},
 					{Name: []byte("replay_lag_bytes")}, {Name: []byte("total_lag_bytes")}, {Name: []byte("write_lag_seconds")},
 					{Name: []byte("flush_lag_seconds")}, {Name: []byte("replay_lag_seconds")}, {Name: []byte("total_lag_seconds")},
@@ -86,13 +87,14 @@ func Test_parsePostgresReplicationStats(t *testing.T) {
 
 func Test_selectReplicationQuery(t *testing.T) {
 	var testcases = []struct {
-		version int
+		version PostgresVersion
 		want    string
 	}{
-		{version: 90600, want: postgresReplicationQuery96},
-		{version: 90605, want: postgresReplicationQuery96},
-		{version: 100000, want: postgresReplicationQueryLatest},
-		{version: 100005, want: postgresReplicationQueryLatest},
+		{version: PostgresVersion{Numeric: 90620, IsAwsAurora: false}, want: postgresReplicationQuery96},
+		{version: PostgresVersion{Numeric: 90605, IsAwsAurora: false}, want: postgresReplicationQuery96},
+		{version: PostgresVersion{Numeric: 100000, IsAwsAurora: false}, want: postgresReplicationQueryLatest},
+		{version: PostgresVersion{Numeric: 100005, IsAwsAurora: false}, want: postgresReplicationQueryLatest},
+		{version: PostgresVersion{Numeric: 110005, IsAwsAurora: true}, want: postgresAuroraReplicationQueryLatest},
 	}
 
 	for _, tc := range testcases {
