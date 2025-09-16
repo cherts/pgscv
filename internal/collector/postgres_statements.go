@@ -335,7 +335,7 @@ func (c *postgresStatementsCollector) Update(ctx context.Context, config Config,
 
 	// get pg_stat_statements stats
 	if config.CollectTopQuery > 0 {
-		query := selectStatementsQuery(config.serverVersionNum, config.pgStatStatementsSchema, config.NoTrackMode, config.CollectTopQuery)
+		query := selectStatementsQuery(config.pgVersion.Numeric, config.pgStatStatementsSchema, config.NoTrackMode, config.CollectTopQuery)
 		cacheKey, res = getFromCache(config.CacheConfig, config.ConnString, collectorPostgresStatements, query, config.CollectTopQuery)
 		if res == nil {
 			res, err = conn.Query(ctx, query, config.CollectTopQuery)
@@ -345,7 +345,7 @@ func (c *postgresStatementsCollector) Update(ctx context.Context, config Config,
 			saveToCache(collectorPostgresStatements, wg, config.CacheConfig, cacheKey, res)
 		}
 	} else {
-		query := selectStatementsQuery(config.serverVersionNum, config.pgStatStatementsSchema, config.NoTrackMode, config.CollectTopQuery)
+		query := selectStatementsQuery(config.pgVersion.Numeric, config.pgStatStatementsSchema, config.NoTrackMode, config.CollectTopQuery)
 		cacheKey, res = getFromCache(config.CacheConfig, config.ConnString, collectorPostgresStatements, query)
 		if res == nil {
 			res, err = conn.Query(ctx, query)
@@ -432,7 +432,7 @@ func (c *postgresStatementsCollector) Update(ctx context.Context, config Config,
 			ch <- c.walBytes.newConstMetric(stat.walFPI*blockSize, stat.user, stat.database, stat.queryid, "fpi")
 			ch <- c.walBytes.newConstMetric(stat.walBytes, stat.user, stat.database, stat.queryid, "regular")
 
-			if config.serverVersionNum >= PostgresV18 {
+			if config.pgVersion.Numeric >= PostgresV18 {
 				// WAL buffers
 				ch <- c.walBuffers.newConstMetric(stat.walBuffers, stat.user, stat.database, stat.queryid)
 			}

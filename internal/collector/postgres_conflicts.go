@@ -43,7 +43,7 @@ func (c *postgresConflictsCollector) Update(ctx context.Context, config Config, 
 	defer wg.Wait()
 	var err error
 
-	query := selectDatabaseConflictsQuery(config.serverVersionNum)
+	query := selectDatabaseConflictsQuery(config.pgVersion.Numeric)
 	cacheKey, res := getFromCache(config.CacheConfig, config.ConnString, collectorPostgresConflicts, query)
 	if res == nil {
 		res, err = conn.Query(ctx, query)

@@ -140,7 +140,7 @@ func (c *postgresBgwriterCollector) Update(ctx context.Context, config Config, c
 	defer wg.Wait()
 	var err error
 
-	query := selectBgwriterQuery(config.serverVersionNum)
+	query := selectBgwriterQuery(config.pgVersion.Numeric)
 	cacheKey, res := getFromCache(config.CacheConfig, config.ConnString, collectorPostgresBgWriter, query)
 	if res == nil {
 		res, err = config.DB.Query(ctx, query)
@@ -158,7 +158,7 @@ func (c *postgresBgwriterCollector) Update(ctx context.Context, config Config, c
 		case "checkpoints":
 			ch <- desc.newConstMetric(stats.ckptTimed, "timed")
 			ch <- desc.newConstMetric(stats.ckptReq, "req")
-			if config.serverVersionNum >= PostgresV18 {
+			if config.pgVersion.Numeric >= PostgresV18 {
 				ch <- desc.newConstMetric(stats.ckptDone, "done")
 			}
 		case "checkpoints_all":
@@ -174,7 +174,7 @@ func (c *postgresBgwriterCollector) Update(ctx context.Context, config Config, c
 			ch <- desc.newConstMetric(stats.ckptBuffers*blockSize, "checkpointer")
 			ch <- desc.newConstMetric(stats.bgwrBuffers*blockSize, "bgwriter")
 			ch <- desc.newConstMetric(stats.backendBuffers*blockSize, "backend")
-			if config.serverVersionNum >= PostgresV18 {
+			if config.pgVersion.Numeric >= PostgresV18 {
 				ch <- desc.newConstMetric(stats.slruBuffers*blockSize, "slru")
 			}
 		case "buffers_backend_fsync":
