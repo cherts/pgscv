@@ -341,6 +341,7 @@ func extensionInstalledSchema(db *store.DB, name string) string {
 	return schema
 }
 
+// GetIsAwsAurora returns true if connected to Amazon Aurora, and false otherwise.
 func GetIsAwsAurora(db *store.DB) (bool, error) {
 	var isAurora bool
 	err := db.Conn().
@@ -349,6 +350,7 @@ func GetIsAwsAurora(db *store.DB) (bool, error) {
 	return isAurora, err
 }
 
+// GetIsCitus returns true if connected to Citus, and false otherwise.
 func GetIsCitus(db *store.DB) (bool, error) {
 	var isCitus bool
 	err := db.Conn().
