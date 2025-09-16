@@ -107,7 +107,7 @@ func (c *postgresStorageCollector) Update(config Config, ch chan<- prometheus.Me
 	// Following directory listing functions are available since:
 	// - pg_ls_dir(), pg_ls_waldir() since Postgres 10
 	// - pg_ls_tmpdir() since Postgres 12
-	if config.serverVersionNum < PostgresV10 {
+	if config.pgVersion.Numeric < PostgresV10 {
 		log.Debugln("[postgres storage collector]: some server-side functions are not available, required Postgres 10 or newer")
 		return nil
 	}
@@ -119,7 +119,7 @@ func (c *postgresStorageCollector) Update(config Config, ch chan<- prometheus.Me
 	defer conn.Close()
 
 	// Collecting in-flight temp only since Postgres 12.
-	if config.serverVersionNum >= PostgresV12 {
+	if config.pgVersion.Numeric >= PostgresV12 {
 		res, err := conn.Query(postgresTempFilesInflightQuery)
 		if err != nil {
 			log.Warnf("get in-flight temp files failed: %s; skip", err)
@@ -140,7 +140,7 @@ func (c *postgresStorageCollector) Update(config Config, ch chan<- prometheus.Me
 	if !config.localService {
 		// Collect a limited set of Wal metrics
 		log.Debugln("[postgres storage collector]: collecting limited WAL, Log and Temp file metrics from remote services")
-		dirstats, err := newPostgresStat(conn, config.loggingCollector, config.serverVersionNum)
+		dirstats, err := newPostgresStat(conn, config.loggingCollector, config.pgVersion.Numeric)
 		if err != nil {
 			return err
 		}
@@ -155,7 +155,7 @@ func (c *postgresStorageCollector) Update(config Config, ch chan<- prometheus.Me
 		}
 
 		// Temp directory
-		if config.serverVersionNum >= PostgresV12 {
+		if config.pgVersion.Numeric >= PostgresV12 {
 			ch <- c.tmpfilesBytes.newConstMetric(dirstats.tmpfilesSizeBytes, "temp", "temp", "temp")
 		}
 
@@ -164,7 +164,7 @@ func (c *postgresStorageCollector) Update(config Config, ch chan<- prometheus.Me
 	}
 
 	// Collecting other server-directories stats (DATADIR and tablespaces, WALDIR, LOGDIR, TEMPDIR).
-	dirstats, tblspcStats, err := newPostgresDirStat(conn, config.dataDirectory, config.loggingCollector, config.serverVersionNum)
+	dirstats, tblspcStats, err := newPostgresDirStat(conn, config.dataDirectory, config.loggingCollector, config.pgVersion.Numeric)
 	if err != nil {
 		return err
 	}
@@ -187,7 +187,7 @@ func (c *postgresStorageCollector) Update(config Config, ch chan<- prometheus.Me
 	}
 
 	// Temp directory
-	if config.serverVersionNum >= PostgresV12 {
+	if config.pgVersion.Numeric >= PostgresV12 {
 		ch <- c.tmpfilesBytes.newConstMetric(dirstats.tmpfilesSizeBytes, "temp", "temp", "temp")
 	}
 
@@ -449,7 +449,7 @@ func getWalStat(conn *store.DB) (string, int64, int64, error) {
 	var path string
 	var size, count int64
 	err := conn.Conn().
-		QueryRow(context.Background(), "SELECT current_setting('data_directory')||'/pg_wal' AS path, sum(size) AS bytes, count(name) AS count FROM pg_ls_waldir()").
+		QueryRow(context.Background(), "SELECT current_setting('data_directory')||'/pg_wal' AS path, COALESCE(sum(size), 0) AS bytes, COALESCE(count(name), 0) AS count FROM pg_ls_waldir()").
 		Scan(&path, &size, &count)
 	if err != nil {
 		return "", 0, 0, fmt.Errorf("get WAL directory size failed: %s", err)
@@ -486,7 +486,7 @@ func getLogStat(conn *store.DB, logcollector bool) (string, int64, int64, error)
 	var size, count int64
 	var path string
 	err := conn.Conn().
-		QueryRow(context.Background(), "SELECT current_setting('log_directory') AS path, coalesce(sum(size), 0) AS bytes, coalesce(count(name), 0) AS count FROM pg_ls_logdir()").
+		QueryRow(context.Background(), "SELECT current_setting('log_directory') AS path, COALESCE(sum(size), 0) AS bytes, COALESCE(count(name), 0) AS count FROM pg_ls_logdir()").
 		Scan(&path, &size, &count)
 	if err != nil {
 		return "", 0, 0, fmt.Errorf("get log directory size failed: %s", err)

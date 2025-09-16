@@ -347,9 +347,9 @@ func (c *postgresStatementsCollector) Update(config Config, ch chan<- prometheus
 	var res *model.PGResult
 	// get pg_stat_statements stats
 	if config.CollectTopQuery > 0 {
-		res, err = conn.Query(selectStatementsQuery(config.serverVersionNum, config.pgStatStatementsSchema, config.NoTrackMode, config.CollectTopQuery), config.CollectTopQuery)
+		res, err = conn.Query(selectStatementsQuery(config.pgVersion.Numeric, config.pgStatStatementsSchema, config.NoTrackMode, config.CollectTopQuery), config.CollectTopQuery)
 	} else {
-		res, err = conn.Query(selectStatementsQuery(config.serverVersionNum, config.pgStatStatementsSchema, config.NoTrackMode, config.CollectTopQuery))
+		res, err = conn.Query(selectStatementsQuery(config.pgVersion.Numeric, config.pgStatStatementsSchema, config.NoTrackMode, config.CollectTopQuery))
 	}
 	if err != nil {
 		return err
@@ -431,7 +431,7 @@ func (c *postgresStatementsCollector) Update(config Config, ch chan<- prometheus
 			ch <- c.walBytes.newConstMetric(stat.walFPI*blockSize, stat.user, stat.database, stat.queryid, "fpi")
 			ch <- c.walBytes.newConstMetric(stat.walBytes, stat.user, stat.database, stat.queryid, "regular")
 
-			if config.serverVersionNum >= PostgresV18 {
+			if config.pgVersion.Numeric >= PostgresV18 {
 				// WAL buffers
 				ch <- c.walBuffers.newConstMetric(stat.walBuffers, stat.user, stat.database, stat.queryid)
 			}
