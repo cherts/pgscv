@@ -93,8 +93,9 @@ func Test_selectReplicationQuery(t *testing.T) {
 		{version: PostgresVersion{Numeric: 90620, IsAwsAurora: false}, want: postgresReplicationQuery96},
 		{version: PostgresVersion{Numeric: 90605, IsAwsAurora: false}, want: postgresReplicationQuery96},
 		{version: PostgresVersion{Numeric: 100000, IsAwsAurora: false}, want: postgresReplicationQueryLatest},
-		{version: PostgresVersion{Numeric: 100005, IsAwsAurora: false}, want: postgresReplicationQueryLatest},
-		{version: PostgresVersion{Numeric: 110005, IsAwsAurora: true}, want: postgresAuroraReplicationQueryLatest},
+		{version: PostgresVersion{Numeric: 150000, IsAwsAurora: false}, want: postgresReplicationQueryLatest},
+		{version: PostgresVersion{Numeric: 170004, IsAwsAurora: false}, want: postgresReplicationQueryLatest},
+		{version: PostgresVersion{Numeric: 170004, IsAwsAurora: true}, want: postgresAuroraReplicationQueryLatest},
 	}
 
 	for _, tc := range testcases {
