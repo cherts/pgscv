@@ -89,7 +89,7 @@ func (c *postgresSchemaCollector) Update(config Config, ch chan<- prometheus.Met
 		collectSchemaNonPKTables(conn, ch, c.nonpktables)
 
 		// Functions below uses queries with casting to regnamespace data type, which is introduced in Postgres 9.5.
-		if config.serverVersionNum < PostgresV95 {
+		if config.pgVersion.Numeric < PostgresV95 {
 			log.Debugln("[postgres schema collector]: some system data types are not available, required Postgres 9.5 or newer")
 			return
 		}
@@ -107,7 +107,7 @@ func (c *postgresSchemaCollector) Update(config Config, ch chan<- prometheus.Met
 		collectSchemaFKDatatypeMismatch(conn, ch, c.difftypefkey)
 
 		// Function below uses queries pg_sequences which is introduced in Postgres 10.
-		if config.serverVersionNum < PostgresV10 {
+		if config.pgVersion.Numeric < PostgresV10 {
 			log.Debugln("[postgres schema collector]: some system views are not available, required Postgres 10 or newer")
 		} else {
 			// 7. collect metrics related to sequences (available since Postgres 10).
