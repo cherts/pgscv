@@ -45,13 +45,14 @@ const (
 
 	// Query for Aurora Postgres versions
 	// See https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/aurora_replica_status.html
-	postgresAuroraReplicationQueryLatest = "SELECT server_id AS pid, server_id AS client_addr, " +
-		"server_id AS application_name, " +
+	postgresAuroraReplicationQueryLatest = "SELECT CASE WHEN 'MASTER_SESSION_ID' = session_id THEN '0' ELSE ('x'||substr(md5(session_id),1,8))::bit(32)::bigint END AS pid, " +
+		"server_id AS client_addr, server_id AS application_name," +
+		"0 AS client_port, 'system' AS user, " +
 		"CASE WHEN 'MASTER_SESSION_ID' = session_id THEN 'writer' ELSE 'reader' END AS state, " +
 		"highest_lsn_rcvd - durable_lsn AS total_lag_bytes, " +
 		"(replica_lag_in_msec / 1000)::int AS replay_lag_seconds, " +
 		"(replica_lag_in_msec / 1000)::int AS total_lag_seconds " +
-		"FROM pg_catalog.aurora_replica_status() WHERE server_id = pg_catalog.aurora_db_instance_identifier()"
+		"FROM pg_catalog.aurora_replica_status() WHERE session_id <> 'MASTER_SESSION_ID'"
 )
 
 type postgresReplicationCollector struct {

@@ -449,7 +449,7 @@ func getWalStat(conn *store.DB) (string, int64, int64, error) {
 	var path string
 	var size, count int64
 	err := conn.Conn().
-		QueryRow(context.Background(), "SELECT current_setting('data_directory')||'/pg_wal' AS path, sum(size) AS bytes, count(name) AS count FROM pg_ls_waldir()").
+		QueryRow(context.Background(), "SELECT current_setting('data_directory')||'/pg_wal' AS path, COALESCE(sum(size), 0) AS bytes, COALESCE(count(name), 0) AS count FROM pg_ls_waldir()").
 		Scan(&path, &size, &count)
 	if err != nil {
 		return "", 0, 0, fmt.Errorf("get WAL directory size failed: %s", err)
@@ -486,7 +486,7 @@ func getLogStat(conn *store.DB, logcollector bool) (string, int64, int64, error)
 	var size, count int64
 	var path string
 	err := conn.Conn().
-		QueryRow(context.Background(), "SELECT current_setting('log_directory') AS path, coalesce(sum(size), 0) AS bytes, coalesce(count(name), 0) AS count FROM pg_ls_logdir()").
+		QueryRow(context.Background(), "SELECT current_setting('log_directory') AS path, COALESCE(sum(size), 0) AS bytes, COALESCE(count(name), 0) AS count FROM pg_ls_logdir()").
 		Scan(&path, &size, &count)
 	if err != nil {
 		return "", 0, 0, fmt.Errorf("get log directory size failed: %s", err)
