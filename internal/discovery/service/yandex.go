@@ -46,13 +46,6 @@ type YandexConfig struct {
 type engineIdx int
 type version uint64
 
-type subscriber struct {
-	AddService     discovery.AddServiceFunc
-	RemoveService  discovery.RemoveServiceFunc
-	SyncedVersion  map[engineIdx]version
-	syncedServices map[string]discovery.Service
-}
-
 // YandexDiscovery is main struct for Yandex Managed Databases discoverer
 type YandexDiscovery struct {
 	sync.RWMutex

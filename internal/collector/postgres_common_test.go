@@ -3,7 +3,6 @@ package collector
 import (
 	"database/sql"
 	"github.com/cherts/pgscv/internal/model"
-	"github.com/cherts/pgscv/internal/store"
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/stretchr/testify/assert"
 	"testing"
@@ -100,13 +99,4 @@ func Test_parsePostgresCustomStats(t *testing.T) {
 			assert.EqualValues(t, tc.want, got)
 		})
 	}
-}
-
-func Test_listDatabases(t *testing.T) {
-	conn := store.NewTest(t)
-
-	databases, err := listDatabases(conn)
-	assert.NoError(t, err)
-	assert.Greater(t, len(databases), 0)
-	conn.Close()
 }

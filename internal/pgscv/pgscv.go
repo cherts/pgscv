@@ -84,7 +84,13 @@ func Start(ctx context.Context, config *Config) error {
 			}()
 			switch dt := ds.(type) {
 			case *sd.YandexDiscovery:
-				err := subscribeYandex(&ds, config, serviceRepo)
+				err := subscribe(&ds, config, serviceRepo)
+				if err != nil {
+					cancel()
+					return err
+				}
+			case *sd.PostgresDiscovery:
+				err := subscribe(&ds, config, serviceRepo)
 				if err != nil {
 					cancel()
 					return err
@@ -121,7 +127,7 @@ func Start(ctx context.Context, config *Config) error {
 	}
 }
 
-func subscribeYandex(ds *discovery.Discovery, config *Config, serviceRepo *service.Repository) error {
+func subscribe(ds *discovery.Discovery, config *Config, serviceRepo *service.Repository) error {
 	err := (*ds).Subscribe(pgSCVSubscriber,
 		// addService
 		func(services map[string]discovery.Service) error {
