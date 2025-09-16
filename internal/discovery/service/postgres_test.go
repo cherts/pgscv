@@ -55,11 +55,11 @@ func TestPostgresDiscovery_Subscribe_Unsubscribe(t *testing.T) {
 
 	subscriberID := "test-subscriber"
 
-	addFunc := func(services map[string]discovery.Service) error {
+	addFunc := func(_ map[string]discovery.Service) error {
 		return nil
 	}
 
-	removeFunc := func(serviceIds []string) error {
+	removeFunc := func(_ []string) error {
 		return nil
 	}
 
@@ -170,7 +170,7 @@ func TestPostgresDiscovery_Sync_Integration(t *testing.T) {
 		return nil
 	}
 
-	removeFunc := func(serviceIds []string) error {
+	removeFunc := func(_ []string) error {
 		return nil
 	}
 
