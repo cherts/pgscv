@@ -114,7 +114,11 @@ func (p *PostgresDiscovery) sync(ctx context.Context) error {
 		return nil
 	}
 	services := p.getServices(dbs)
-	err = syncSubscriberServices(discovery.Postgres, &p.subscribers, services, p.config.TargetLabels)
+	configLabels := &[]Label{
+		{Name: "provider", Value: discovery.Postgres},
+		{Name: "provider_id", Value: p.id},
+	}
+	err = syncSubscriberServices(discovery.Postgres, &p.subscribers, services, configLabels, p.config.TargetLabels)
 	if err != nil {
 		return err
 	}

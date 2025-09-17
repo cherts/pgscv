@@ -23,6 +23,7 @@ func syncSubscriberServices(
 	subscribers *map[string]subscriber,
 	services *map[string]clusterDSN,
 	configLabels *[]Label,
+	targetLabels *[]Label,
 ) error {
 	for _, subscriber := range *subscribers {
 		removeSvc := make([]string, 0)
@@ -33,15 +34,22 @@ func syncSubscriberServices(
 				delete(subscriber.syncedServices, *v.Right)
 			}
 			if v.Right == nil {
-				labels := make(map[string]string)
-				labels["provider"] = provider
-				targetLabels := make(map[string]string)
-				if configLabels != nil {
-					for _, l := range *configLabels {
-						targetLabels[l.Name] = l.Value
+				configLabelsMap := make(map[string]string)
+				targetLabelsMap := make(map[string]string)
+
+				if targetLabels != nil {
+					for _, l := range *targetLabels {
+						targetLabelsMap[l.Name] = l.Value
 					}
 				}
-				appendSvc[(*services)[*v.Left].name] = discovery.Service{DSN: (*services)[*v.Left].dsn, ConstLabels: labels, TargetLabels: targetLabels}
+
+				if configLabels != nil {
+					for _, l := range *configLabels {
+						configLabelsMap[l.Name] = l.Value
+					}
+				}
+
+				appendSvc[(*services)[*v.Left].name] = discovery.Service{DSN: (*services)[*v.Left].dsn, ConstLabels: configLabelsMap, TargetLabels: targetLabelsMap}
 				subscriber.syncedServices[*v.Left] = appendSvc[*v.Left]
 			}
 		}
