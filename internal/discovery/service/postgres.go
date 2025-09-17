@@ -18,6 +18,7 @@ import (
 // PostgresDiscovery is main struct for Postgres discoverer
 type PostgresDiscovery struct {
 	sync.RWMutex
+	id     string
 	config postgresConfig
 
 	subscribers map[string]subscriber
@@ -37,8 +38,8 @@ type postgresConfig struct {
 }
 
 // NewPostgresDiscovery return pointer initialized PostgresDiscovery structure
-func NewPostgresDiscovery() *PostgresDiscovery {
-	return &PostgresDiscovery{subscribers: make(map[string]subscriber)}
+func NewPostgresDiscovery(id string) *PostgresDiscovery {
+	return &PostgresDiscovery{id: id, subscribers: make(map[string]subscriber)}
 }
 
 // Init implementation Init method of Discovery interface
@@ -109,7 +110,8 @@ func (p *PostgresDiscovery) sync(ctx context.Context) error {
 	}
 	dbs, err := store.Databases(ctx, p.db)
 	if err != nil {
-		return err
+		log.Errorf("[Postgres SD] Failed to sync databases, error: %v", err)
+		return nil
 	}
 	services := p.getServices(dbs)
 	err = syncSubscriberServices(discovery.Postgres, &p.subscribers, services, p.config.TargetLabels)
@@ -132,7 +134,7 @@ func (p *PostgresDiscovery) getServices(dbs []string) *map[string]clusterDSN {
 }
 
 func (p *PostgresDiscovery) getSvcID(db string) string {
-	return fmt.Sprintf("%s_%s", p.dbConfig.ConnConfig.Host, db)
+	return fmt.Sprintf("%s_%s", p.id, db)
 }
 
 func (p *PostgresDiscovery) getDSN(db string) string {
