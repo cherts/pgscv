@@ -3,10 +3,9 @@ package service
 import (
 	"crypto/sha256"
 	"encoding/hex"
-	"testing"
-
 	"os"
 	"path/filepath"
+	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -17,7 +16,7 @@ func addTrustedScriptHash(hash string) {
 }
 
 func TestScriptDiscovery_validateScriptHash(t *testing.T) {
-	sd := NewScriptDiscovery()
+	sd := NewScriptDiscovery("test-id")
 
 	tmpDir := t.TempDir()
 	scriptPath := filepath.Join(tmpDir, "test_script.sh")
@@ -55,7 +54,7 @@ func TestScriptDiscovery_validateScriptHash_Trusted(t *testing.T) {
 
 	addTrustedScriptHash(trustedHash)
 
-	sd := NewScriptDiscovery()
+	sd := NewScriptDiscovery("test-id")
 
 	tmpDir := t.TempDir()
 	scriptPath := filepath.Join(tmpDir, "trusted_script.sh")
