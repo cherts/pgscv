@@ -185,8 +185,10 @@ func TestFillSvcResponse_EdgeCases(t *testing.T) {
 
 func TestFillSvcResponse_Priority(t *testing.T) {
 	t.Run("user from field takes priority over env var", func(t *testing.T) {
-		os.Setenv("TEST_USER", "envuser")
-		defer os.Unsetenv("TEST_USER")
+		_ = os.Setenv("TEST_USER", "envuser")
+		defer func() {
+			_ = os.Unsetenv("TEST_USER")
+		}()
 
 		svc := &response.ScriptResponse{
 			Host:        "localhost",
@@ -200,8 +202,10 @@ func TestFillSvcResponse_Priority(t *testing.T) {
 	})
 
 	t.Run("password from field takes priority over env var", func(t *testing.T) {
-		os.Setenv("TEST_PASS", "envpass")
-		defer os.Unsetenv("TEST_PASS")
+		_ = os.Setenv("TEST_PASS", "envpass")
+		defer func() {
+			_ = os.Unsetenv("TEST_PASS")
+		}()
 
 		svc := &response.ScriptResponse{
 			Host:               "localhost",
@@ -223,14 +227,14 @@ echo "test-service-2 192.168.1.100 6432 monitor - secret123"
 `
 
 func TestNewScriptDiscovery(t *testing.T) {
-	sd := NewScriptDiscovery()
+	sd := NewScriptDiscovery("test-id")
 	assert.NotNil(t, sd)
 	assert.NotNil(t, sd.subscribers)
 	assert.Empty(t, sd.subscribers)
 }
 
 func TestScriptDiscovery_Init(t *testing.T) {
-	sd := NewScriptDiscovery()
+	sd := NewScriptDiscovery("test-id")
 
 	tmpDir := t.TempDir()
 	scriptPath := filepath.Join(tmpDir, "test_script.sh")
@@ -255,7 +259,7 @@ func TestScriptDiscovery_Init(t *testing.T) {
 }
 
 func TestScriptDiscovery_Init_WithEnvVars(t *testing.T) {
-	sd := NewScriptDiscovery()
+	sd := NewScriptDiscovery("test-id")
 
 	tmpDir := t.TempDir()
 	scriptPath := filepath.Join(tmpDir, "test_script.sh")
@@ -277,7 +281,7 @@ func TestScriptDiscovery_Init_WithEnvVars(t *testing.T) {
 }
 
 func TestScriptDiscovery_Subscribe_Unsubscribe(t *testing.T) {
-	sd := NewScriptDiscovery()
+	sd := NewScriptDiscovery("test-id")
 
 	tmpDir := t.TempDir()
 	scriptPath := filepath.Join(tmpDir, "test_script.sh")
@@ -319,7 +323,7 @@ func TestScriptDiscovery_Subscribe_Unsubscribe(t *testing.T) {
 }
 
 func TestScriptDiscovery_getScriptResponse(t *testing.T) {
-	sd := NewScriptDiscovery()
+	sd := NewScriptDiscovery("test-id")
 
 	scriptContent := `#!/bin/sh
 echo "# service-id host port user password"
@@ -374,7 +378,7 @@ echo "cluster-2 db2.example.com 6432 monitor secret2"
 }
 
 func TestScriptDiscovery_getScriptResponse_WithEnvVars(t *testing.T) {
-	sd := NewScriptDiscovery()
+	sd := NewScriptDiscovery("test-id")
 
 	scriptContent := `#!/bin/sh
 echo "# service-id host port user-from-env"
@@ -413,7 +417,7 @@ echo "test-cluster localhost 5432 PG_USER"
 }
 
 func TestScriptDiscovery_getScriptResponse_InvalidOutput(t *testing.T) {
-	sd := NewScriptDiscovery()
+	sd := NewScriptDiscovery("test-id")
 
 	scriptContent := `#!/bin/sh
 echo "invalid output without header"
@@ -442,7 +446,7 @@ echo "just some random text"
 }
 
 func TestScriptDiscovery_getServices(t *testing.T) {
-	sd := NewScriptDiscovery()
+	sd := NewScriptDiscovery("test-id")
 
 	scriptContent := `#!/bin/sh
 echo "# service-id host port user password-from-env password"
@@ -481,7 +485,7 @@ echo "backup-cluster db-backup.com 6432 backup - backup_pass"
 }
 
 func TestScriptDiscovery_getServices_WithEmptyResponse(t *testing.T) {
-	sd := NewScriptDiscovery()
+	sd := NewScriptDiscovery("test-id")
 
 	scriptContent := `#!/bin/sh
 echo "# service-id host port user password"
@@ -514,7 +518,7 @@ func TestScriptDiscovery_Sync_Integration(t *testing.T) {
 		t.Skip("Skipping integration test in short mode")
 	}
 
-	sd := NewScriptDiscovery()
+	sd := NewScriptDiscovery("test-id")
 
 	scriptContent := `#!/bin/sh
 echo "# service-id host port user password"
@@ -566,7 +570,7 @@ echo "staging-db db-staging.example.com 5432 monitor staging_password"
 }
 
 func TestScriptDiscovery_EnvironmentIsolation(t *testing.T) {
-	sd := NewScriptDiscovery()
+	sd := NewScriptDiscovery("test-id")
 
 	scriptContent := `#!/bin/sh
 echo "# service-id host"
