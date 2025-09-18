@@ -161,7 +161,12 @@ func (s *ScriptDiscovery) sync(ctx context.Context) error {
 		return nil // non fatal, scripts may fail
 	}
 
-	err = syncSubscriberServices(discovery.Script, &s.subscribers, services, s.config.TargetLabels)
+	configLabels := &[]Label{
+		{Name: "provider", Value: discovery.Postgres},
+		{Name: "provider_id", Value: s.id},
+	}
+
+	err = syncSubscriberServices(discovery.Script, &s.subscribers, services, configLabels, s.config.TargetLabels)
 	if err != nil {
 		return err
 	}
