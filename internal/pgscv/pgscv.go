@@ -135,10 +135,14 @@ func Start(ctx context.Context, config *Config) error {
 	}
 }
 
+var addServicesLock sync.Mutex
+
 func subscribe(ds *discovery.Discovery, config *Config, serviceRepo *service.Repository) error {
 	err := (*ds).Subscribe(pgSCVSubscriber,
 		// addService
 		func(services map[string]discovery.Service) error {
+			addServicesLock.Lock()
+			defer addServicesLock.Unlock()
 			constLabels := make(map[string]*map[string]string)
 			targetLabels := make(map[string]*map[string]string)
 			serviceDiscoveryConfig := service.Config{

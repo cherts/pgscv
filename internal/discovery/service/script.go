@@ -27,13 +27,17 @@ import (
 // It implements the Discovery interface and manages service discovery through external scripts.
 type ScriptDiscovery struct {
 	sync.RWMutex
+	id          string
 	config      scriptConfig          // Configuration for script discovery
 	subscribers map[string]subscriber // Map of subscribers and their callback functions
 }
 
 // NewScriptDiscovery creates and returns a new instance of ScriptDiscovery.
-func NewScriptDiscovery() *ScriptDiscovery {
-	return &ScriptDiscovery{subscribers: make(map[string]subscriber)}
+func NewScriptDiscovery(id string) *ScriptDiscovery {
+	return &ScriptDiscovery{
+		id:          id,
+		subscribers: make(map[string]subscriber),
+	}
 }
 
 // Init initializes the script discovery configuration.

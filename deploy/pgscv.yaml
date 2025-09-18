@@ -84,7 +84,6 @@ services:
 #  "patroni3":
 #    service_type: "patroni"
 #    baseurl: "http://127.0.0.1:8010"
-#databases: "^([a-zA-Z0-9])+_(prod|PROD)$"
 #disable_collectors:
 #  - system
 #  - system/pgscv

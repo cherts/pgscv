@@ -117,7 +117,7 @@ func (c *postgresLogsCollector) Update(_ context.Context, config Config, ch chan
 		return nil
 	}
 
-	if config.serverVersionNum < PostgresV10 {
+	if config.pgVersion.Numeric < PostgresV10 {
 		log.Debugln("[postgres log collector]: some system functions are not available, required Postgres 10 or newer")
 		return nil
 	}

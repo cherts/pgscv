@@ -14,14 +14,14 @@ import (
 const TestPostgresConnStr = store.TestPostgresConnStr
 
 func TestNewPostgresDiscovery(t *testing.T) {
-	pd := NewPostgresDiscovery()
+	pd := NewPostgresDiscovery("test-id")
 	assert.NotNil(t, pd)
 	assert.NotNil(t, pd.subscribers)
 	assert.Empty(t, pd.subscribers)
 }
 
 func TestPostgresDiscovery_Init_WithPasswordFromEnv(t *testing.T) {
-	pd := NewPostgresDiscovery()
+	pd := NewPostgresDiscovery("test-id")
 
 	envVar := "TEST_PG_PASSWORD"
 	testPassword := "testpassword123"
@@ -45,7 +45,7 @@ func TestPostgresDiscovery_Init_WithPasswordFromEnv(t *testing.T) {
 }
 
 func TestPostgresDiscovery_Subscribe_Unsubscribe(t *testing.T) {
-	pd := NewPostgresDiscovery()
+	pd := NewPostgresDiscovery("test-id")
 
 	config := postgresConfig{
 		ConnInfo: TestPostgresConnStr,
@@ -79,7 +79,7 @@ func TestPostgresDiscovery_Subscribe_Unsubscribe(t *testing.T) {
 }
 
 func TestPostgresDiscovery_EnsureDB(t *testing.T) {
-	pd := NewPostgresDiscovery()
+	pd := NewPostgresDiscovery("test-id")
 
 	config := postgresConfig{
 		ConnInfo: TestPostgresConnStr,
@@ -99,7 +99,7 @@ func TestPostgresDiscovery_EnsureDB(t *testing.T) {
 }
 
 func TestPostgresDiscovery_GetServices(t *testing.T) {
-	pd := NewPostgresDiscovery()
+	pd := NewPostgresDiscovery("test-id")
 
 	config := postgresConfig{
 		ConnInfo: TestPostgresConnStr,
@@ -115,7 +115,7 @@ func TestPostgresDiscovery_GetServices(t *testing.T) {
 	assert.Len(t, *services, 2)
 
 	for _, db := range testDBs {
-		expectedSvcID := fmt.Sprintf("%s_%s", "127.0.0.1", db)
+		expectedSvcID := fmt.Sprintf("%s_%s", "test-id", db)
 		assert.Contains(t, *services, expectedSvcID)
 	}
 
@@ -126,7 +126,7 @@ func TestPostgresDiscovery_GetServices(t *testing.T) {
 }
 
 func TestPostgresDiscovery_GetServices_WithFilter(t *testing.T) {
-	pd := NewPostgresDiscovery()
+	pd := NewPostgresDiscovery("test-id")
 
 	excludeDB := "postgres"
 	config := postgresConfig{
@@ -144,9 +144,9 @@ func TestPostgresDiscovery_GetServices_WithFilter(t *testing.T) {
 	assert.NotNil(t, services)
 
 	assert.Len(t, *services, 2)
-	assert.Contains(t, *services, "127.0.0.1_pgscv_fixtures")
-	assert.Contains(t, *services, "127.0.0.1_template1")
-	assert.NotContains(t, *services, "127.0.0.1_postgres")
+	assert.Contains(t, *services, "test-id_pgscv_fixtures")
+	assert.Contains(t, *services, "test-id_template1")
+	assert.NotContains(t, *services, "test-id_postgres")
 }
 
 func TestPostgresDiscovery_Sync_Integration(t *testing.T) {
@@ -154,7 +154,7 @@ func TestPostgresDiscovery_Sync_Integration(t *testing.T) {
 		t.Skip("Skipping integration test in short mode")
 	}
 
-	pd := NewPostgresDiscovery()
+	pd := NewPostgresDiscovery("test-id")
 
 	config := postgresConfig{
 		ConnInfo: TestPostgresConnStr,
@@ -185,7 +185,7 @@ func TestPostgresDiscovery_Sync_Integration(t *testing.T) {
 	assert.True(t, len(receivedServices) > 0)
 
 	for svcID, service := range receivedServices {
-		assert.Contains(t, svcID, "127.0.0.1_")
+		assert.Contains(t, svcID, "test-id_")
 		assert.Contains(t, service.DSN, "postgres://")
 		assert.Contains(t, service.DSN, "127.0.0.1:5432")
 	}

@@ -82,7 +82,7 @@ func NewPostgresStatSlruCollector(constLabels labels, settings model.CollectorSe
 
 // Update method collects statistics, parse it and produces metrics that are sent to Prometheus.
 func (c *postgresStatSlruCollector) Update(ctx context.Context, config Config, ch chan<- prometheus.Metric) error {
-	if config.serverVersionNum < PostgresV13 {
+	if config.pgVersion.Numeric < PostgresV13 {
 		log.Debugln("[postgres stat_slru collector]: pg_stat_slru view are not available, required Postgres 13 or newer")
 		return nil
 	}

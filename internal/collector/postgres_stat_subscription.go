@@ -125,7 +125,7 @@ func NewPostgresStatSubscriptionCollector(constLabels labels, settings model.Col
 
 // Update method collects statistics, parse it and produces metrics that are sent to Prometheus.
 func (c *postgresStatSubscriptionCollector) Update(ctx context.Context, config Config, ch chan<- prometheus.Metric) error {
-	if config.serverVersionNum < PostgresV10 {
+	if config.pgVersion.Numeric < PostgresV10 {
 		log.Debugln("[postgres stat_subscription collector]: pg_stat_subscription view are not available, required Postgres 10 or newer")
 		return nil
 	}
@@ -137,7 +137,7 @@ func (c *postgresStatSubscriptionCollector) Update(ctx context.Context, config C
 	defer wg.Wait()
 	var err error
 
-	query := selectSubscriptionQuery(config.serverVersionNum)
+	query := selectSubscriptionQuery(config.pgVersion.Numeric)
 	cacheKey, res := getFromCache(config.CacheConfig, config.ConnString, collectorPostgresStatSubscription, query)
 	if res == nil {
 		res, err = conn.Query(ctx, query)

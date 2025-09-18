@@ -57,7 +57,7 @@ func NewPostgresWalArchivingCollector(constLabels labels, settings model.Collect
 // Update method collects statistics, parse it and produces metrics that are sent to Prometheus.
 func (c *postgresWalArchivingCollector) Update(ctx context.Context, config Config, ch chan<- prometheus.Metric) error {
 
-	if config.serverVersionNum < PostgresV12 {
+	if config.pgVersion.Numeric < PostgresV12 {
 		log.Debugln("[postgres WAL archiver collector]: some system functions are not available, required Postgres 12 or newer")
 		return nil
 	}

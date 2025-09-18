@@ -158,7 +158,7 @@ func (c *postgresActivityCollector) Update(ctx context.Context, config Config, c
 	wg := &sync.WaitGroup{}
 	defer wg.Wait()
 
-	query := selectActivityQuery(config.serverVersionNum)
+	query := selectActivityQuery(config.pgVersion.Numeric)
 	cacheKey, res := getFromCache(config.CacheConfig, config.ConnString, collectorPostgresActivity, query)
 	if res == nil {
 		res, err = conn.Query(ctx, query)

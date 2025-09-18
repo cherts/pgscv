@@ -86,13 +86,15 @@ func Test_parsePostgresReplicationStats(t *testing.T) {
 
 func Test_selectReplicationQuery(t *testing.T) {
 	var testcases = []struct {
-		version int
+		version PostgresVersion
 		want    string
 	}{
-		{version: 90600, want: postgresReplicationQuery96},
-		{version: 90605, want: postgresReplicationQuery96},
-		{version: 100000, want: postgresReplicationQueryLatest},
-		{version: 100005, want: postgresReplicationQueryLatest},
+		{version: PostgresVersion{Numeric: 90620, IsAwsAurora: false}, want: postgresReplicationQuery96},
+		{version: PostgresVersion{Numeric: 90605, IsAwsAurora: false}, want: postgresReplicationQuery96},
+		{version: PostgresVersion{Numeric: 100000, IsAwsAurora: false}, want: postgresReplicationQueryLatest},
+		{version: PostgresVersion{Numeric: 150000, IsAwsAurora: false}, want: postgresReplicationQueryLatest},
+		{version: PostgresVersion{Numeric: 170004, IsAwsAurora: false}, want: postgresReplicationQueryLatest},
+		{version: PostgresVersion{Numeric: 170004, IsAwsAurora: true}, want: postgresAuroraReplicationQueryLatest},
 	}
 
 	for _, tc := range testcases {

@@ -261,19 +261,19 @@ func (c *Config) Validate() error {
 	}
 
 	if c.CollectTopQuery > 0 {
-		log.Infof("TopQuery: limit (%d queries) enabled", c.CollectTopQuery)
+		log.Infof("option collect_top_query is enabled (limited top-%d queries)", c.CollectTopQuery)
 	}
 	if c.CollectTopTable > 0 {
-		log.Infof("TopTable: limit (%d tables) enabled", c.CollectTopTable)
+		log.Infof("option collect_top_table is enabled (limited top-%d tables)", c.CollectTopTable)
 	}
 	if c.CollectTopIndex > 0 {
-		log.Infof("TopIndex: limit (%d indexes) enabled", c.CollectTopIndex)
+		log.Infof("option collect_top_table is enabled (limited top-%d indexes)", c.CollectTopIndex)
 	}
 	if c.ConcurrencyLimit != nil {
-		log.Infof("ConcurrencyLimit: %d connection limit set for DB", *c.ConcurrencyLimit)
+		log.Infof("option concurrency_limit is enabled (limited %d concurrency collectors)", *c.ConcurrencyLimit)
 	}
 	if c.ConnTimeout > 0 {
-		log.Infof("ConnTimeout: %d seconds timeout set for connecting to DB", c.ConnTimeout)
+		log.Infof("option conn_timeout is enabled (set %d seconds timeout)", c.ConnTimeout)
 	}
 
 	validate := validator.New()

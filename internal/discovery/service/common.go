@@ -39,6 +39,7 @@ func syncSubscriberServices(
 	subscribers *map[string]subscriber,
 	services *map[string]clusterDSN,
 	configLabels *[]Label,
+	targetLabels *[]Label,
 ) error {
 	if services == nil {
 		log.Debugf("[%s SD] syncSubscriberServices: services is nil", provider)
@@ -63,20 +64,25 @@ func syncSubscriberServices(
 			}
 
 			if v.Right == nil {
-				labels := make(map[string]string)
-				targetLabels := make(map[string]string)
-				labels["provider"] = provider
+				configLabelsMap := make(map[string]string)
+				targetLabelsMap := make(map[string]string)
+
+				if targetLabels != nil {
+					for _, l := range *targetLabels {
+						targetLabelsMap[l.Name] = l.Value
+					}
+				}
 
 				if configLabels != nil {
 					for _, l := range *configLabels {
-						targetLabels[l.Name] = l.Value
+						configLabelsMap[l.Name] = l.Value
 					}
 				}
 
 				appendSvc[(*services)[*v.Left].name] = discovery.Service{
-					DSN:          (*services)[*v.Left].dsn,
-					ConstLabels:  labels,
-					TargetLabels: targetLabels,
+					DSN: (*services)[*v.Left].dsn,
+					ConstLabels: configLabelsMap,
+					TargetLabels: targetLabelsMap,
 				}
 				subscriber.syncedServices[*v.Left] = appendSvc[*v.Left]
 			}
