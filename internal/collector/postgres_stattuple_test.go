@@ -5,7 +5,7 @@ import (
 	"testing"
 )
 
-func TestPostgresSubscriptionRelCollector_Update(t *testing.T) {
+func TestPostgresStatTupleCollector_Update(t *testing.T) {
 	var input = pipelineInput{
 		required: []string{
 			"postgres_pgstattuple_approx_free_percent",
