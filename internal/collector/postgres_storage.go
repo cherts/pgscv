@@ -107,7 +107,7 @@ func (c *postgresStorageCollector) Update(ctx context.Context, config Config, ch
 	// Following directory listing functions are available since:
 	// - pg_ls_dir(), pg_ls_waldir() since Postgres 10
 	// - pg_ls_tmpdir() since Postgres 12
-	if config.serverVersionNum < PostgresV10 {
+	if config.pgVersion.Numeric < PostgresV10 {
 		log.Debugln("[postgres storage collector]: some server-side functions are not available, required Postgres 10 or newer")
 		return nil
 	}
@@ -120,7 +120,7 @@ func (c *postgresStorageCollector) Update(ctx context.Context, config Config, ch
 	var res *model.PGResult
 
 	// Collecting in-flight temp only since Postgres 12.
-	if config.serverVersionNum >= PostgresV12 {
+	if config.pgVersion.Numeric >= PostgresV12 {
 		cacheKey, res = getFromCache(config.CacheConfig, config.ConnString, collectorPostgresStorage, postgresTempFilesInflightQuery)
 		if res == nil {
 			res, err = conn.Query(ctx, postgresTempFilesInflightQuery)
@@ -145,7 +145,6 @@ func (c *postgresStorageCollector) Update(ctx context.Context, config Config, ch
 	if !config.localService {
 		// Collect a limited set of Wal metrics
 		log.Debugln("[postgres storage collector]: collecting limited WAL, Log and Temp file metrics from remote services")
-		//dirstats, err := newPostgresStat(conn, config.loggingCollector, config.serverVersionNum)
 		dirstats, err := newPostgresStat(ctx, config, wg)
 		if err != nil {
 			return err
@@ -161,7 +160,7 @@ func (c *postgresStorageCollector) Update(ctx context.Context, config Config, ch
 		}
 
 		// Temp directory
-		if config.serverVersionNum >= PostgresV12 {
+		if config.pgVersion.Numeric >= PostgresV12 {
 			ch <- c.tmpfilesBytes.newConstMetric(dirstats.tmpfilesSizeBytes, "temp", "temp", "temp")
 		}
 
@@ -193,7 +192,7 @@ func (c *postgresStorageCollector) Update(ctx context.Context, config Config, ch
 	}
 
 	// Temp directory
-	if config.serverVersionNum >= PostgresV12 {
+	if config.pgVersion.Numeric >= PostgresV12 {
 		ch <- c.tmpfilesBytes.newConstMetric(dirstats.tmpfilesSizeBytes, "temp", "temp", "temp")
 	}
 
@@ -308,7 +307,7 @@ func newPostgresStat(ctx context.Context, config Config, wg *sync.WaitGroup) (*p
 	}
 
 	// Get temp files and directories properties.
-	tmpfilesSize, tmpfilesCount, err := getTempfilesStat(ctx, config, config.serverVersionNum, wg)
+	tmpfilesSize, tmpfilesCount, err := getTempfilesStat(ctx, config, config.pgVersion.Numeric, wg)
 	if err != nil {
 		log.Errorln(err)
 	}
@@ -359,7 +358,7 @@ func newPostgresDirStat(ctx context.Context, config Config, wg *sync.WaitGroup) 
 	}
 
 	// Get temp files and directories properties.
-	tmpfilesSize, tmpfilesCount, err := getTempfilesStat(ctx, config, config.serverVersionNum, wg)
+	tmpfilesSize, tmpfilesCount, err := getTempfilesStat(ctx, config, config.pgVersion.Numeric, wg)
 	if err != nil {
 		log.Errorln(err)
 	}
@@ -465,7 +464,7 @@ func getWalStat(ctx context.Context, config Config, wg *sync.WaitGroup) (string,
 	var err error
 	var path string
 	var size, count int64
-	query := "SELECT current_setting('data_directory')||'/pg_wal' AS path, sum(size) AS bytes, count(name) AS count FROM pg_ls_waldir()"
+	query := "SELECT current_setting('data_directory')||'/pg_wal' AS path, COALESCE(sum(size), 0) AS bytes, COALESCE(count(name), 0) AS count FROM pg_ls_waldir()"
 	cacheKey, res := getFromCache(config.CacheConfig, config.ConnString, collectorPostgresStorage, query)
 	if res == nil {
 		res, err = config.DB.Query(ctx, query)
@@ -519,7 +518,7 @@ func getLogStat(ctx context.Context, config Config, wg *sync.WaitGroup, logcolle
 	var path string
 	var err error
 
-	query := "SELECT current_setting('log_directory') AS path, coalesce(sum(size), 0) AS bytes, coalesce(count(name), 0) AS count FROM pg_ls_logdir()"
+	query := "SELECT current_setting('log_directory') AS path, COALESCE(sum(size), 0) AS bytes, COALESCE(count(name), 0) AS count FROM pg_ls_logdir()"
 
 	cacheKey, res := getFromCache(config.CacheConfig, config.ConnString, collectorPostgresStorage, query)
 	if res == nil {

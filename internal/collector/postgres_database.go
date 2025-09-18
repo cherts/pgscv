@@ -238,7 +238,7 @@ func (c *postgresDatabasesCollector) Update(ctx context.Context, config Config, 
 	wg := &sync.WaitGroup{}
 	defer wg.Wait()
 
-	query := selectDatabasesQuery(config.serverVersionNum)
+	query := selectDatabasesQuery(config.pgVersion.Numeric)
 	cacheKey, res := getFromCache(config.CacheConfig, config.ConnString, collectorPostgresDatabases, query)
 	if res == nil {
 		res, err = conn.Query(ctx, query)
@@ -282,12 +282,12 @@ func (c *postgresDatabasesCollector) Update(ctx context.Context, config Config, 
 		ch <- c.sizes.newConstMetric(stat.sizebytes, stat.database)
 		ch <- c.statsage.newConstMetric(stat.statsage, stat.database)
 
-		if config.serverVersionNum >= PostgresV12 {
+		if config.pgVersion.Numeric >= PostgresV12 {
 			ch <- c.csumfails.newConstMetric(stat.csumfails, stat.database)
 			ch <- c.csumlastfailunixts.newConstMetric(stat.csumlastfailunixts, stat.database)
 		}
 
-		if config.serverVersionNum >= PostgresV14 {
+		if config.pgVersion.Numeric >= PostgresV14 {
 			ch <- c.sessionalltime.newConstMetric(stat.sessiontime, stat.database)
 			ch <- c.sessiontime.newConstMetric(stat.activetime, stat.database, "active")
 			ch <- c.sessiontime.newConstMetric(stat.idletxtime, stat.database, "idle_in_transaction")
@@ -299,7 +299,7 @@ func (c *postgresDatabasesCollector) Update(ctx context.Context, config Config, 
 			ch <- c.sessions.newConstMetric(stat.sessions-(stat.sessabandoned+stat.sessfatal+stat.sesskilled), stat.database, "normal")
 		}
 
-		if config.serverVersionNum >= PostgresV18 {
+		if config.pgVersion.Numeric >= PostgresV18 {
 			ch <- c.parallelWorkers.newConstMetric(stat.prlworkplan, stat.database, "planned")
 			ch <- c.parallelWorkers.newConstMetric(stat.prlworkfact, stat.database, "fact")
 		}

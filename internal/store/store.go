@@ -169,3 +169,28 @@ func isDataTypeSupported(t uint32) bool {
 		return false
 	}
 }
+
+// Databases returns slice with databases names
+func Databases(ctx context.Context, db *DB) ([]string, error) {
+	// getDBList returns the list of databases that allowed for connection
+	rows, err := db.Conn().Query(ctx,
+		`SELECT datname FROM pg_database
+			 WHERE NOT datistemplate AND datallowconn
+			  AND has_database_privilege(datname, 'CONNECT')
+			  AND NOT (version() LIKE '%yandex%' AND datname = 'postgres');`,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var list = make([]string, 0, 10)
+	for rows.Next() {
+		var dbname string
+		if err := rows.Scan(&dbname); err != nil {
+			return nil, err
+		}
+		list = append(list, dbname)
+	}
+	return list, nil
+}
