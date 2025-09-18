@@ -159,13 +159,13 @@ func NewPostgresStatIOCollector(constLabels labels, settings model.CollectorSett
 
 // Update method collects statistics, parse it and produces metrics that are sent to Prometheus.
 func (c *postgresStatIOCollector) Update(ctx context.Context, config Config, ch chan<- prometheus.Metric) error {
-	if config.serverVersionNum < PostgresV16 {
+	if config.pgVersion.Numeric < PostgresV16 {
 		log.Debugln("[postgres stat_io collector]: pg_stat_io view are not available, required Postgres 16 or newer")
 		return nil
 	}
 
 	conn := config.DB
-	query := selectStatIOQuery(config.serverVersionNum)
+	query := selectStatIOQuery(config.pgVersion.Numeric)
 	wg := &sync.WaitGroup{}
 	defer wg.Wait()
 	var err error

@@ -49,7 +49,7 @@ func NewPostgresStatSslCollector(constLabels labels, settings model.CollectorSet
 
 // Update method collects statistics, parse it and produces metrics that are sent to Prometheus.
 func (c *postgresStatSslCollector) Update(ctx context.Context, config Config, ch chan<- prometheus.Metric) error {
-	if config.serverVersionNum < PostgresV95 {
+	if config.pgVersion.Numeric < PostgresV95 {
 		log.Debugln("[postgres stat_ssl collector]: pg_stat_ssl view are not available, required Postgres 9.5 or newer")
 		return nil
 	}

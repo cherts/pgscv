@@ -37,6 +37,10 @@ Temporary Items
 debug_run.*
 # Bin
 bin/*
+# Cert
+*.pem
+*.key
+*.crt
 # Test
 .test_coverage.*
 # Exclude demo-stack data
