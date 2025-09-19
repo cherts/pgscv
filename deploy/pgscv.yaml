@@ -50,7 +50,7 @@
 #            value: 1m
 #          - name: __scrape_interval__
 #            value: 2m
-# Monitoring multi-database PostgreSQL instance
+# Monitoring multiple databases PostgreSQL instance
 #  cluster1:
 #    type: postgres
 #    config:
@@ -66,7 +66,7 @@
 #        - name: __scrape_interval__
 #          value: 2m
 services:
-# Monitoring only one PostgreSQL database per instance
+# Monitoring only one database PostgreSQL per instance
   "postgres:5432":
     service_type: "postgres"
     conninfo: "postgres://postgres:password@127.0.0.1:5432/postgres"
