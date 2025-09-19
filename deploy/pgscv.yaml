@@ -20,7 +20,7 @@
 #  type: "memcached"
 #  server: 127.0.0.1:11211
 #  ttl: 30s
-#  collector:
+#  collectors:
 #    postgres/indexes:
 #      ttl: 10m
 #    postgres/tables:

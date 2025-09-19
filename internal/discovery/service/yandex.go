@@ -88,6 +88,7 @@ func (yd *YandexDiscovery) Subscribe(subscriberID string, addService discovery.A
 			labels := make(map[string]string)
 			labels["mdb_cluster"] = svc.name
 			labels["provider"] = discovery.YandexMDB
+			labels["provider_id"] = yd.id
 			targetLabels := make(map[string]string)
 			if yd.config[engineID].TargetLabels != nil {
 				for _, item := range *yd.config[engineID].TargetLabels {
@@ -109,8 +110,7 @@ func (yd *YandexDiscovery) Subscribe(subscriberID string, addService discovery.A
 	return nil
 }
 
-// Sync implementation Sync method of Discovery interface
-func (yd *YandexDiscovery) Sync() error {
+func (yd *YandexDiscovery) sync() error {
 	yd.Lock()
 	defer yd.Unlock()
 	log.Debug("[Yandex.Cloud SD] Sync...")
@@ -144,6 +144,7 @@ func (yd *YandexDiscovery) Sync() error {
 				labels := make(map[string]string)
 				labels["mdb_cluster"] = engineServices[*v.Left].name
 				labels["provider"] = discovery.YandexMDB
+				labels["provider_id"] = yd.id
 				targetLabels := make(map[string]string)
 				for _, l := range engineServices[*v.Left].labels {
 					targetLabels[l.Name] = l.Value
@@ -202,7 +203,7 @@ func (yd *YandexDiscovery) Start(ctx context.Context, errCh chan<- error) error 
 	}
 
 	for {
-		err := yd.Sync()
+		err := yd.sync()
 		if err != nil {
 			log.Errorf("[Yandex.Cloud SD] Failed to sync, error: %s", err.Error())
 			errCh <- err
