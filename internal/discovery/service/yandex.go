@@ -3,6 +3,7 @@ package service
 
 import (
 	"context"
+	"fmt"
 	"github.com/cherts/pgscv/discovery"
 	"maps"
 	"os"
@@ -173,7 +174,7 @@ func (yd *YandexDiscovery) sync() error {
 
 // Init implementation Init method of Discovery interface
 func (yd *YandexDiscovery) Init(cfg discovery.Config) error {
-	log.Debug("[Yandex.Cloud SD] Init discovery config...")
+	log.Debug(fmt.Sprintf("[Yandex.Cloud:%s SD] Init discovery config...", yd.id))
 	c, err := ensureConfigYandexMDB(cfg)
 	if err != nil {
 		log.Errorf("[Yandex.Cloud SD] Failed to init discovery config, error: %v", err)
