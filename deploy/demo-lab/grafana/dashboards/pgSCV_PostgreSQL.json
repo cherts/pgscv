@@ -19,7 +19,7 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 1,
-  "id": 7,
+  "id": 11,
   "links": [
     {
       "asDropdown": true,
@@ -2446,7 +2446,7 @@
             "h": 8,
             "w": 9,
             "x": 0,
-            "y": 42
+            "y": 570
           },
           "id": 78,
           "options": {
@@ -2559,7 +2559,7 @@
             "h": 8,
             "w": 9,
             "x": 9,
-            "y": 42
+            "y": 570
           },
           "id": 80,
           "options": {
@@ -2630,7 +2630,7 @@
             "h": 8,
             "w": 6,
             "x": 18,
-            "y": 42
+            "y": 570
           },
           "id": 83,
           "options": {
@@ -2752,7 +2752,7 @@
             "h": 8,
             "w": 12,
             "x": 0,
-            "y": 51
+            "y": 43
           },
           "id": 19,
           "options": {
@@ -2849,7 +2849,7 @@
             "h": 8,
             "w": 12,
             "x": 12,
-            "y": 51
+            "y": 43
           },
           "id": 20,
           "options": {
@@ -2947,7 +2947,7 @@
             "h": 8,
             "w": 12,
             "x": 0,
-            "y": 59
+            "y": 51
           },
           "id": 21,
           "options": {
@@ -3045,7 +3045,7 @@
             "h": 8,
             "w": 12,
             "x": 12,
-            "y": 59
+            "y": 51
           },
           "id": 22,
           "options": {
@@ -3156,7 +3156,7 @@
             "h": 8,
             "w": 12,
             "x": 0,
-            "y": 68
+            "y": 596
           },
           "id": 27,
           "options": {
@@ -3251,7 +3251,7 @@
             "h": 8,
             "w": 12,
             "x": 12,
-            "y": 68
+            "y": 596
           },
           "id": 28,
           "options": {
@@ -3346,7 +3346,7 @@
             "h": 8,
             "w": 12,
             "x": 0,
-            "y": 76
+            "y": 604
           },
           "id": 26,
           "options": {
@@ -3458,7 +3458,7 @@
             "h": 8,
             "w": 12,
             "x": 12,
-            "y": 76
+            "y": 604
           },
           "id": 29,
           "options": {
@@ -3570,7 +3570,7 @@
             "h": 8,
             "w": 12,
             "x": 0,
-            "y": 85
+            "y": 401
           },
           "id": 41,
           "options": {
@@ -3666,7 +3666,7 @@
             "h": 8,
             "w": 12,
             "x": 12,
-            "y": 85
+            "y": 401
           },
           "id": 38,
           "options": {
@@ -3777,7 +3777,7 @@
             "h": 4,
             "w": 24,
             "x": 0,
-            "y": 94
+            "y": 402
           },
           "id": 127,
           "options": {
@@ -4036,7 +4036,7 @@
             "h": 8,
             "w": 9,
             "x": 0,
-            "y": 99
+            "y": 263
           },
           "id": 33,
           "options": {
@@ -4161,9 +4161,42 @@
                   {
                     "id": "color",
                     "value": {
-                      "fixedColor": "dark-red",
+                      "fixedColor": "yellow",
                       "mode": "fixed"
                     }
+                  },
+                  {
+                    "id": "custom.lineStyle",
+                    "value": {
+                      "dash": [
+                        10,
+                        10
+                      ],
+                      "fill": "dash"
+                    }
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "Limit by max_slot_wal_keep_size"
+                },
+                "properties": [
+                  {
+                    "id": "color",
+                    "value": {
+                      "fixedColor": "red",
+                      "mode": "fixed"
+                    }
+                  },
+                  {
+                    "id": "custom.lineWidth",
+                    "value": 2
+                  },
+                  {
+                    "id": "custom.fillOpacity",
+                    "value": 0
                   }
                 ]
               }
@@ -4173,7 +4206,7 @@
             "h": 8,
             "w": 9,
             "x": 9,
-            "y": 99
+            "y": 263
           },
           "id": 35,
           "options": {
@@ -4217,6 +4250,19 @@
               "legendFormat": "Limit by max_wal_size",
               "range": true,
               "refId": "B"
+            },
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "${ds}"
+              },
+              "editorMode": "code",
+              "expr": "postgres_service_settings_info{instance=\"$instance\",service_id=\"$postgres\",name=\"max_slot_wal_keep_size\"}",
+              "hide": false,
+              "instant": false,
+              "legendFormat": "Limit by max_slot_wal_keep_size",
+              "range": true,
+              "refId": "C"
             }
           ],
           "title": "WAL directory size",
@@ -4258,7 +4304,7 @@
             "h": 8,
             "w": 6,
             "x": 18,
-            "y": 99
+            "y": 263
           },
           "id": 87,
           "options": {
@@ -4393,7 +4439,7 @@
             "h": 8,
             "w": 12,
             "x": 0,
-            "y": 108
+            "y": 424
           },
           "id": 34,
           "options": {
@@ -4489,7 +4535,7 @@
             "h": 8,
             "w": 12,
             "x": 12,
-            "y": 108
+            "y": 424
           },
           "id": 42,
           "options": {
@@ -4588,7 +4634,7 @@
             "h": 8,
             "w": 24,
             "x": 0,
-            "y": 116
+            "y": 456
           },
           "id": 85,
           "options": {
@@ -4796,7 +4842,7 @@
             "h": 8,
             "w": 9,
             "x": 0,
-            "y": 125
+            "y": 425
           },
           "id": 46,
           "options": {
@@ -4907,7 +4953,7 @@
             "h": 8,
             "w": 9,
             "x": 9,
-            "y": 125
+            "y": 425
           },
           "id": 47,
           "options": {
@@ -4979,7 +5025,7 @@
             "h": 8,
             "w": 6,
             "x": 18,
-            "y": 125
+            "y": 425
           },
           "id": 86,
           "options": {
@@ -5146,7 +5192,7 @@
             "h": 8,
             "w": 24,
             "x": 0,
-            "y": 133
+            "y": 433
           },
           "id": 48,
           "options": {
@@ -5290,7 +5336,7 @@
             "h": 8,
             "w": 24,
             "x": 0,
-            "y": 141
+            "y": 441
           },
           "id": 88,
           "options": {
@@ -5432,7 +5478,7 @@
             "h": 8,
             "w": 9,
             "x": 0,
-            "y": 150
+            "y": 274
           },
           "id": 52,
           "options": {
@@ -5605,7 +5651,7 @@
             "h": 8,
             "w": 9,
             "x": 9,
-            "y": 150
+            "y": 274
           },
           "id": 53,
           "options": {
@@ -5705,7 +5751,7 @@
             "h": 8,
             "w": 6,
             "x": 18,
-            "y": 150
+            "y": 274
           },
           "id": 122,
           "options": {
@@ -5840,7 +5886,7 @@
             "h": 8,
             "w": 12,
             "x": 0,
-            "y": 151
+            "y": 679
           },
           "id": 102,
           "options": {
@@ -5993,7 +6039,7 @@
             "h": 8,
             "w": 12,
             "x": 12,
-            "y": 151
+            "y": 679
           },
           "id": 104,
           "options": {
@@ -6146,7 +6192,7 @@
             "h": 8,
             "w": 12,
             "x": 0,
-            "y": 159
+            "y": 687
           },
           "id": 107,
           "options": {
@@ -6300,7 +6346,7 @@
             "h": 8,
             "w": 12,
             "x": 12,
-            "y": 159
+            "y": 687
           },
           "id": 108,
           "options": {
@@ -6454,7 +6500,7 @@
             "h": 8,
             "w": 12,
             "x": 0,
-            "y": 167
+            "y": 695
           },
           "id": 109,
           "options": {
@@ -6607,7 +6653,7 @@
             "h": 8,
             "w": 12,
             "x": 12,
-            "y": 167
+            "y": 695
           },
           "id": 119,
           "options": {
@@ -6760,7 +6806,7 @@
             "h": 8,
             "w": 12,
             "x": 0,
-            "y": 175
+            "y": 703
           },
           "id": 105,
           "options": {
@@ -6913,7 +6959,7 @@
             "h": 8,
             "w": 12,
             "x": 12,
-            "y": 175
+            "y": 703
           },
           "id": 106,
           "options": {
@@ -7066,7 +7112,7 @@
             "h": 8,
             "w": 12,
             "x": 0,
-            "y": 183
+            "y": 711
           },
           "id": 120,
           "options": {
@@ -7219,7 +7265,7 @@
             "h": 8,
             "w": 12,
             "x": 12,
-            "y": 183
+            "y": 711
           },
           "id": 110,
           "options": {
@@ -7386,7 +7432,7 @@
             "h": 8,
             "w": 12,
             "x": 0,
-            "y": 200
+            "y": 728
           },
           "id": 117,
           "options": {
@@ -7483,7 +7529,7 @@
             "h": 8,
             "w": 12,
             "x": 12,
-            "y": 200
+            "y": 728
           },
           "id": 118,
           "options": {
@@ -7580,7 +7626,7 @@
             "h": 8,
             "w": 12,
             "x": 0,
-            "y": 208
+            "y": 736
           },
           "id": 112,
           "options": {
@@ -7677,7 +7723,7 @@
             "h": 8,
             "w": 12,
             "x": 12,
-            "y": 208
+            "y": 736
           },
           "id": 113,
           "options": {
@@ -7774,7 +7820,7 @@
             "h": 8,
             "w": 12,
             "x": 0,
-            "y": 216
+            "y": 744
           },
           "id": 114,
           "options": {
@@ -7871,7 +7917,7 @@
             "h": 8,
             "w": 12,
             "x": 12,
-            "y": 216
+            "y": 744
           },
           "id": 115,
           "options": {
@@ -7968,7 +8014,7 @@
             "h": 8,
             "w": 12,
             "x": 0,
-            "y": 224
+            "y": 752
           },
           "id": 116,
           "options": {
@@ -8080,7 +8126,7 @@
             "h": 8,
             "w": 12,
             "x": 0,
-            "y": 233
+            "y": 761
           },
           "id": 65,
           "options": {
@@ -8200,7 +8246,7 @@
             "h": 8,
             "w": 12,
             "x": 12,
-            "y": 233
+            "y": 761
           },
           "id": 66,
           "options": {
@@ -8298,7 +8344,7 @@
             "h": 8,
             "w": 12,
             "x": 0,
-            "y": 241
+            "y": 769
           },
           "id": 69,
           "options": {
@@ -8396,7 +8442,7 @@
             "h": 8,
             "w": 12,
             "x": 12,
-            "y": 241
+            "y": 769
           },
           "id": 70,
           "options": {
@@ -8494,7 +8540,7 @@
             "h": 8,
             "w": 12,
             "x": 0,
-            "y": 249
+            "y": 777
           },
           "id": 67,
           "options": {
@@ -8592,7 +8638,7 @@
             "h": 8,
             "w": 12,
             "x": 12,
-            "y": 249
+            "y": 777
           },
           "id": 68,
           "options": {
@@ -8690,7 +8736,7 @@
             "h": 8,
             "w": 12,
             "x": 0,
-            "y": 257
+            "y": 785
           },
           "id": 123,
           "options": {
@@ -8802,7 +8848,7 @@
             "h": 8,
             "w": 12,
             "x": 0,
-            "y": 266
+            "y": 70
           },
           "id": 57,
           "options": {
@@ -8900,7 +8946,7 @@
             "h": 8,
             "w": 12,
             "x": 12,
-            "y": 266
+            "y": 70
           },
           "id": 60,
           "options": {
@@ -8998,7 +9044,7 @@
             "h": 8,
             "w": 12,
             "x": 0,
-            "y": 274
+            "y": 78
           },
           "id": 89,
           "options": {
@@ -9096,7 +9142,7 @@
             "h": 8,
             "w": 12,
             "x": 12,
-            "y": 274
+            "y": 78
           },
           "id": 59,
           "options": {
@@ -9194,7 +9240,7 @@
             "h": 8,
             "w": 12,
             "x": 0,
-            "y": 282
+            "y": 86
           },
           "id": 58,
           "options": {
@@ -9292,7 +9338,7 @@
             "h": 8,
             "w": 12,
             "x": 12,
-            "y": 282
+            "y": 86
           },
           "id": 61,
           "options": {
@@ -9390,7 +9436,7 @@
             "h": 8,
             "w": 12,
             "x": 0,
-            "y": 290
+            "y": 94
           },
           "id": 94,
           "options": {
@@ -9479,7 +9525,7 @@
             "h": 8,
             "w": 12,
             "x": 12,
-            "y": 290
+            "y": 94
           },
           "id": 93,
           "options": {
@@ -9607,8 +9653,8 @@
       },
       {
         "current": {
-          "text": "postgres",
-          "value": "postgres"
+          "text": "yandex-mdb",
+          "value": "yandex-mdb"
         },
         "datasource": {
           "type": "prometheus",
@@ -9631,8 +9677,8 @@
       },
       {
         "current": {
-          "text": "postgres17_pgbench",
-          "value": "postgres17_pgbench"
+          "text": "rc1b_jp16v32m9e45w129_ad_events",
+          "value": "rc1b_jp16v32m9e45w129_ad_events"
         },
         "datasource": {
           "type": "prometheus",
@@ -9663,7 +9709,7 @@
           "type": "prometheus",
           "uid": "DS_VM_01"
         },
-        "definition": "label_values(postgres_database_size_bytes{instance=\"$instance\"},database)",
+        "definition": "label_values(postgres_database_size_bytes{instance=\"$instance\", provider=\"$provider\", service_id=\"$postgres\"},database)",
         "includeAll": true,
         "label": "Database",
         "multi": true,
@@ -9671,7 +9717,7 @@
         "options": [],
         "query": {
           "qryType": 1,
-          "query": "label_values(postgres_database_size_bytes{instance=\"$instance\"},database)",
+          "query": "label_values(postgres_database_size_bytes{instance=\"$instance\", provider=\"$provider\", service_id=\"$postgres\"},database)",
           "refId": "PrometheusVariableQueryEditor-VariableQuery"
         },
         "refresh": 1,
@@ -9679,33 +9725,39 @@
         "type": "query"
       },
       {
+        "allValue": "postgres",
+        "allowCustomValue": false,
         "current": {
           "text": [
-            "pgscv"
+            "postgres",
+            "monitor",
+            "postgres_exporter"
           ],
           "value": [
-            "pgscv"
+            "postgres",
+            "monitor",
+            "postgres_exporter"
           ]
         },
-        "description": "Exclude users",
-        "includeAll": false,
+        "datasource": {
+          "type": "prometheus",
+          "uid": "DS_VM_01"
+        },
+        "definition": "label_values(postgres_statements_calls_total{instance=\"$instance\", provider=\"$provider\", service_id=\"$postgres\"},user)",
+        "includeAll": true,
         "label": "Exclude",
         "multi": true,
         "name": "exclude",
-        "options": [
-          {
-            "selected": false,
-            "text": "postgres",
-            "value": "postgres"
-          },
-          {
-            "selected": true,
-            "text": "pgscv",
-            "value": "pgscv"
-          }
-        ],
-        "query": "postgres,pgscv",
-        "type": "custom"
+        "options": [],
+        "query": {
+          "qryType": 1,
+          "query": "label_values(postgres_statements_calls_total{instance=\"$instance\", provider=\"$provider\", service_id=\"$postgres\"},user)",
+          "refId": "PrometheusVariableQueryEditor-VariableQuery"
+        },
+        "refresh": 1,
+        "regex": "",
+        "sort": 1,
+        "type": "query"
       },
       {
         "auto": true,
@@ -9767,7 +9819,7 @@
     ]
   },
   "time": {
-    "from": "now-30m",
+    "from": "now-1h",
     "to": "now"
   },
   "timepicker": {
