@@ -141,7 +141,7 @@ func (c *postgresBgwriterCollector) Update(ctx context.Context, config Config, c
 	var err error
 
 	query := selectBgwriterQuery(config.pgVersion.Numeric)
-	cacheKey, res := getFromCache(config.CacheConfig, config.ConnString, collectorPostgresBgWriter, query)
+	cacheKey, res, _ := getFromCache(config.CacheConfig, config.ConnString, collectorPostgresBgWriter, query)
 	if res == nil {
 		res, err = config.DB.Query(ctx, query)
 		if err != nil {

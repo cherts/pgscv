@@ -164,7 +164,7 @@ func TestMemcachedCache_Integration(t *testing.T) {
 		assert.Equal(t, "", result.Rows[0][1].String)
 	})
 
-	t.Run("test empty result", func(t *testing.T) {
+	t.Run("test empty Result", func(t *testing.T) {
 		emptyData := &model.PGResult{
 			Nrows:    0,
 			Ncols:    0,

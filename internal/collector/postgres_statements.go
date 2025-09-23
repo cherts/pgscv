@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/cherts/pgscv/internal/log"
 	"github.com/cherts/pgscv/internal/model"
@@ -333,10 +334,12 @@ func (c *postgresStatementsCollector) Update(ctx context.Context, config Config,
 	wg := &sync.WaitGroup{}
 	defer wg.Wait()
 
+	var metricsTs *time.Time
+
 	// get pg_stat_statements stats
 	if config.CollectTopQuery > 0 {
 		query := selectStatementsQuery(config.pgVersion.Numeric, config.pgStatStatementsSchema, config.NoTrackMode, config.CollectTopQuery)
-		cacheKey, res = getFromCache(config.CacheConfig, config.ConnString, collectorPostgresStatements, query, config.CollectTopQuery)
+		cacheKey, res, metricsTs = getFromCache(config.CacheConfig, config.ConnString, collectorPostgresStatements, query, config.CollectTopQuery)
 		if res == nil {
 			res, err = conn.Query(ctx, query, config.CollectTopQuery)
 			if err != nil {
@@ -346,7 +349,7 @@ func (c *postgresStatementsCollector) Update(ctx context.Context, config Config,
 		}
 	} else {
 		query := selectStatementsQuery(config.pgVersion.Numeric, config.pgStatStatementsSchema, config.NoTrackMode, config.CollectTopQuery)
-		cacheKey, res = getFromCache(config.CacheConfig, config.ConnString, collectorPostgresStatements, query)
+		cacheKey, res, metricsTs = getFromCache(config.CacheConfig, config.ConnString, collectorPostgresStatements, query)
 		if res == nil {
 			res, err = conn.Query(ctx, query)
 			if err != nil {
@@ -374,7 +377,12 @@ func (c *postgresStatementsCollector) Update(ctx context.Context, config Config,
 
 		ch <- c.query.newConstMetric(1, stat.user, stat.database, stat.queryid, query)
 
-		ch <- c.calls.newConstMetric(stat.calls, stat.user, stat.database, stat.queryid)
+		// temporary, for test
+		if metricsTs != nil {
+			ch <- prometheus.NewMetricWithTimestamp(*metricsTs, c.calls.newConstMetric(stat.calls, stat.user, stat.database, stat.queryid))
+		} else {
+			ch <- c.calls.newConstMetric(stat.calls, stat.user, stat.database, stat.queryid)
+		}
 		ch <- c.rows.newConstMetric(stat.rows, stat.user, stat.database, stat.queryid)
 
 		// total = planning + execution; execution already includes io time.

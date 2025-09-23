@@ -50,7 +50,7 @@ func (c *postgresSettingsCollector) Update(ctx context.Context, config Config, c
 	// For complete list of displayable names of GUC's sources types check guc.c (see GucSource_Names[]).
 	query := "SELECT name, setting, unit, vartype FROM pg_show_all_settings() " +
 		"WHERE source IN ('default','configuration file','override','environment variable','command line','global')"
-	cacheKey, res := getFromCache(config.CacheConfig, config.ConnString, collectorPostgresSettings, query)
+	cacheKey, res, _ := getFromCache(config.CacheConfig, config.ConnString, collectorPostgresSettings, query)
 	if res == nil {
 		res, err = conn.Query(ctx, query)
 		if err != nil {
@@ -74,7 +74,7 @@ func (c *postgresSettingsCollector) Update(ctx context.Context, config Config, c
 	}
 
 	query = `SELECT name, setting FROM pg_show_all_settings() WHERE name IN ('config_file','hba_file','ident_file','data_directory')`
-	cacheKey, res = getFromCache(config.CacheConfig, config.ConnString, collectorPostgresSettings, query)
+	cacheKey, res, _ = getFromCache(config.CacheConfig, config.ConnString, collectorPostgresSettings, query)
 	if res == nil {
 		res, err = conn.Query(ctx, query)
 		if err != nil {

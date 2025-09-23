@@ -239,7 +239,7 @@ func (c *postgresDatabasesCollector) Update(ctx context.Context, config Config, 
 	defer wg.Wait()
 
 	query := selectDatabasesQuery(config.pgVersion.Numeric)
-	cacheKey, res := getFromCache(config.CacheConfig, config.ConnString, collectorPostgresDatabases, query)
+	cacheKey, res, _ := getFromCache(config.CacheConfig, config.ConnString, collectorPostgresDatabases, query)
 	if res == nil {
 		res, err = conn.Query(ctx, query)
 		if err != nil {
@@ -250,7 +250,7 @@ func (c *postgresDatabasesCollector) Update(ctx context.Context, config Config, 
 
 	stats := parsePostgresDatabasesStats(res, c.labelNames)
 
-	cacheKey, res = getFromCache(config.CacheConfig, config.ConnString, collectorPostgresDatabases, xidLimitQuery)
+	cacheKey, res, _ = getFromCache(config.CacheConfig, config.ConnString, collectorPostgresDatabases, xidLimitQuery)
 	if res == nil {
 		res, err = conn.Query(ctx, xidLimitQuery)
 		if err != nil {

@@ -7,29 +7,34 @@ import (
 	"time"
 )
 
+type cacheItem struct {
+	Result *model.PGResult
+	TS     time.Time
+}
+
 // InMemoryCache - in memory cache
 type InMemoryCache struct {
-	items map[string]*model.PGResult
+	items map[string]*cacheItem
 	mu    sync.RWMutex
 }
 
 // NewInMemoryCache return pointer to InMemoryCache
 func NewInMemoryCache() *InMemoryCache {
 	return &InMemoryCache{
-		items: make(map[string]*model.PGResult),
+		items: make(map[string]*cacheItem),
 	}
 }
 
 // Get value by key
-func (c *InMemoryCache) Get(key string) (*model.PGResult, error) {
+func (c *InMemoryCache) Get(key string) (*model.PGResult, time.Time, error) {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
 
 	data, ok := c.items[key]
 	if !ok {
-		return nil, memcache.ErrCacheMiss
+		return nil, time.Now(), memcache.ErrCacheMiss
 	}
-	return data, nil
+	return data.Result, data.TS, nil
 }
 
 // Set value with key and ttl
@@ -37,7 +42,7 @@ func (c *InMemoryCache) Set(key string, value *model.PGResult, ttl time.Duration
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
-	c.items[key] = value
+	c.items[key] = &cacheItem{Result: value, TS: time.Now()}
 	if ttl > 0 {
 		go func() {
 			time.Sleep(ttl)

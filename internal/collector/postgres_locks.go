@@ -64,7 +64,7 @@ func (c *postgresLocksCollector) Update(ctx context.Context, config Config, ch c
 	defer wg.Wait()
 	var err error
 
-	cacheKey, res := getFromCache(config.CacheConfig, config.ConnString, collectorPostgresLocks, locksQuery)
+	cacheKey, res, _ := getFromCache(config.CacheConfig, config.ConnString, collectorPostgresLocks, locksQuery)
 	if res == nil {
 		res, err = conn.Query(ctx, locksQuery)
 		if err != nil {

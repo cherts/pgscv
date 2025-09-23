@@ -89,7 +89,7 @@ func (c *postgresIndexesCollector) Update(ctx context.Context, config Config, ch
 	var res *model.PGResult
 
 	if config.CollectTopIndex > 0 {
-		cacheKey, res = getFromCache(config.CacheConfig, config.ConnString, collectorPostgresIndexes, userIndexesQueryTopK, config.CollectTopIndex)
+		cacheKey, res, _ = getFromCache(config.CacheConfig, config.ConnString, collectorPostgresIndexes, userIndexesQueryTopK, config.CollectTopIndex)
 		if res == nil {
 			res, err = conn.Query(ctx, userIndexesQueryTopK, config.CollectTopIndex)
 			if err != nil {
@@ -98,7 +98,7 @@ func (c *postgresIndexesCollector) Update(ctx context.Context, config Config, ch
 			saveToCache(collectorPostgresIndexes, wg, config.CacheConfig, cacheKey, res)
 		}
 	} else {
-		cacheKey, res = getFromCache(config.CacheConfig, config.ConnString, collectorPostgresIndexes, userIndexesQuery)
+		cacheKey, res, _ = getFromCache(config.CacheConfig, config.ConnString, collectorPostgresIndexes, userIndexesQuery)
 		if res == nil {
 			res, err = conn.Query(ctx, userIndexesQuery)
 			if err != nil {

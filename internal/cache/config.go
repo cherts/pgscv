@@ -34,7 +34,7 @@ type CollectorConfig struct {
 
 // Cache abstract interface
 type Cache interface {
-	Get(key string) (*model.PGResult, error)
+	Get(key string) (*model.PGResult, time.Time, error)
 	Set(key string, value *model.PGResult, ttl time.Duration) error
 	Delete(key string) error
 	Hash(args ...any) string

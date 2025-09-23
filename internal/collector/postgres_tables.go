@@ -223,7 +223,7 @@ func (c *postgresTablesCollector) Update(ctx context.Context, config Config, ch 
 	defer wg.Wait()
 
 	if config.CollectTopTable > 0 {
-		cacheKey, res = getFromCache(config.CacheConfig, config.ConnString, collectorPostgresTables, userTablesQueryTopK, config.CollectTopTable)
+		cacheKey, res, _ = getFromCache(config.CacheConfig, config.ConnString, collectorPostgresTables, userTablesQueryTopK, config.CollectTopTable)
 		if res == nil {
 			res, err = conn.Query(ctx, userTablesQueryTopK, config.CollectTopTable)
 			if err != nil {
@@ -233,7 +233,7 @@ func (c *postgresTablesCollector) Update(ctx context.Context, config Config, ch 
 			saveToCache(collectorPostgresTables, wg, config.CacheConfig, cacheKey, res)
 		}
 	} else {
-		cacheKey, res = getFromCache(config.CacheConfig, config.ConnString, collectorPostgresTables, userTablesQuery)
+		cacheKey, res, _ = getFromCache(config.CacheConfig, config.ConnString, collectorPostgresTables, userTablesQuery)
 		if res == nil {
 			res, err = conn.Query(ctx, userTablesQuery)
 			if err != nil {

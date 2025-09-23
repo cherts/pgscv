@@ -159,7 +159,7 @@ func (c *postgresActivityCollector) Update(ctx context.Context, config Config, c
 	defer wg.Wait()
 
 	query := selectActivityQuery(config.pgVersion.Numeric)
-	cacheKey, res := getFromCache(config.CacheConfig, config.ConnString, collectorPostgresActivity, query)
+	cacheKey, res, _ := getFromCache(config.CacheConfig, config.ConnString, collectorPostgresActivity, query)
 	if res == nil {
 		res, err = conn.Query(ctx, query)
 		if err != nil {
@@ -173,7 +173,7 @@ func (c *postgresActivityCollector) Update(ctx context.Context, config Config, c
 
 	// get pg_prepared_xacts stats
 	var count int64
-	cacheKey, res = getFromCache(config.CacheConfig, config.ConnString, collectorPostgresActivity, postgresPreparedXactQuery)
+	cacheKey, res, _ = getFromCache(config.CacheConfig, config.ConnString, collectorPostgresActivity, postgresPreparedXactQuery)
 	if res == nil {
 		res, err = conn.Query(ctx, postgresPreparedXactQuery)
 		if err != nil {
@@ -192,7 +192,7 @@ func (c *postgresActivityCollector) Update(ctx context.Context, config Config, c
 
 	// get postmaster start time
 	var startTime float64
-	cacheKey, res = getFromCache(config.CacheConfig, config.ConnString, postgresStartTimeQuery, postgresPreparedXactQuery)
+	cacheKey, res, _ = getFromCache(config.CacheConfig, config.ConnString, postgresStartTimeQuery, postgresPreparedXactQuery)
 	if res == nil {
 		res, err = conn.Query(ctx, postgresStartTimeQuery)
 		if err != nil {

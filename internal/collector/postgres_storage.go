@@ -121,7 +121,7 @@ func (c *postgresStorageCollector) Update(ctx context.Context, config Config, ch
 
 	// Collecting in-flight temp only since Postgres 12.
 	if config.pgVersion.Numeric >= PostgresV12 {
-		cacheKey, res = getFromCache(config.CacheConfig, config.ConnString, collectorPostgresStorage, postgresTempFilesInflightQuery)
+		cacheKey, res, _ = getFromCache(config.CacheConfig, config.ConnString, collectorPostgresStorage, postgresTempFilesInflightQuery)
 		if res == nil {
 			res, err = conn.Query(ctx, postgresTempFilesInflightQuery)
 			if err != nil {
@@ -415,7 +415,7 @@ type tablespaceStat struct {
 func getTablespacesStat(ctx context.Context, config Config, wg *sync.WaitGroup, mounts []mount) ([]tablespaceStat, error) {
 	var err error
 	query := "select spcname, coalesce(nullif(pg_tablespace_location(oid), ''), current_setting('data_directory')) as path, pg_tablespace_size(oid) as size from pg_tablespace"
-	cacheKey, res := getFromCache(config.CacheConfig, config.ConnString, collectorPostgresStorage, query)
+	cacheKey, res, _ := getFromCache(config.CacheConfig, config.ConnString, collectorPostgresStorage, query)
 	if res == nil {
 		res, err = config.DB.Query(ctx, query)
 		if err != nil {
@@ -465,7 +465,7 @@ func getWalStat(ctx context.Context, config Config, wg *sync.WaitGroup) (string,
 	var path string
 	var size, count int64
 	query := "SELECT current_setting('data_directory')||'/pg_wal' AS path, COALESCE(sum(size), 0) AS bytes, COALESCE(count(name), 0) AS count FROM pg_ls_waldir()"
-	cacheKey, res := getFromCache(config.CacheConfig, config.ConnString, collectorPostgresStorage, query)
+	cacheKey, res, _ := getFromCache(config.CacheConfig, config.ConnString, collectorPostgresStorage, query)
 	if res == nil {
 		res, err = config.DB.Query(ctx, query)
 		if err != nil {
@@ -520,7 +520,7 @@ func getLogStat(ctx context.Context, config Config, wg *sync.WaitGroup, logcolle
 
 	query := "SELECT current_setting('log_directory') AS path, COALESCE(sum(size), 0) AS bytes, COALESCE(count(name), 0) AS count FROM pg_ls_logdir()"
 
-	cacheKey, res := getFromCache(config.CacheConfig, config.ConnString, collectorPostgresStorage, query)
+	cacheKey, res, _ := getFromCache(config.CacheConfig, config.ConnString, collectorPostgresStorage, query)
 	if res == nil {
 		res, err = config.DB.Query(ctx, query)
 		if err != nil {
@@ -574,7 +574,7 @@ func getTempfilesStat(ctx context.Context, config Config, version int, wg *sync.
 	}
 	var err error
 	query := "SELECT coalesce(sum(size), 0) AS bytes, coalesce(count(name), 0) AS count FROM (SELECT (pg_ls_tmpdir(oid)).* FROM pg_tablespace WHERE spcname != 'pg_global') tablespaces"
-	cacheKey, res := getFromCache(config.CacheConfig, config.ConnString, collectorPostgresStorage, query)
+	cacheKey, res, _ := getFromCache(config.CacheConfig, config.ConnString, collectorPostgresStorage, query)
 	if res == nil {
 		res, err = config.DB.Query(ctx, query)
 		if err != nil {
