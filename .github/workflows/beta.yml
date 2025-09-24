@@ -42,6 +42,7 @@ jobs:
       - name: Log in to Docker Hub
         env:
           DOCKER_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
-        run: echo $DOCKER_TOKEN | docker login -u ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin 
+          DOCKER_LOGIN: ${{ secrets.DOCKERHUB_USERNAME }
+        run: echo $DOCKER_TOKEN | docker login -u $DOCKER_LOGIN --password-stdin 
       - name: Push beta image to Docker Hub
         run: make docker-push-beta
