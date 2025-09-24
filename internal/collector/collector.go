@@ -311,19 +311,13 @@ func (n PgscvCollector) Collect(out chan<- prometheus.Metric) {
 	wgSender.Wait()
 }
 
+// @deprecated
 // send acts like a middleware between metric collector functions which produces metrics and Prometheus who accepts metrics.
 func send(in <-chan prometheus.Metric, out chan<- prometheus.Metric) {
 	for m := range in {
 		// Skip received nil values
 		if m == nil {
 			continue
-		}
-
-		switch v := m.(type) {
-		case pgSCVMetric:
-			if v.Empty() {
-				continue
-			}
 		}
 
 		// implement other middlewares here.

@@ -94,13 +94,6 @@ func (m *pgSCVMetric) WithTS(t *time.Time) prometheus.Metric {
 	return prometheus.NewMetricWithTimestamp(*t, m)
 }
 
-func (m *pgSCVMetric) Empty() bool {
-	if m == nil || m.Metric == nil {
-		return true
-	}
-	return false
-}
-
 func newPgSCVMetric(m prometheus.Metric) *pgSCVMetric {
 	return &pgSCVMetric{Metric: m}
 }
@@ -108,7 +101,6 @@ func newPgSCVMetric(m prometheus.Metric) *pgSCVMetric {
 type PgSCVMetric interface {
 	prometheus.Metric
 	WithTS(t *time.Time) prometheus.Metric
-	Empty() bool
 }
 
 // newConstMetric is the wrapper on prometheus.NewConstMetric
