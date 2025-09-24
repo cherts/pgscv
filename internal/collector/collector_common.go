@@ -111,12 +111,12 @@ func (d *typedDesc) newConstMetric(value float64, labelValues ...string) PgSCVMe
 
 	if len(d.labelNames) != len(labelValues) {
 		log.Errorf("number of labels and collected label values does not match, want: %v; got %v; metric description: %s; skip metric", d.labelNames, labelValues, d.desc.String())
-		return nil
+		return newPgSCVMetric(nil)
 	}
 
 	// Check passed label values against configured filters.
 	if d.hasFilter(labelValues) {
-		return nil
+		return newPgSCVMetric(nil)
 	}
 
 	m, err := prometheus.NewConstMetric(d.desc, d.valueType, value, labelValues...)
