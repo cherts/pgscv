@@ -8,6 +8,7 @@ import (
 	"regexp"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/cherts/pgscv/internal/log"
 	"github.com/cherts/pgscv/internal/model"
@@ -140,38 +141,40 @@ func (c *postgresLogsCollector) Update(_ context.Context, config Config, ch chan
 
 	// Read collected stats and create metrics.
 
+	metricsTs := time.Now()
+
 	// Totals.
 	c.totals.mu.RLock()
 	for label, value := range c.totals.store {
-		ch <- c.messagesTotal.newConstMetric(value, label)
+		ch <- c.messagesTotal.newConstMetric(value, label).WithTS(&metricsTs)
 	}
 	c.totals.mu.RUnlock()
 
 	// PANIC messages.
 	c.panics.mu.RLock()
 	for msg, value := range c.panics.store {
-		ch <- c.panicMessages.newConstMetric(value, msg)
+		ch <- c.panicMessages.newConstMetric(value, msg).WithTS(&metricsTs)
 	}
 	c.panics.mu.RUnlock()
 
 	// FATAL messages.
 	c.fatals.mu.RLock()
 	for msg, value := range c.fatals.store {
-		ch <- c.fatalMessages.newConstMetric(value, msg)
+		ch <- c.fatalMessages.newConstMetric(value, msg).WithTS(&metricsTs)
 	}
 	c.fatals.mu.RUnlock()
 
 	// ERROR messages.
 	c.errors.mu.RLock()
 	for msg, value := range c.errors.store {
-		ch <- c.errorMessages.newConstMetric(value, msg)
+		ch <- c.errorMessages.newConstMetric(value, msg).WithTS(&metricsTs)
 	}
 	c.errors.mu.RUnlock()
 
 	// WARNING messages.
 	c.warnings.mu.RLock()
 	for msg, value := range c.warnings.store {
-		ch <- c.warningMessages.newConstMetric(value, msg)
+		ch <- c.warningMessages.newConstMetric(value, msg).WithTS(&metricsTs)
 	}
 	c.warnings.mu.RUnlock()
 

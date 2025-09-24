@@ -3,13 +3,12 @@ package collector
 
 import (
 	"context"
-	"strconv"
-	"strings"
-	"sync"
-
 	"github.com/cherts/pgscv/internal/log"
 	"github.com/cherts/pgscv/internal/model"
 	"github.com/prometheus/client_golang/prometheus"
+	"strconv"
+	"strings"
+	"sync"
 )
 
 const (
@@ -51,7 +50,7 @@ func (c *postgresReplicationSlotCollector) Update(ctx context.Context, config Co
 	var err error
 
 	query := selectReplicationSlotQuery(config.pgVersion.Numeric)
-	cacheKey, res, _ := getFromCache(config.CacheConfig, config.ConnString, collectorPostgresReplicationSlots, query)
+	cacheKey, res, metricsTs := getFromCache(config.CacheConfig, config.ConnString, collectorPostgresReplicationSlots, query)
 	if res == nil {
 		res, err = conn.Query(ctx, query)
 		if err != nil {
@@ -64,7 +63,7 @@ func (c *postgresReplicationSlotCollector) Update(ctx context.Context, config Co
 	stats := parsePostgresReplicationSlotStats(res, c.restart.labelNames)
 
 	for _, stat := range stats {
-		ch <- c.restart.newConstMetric(stat.retainedBytes, stat.database, stat.slotname, stat.slottype, stat.active)
+		ch <- c.restart.newConstMetric(stat.retainedBytes, stat.database, stat.slotname, stat.slottype, stat.active).WithTS(metricsTs)
 	}
 
 	return nil

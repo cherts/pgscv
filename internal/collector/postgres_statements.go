@@ -375,74 +375,70 @@ func (c *postgresStatementsCollector) Update(ctx context.Context, config Config,
 		// Note: pg_stat_statements.total_exec_time (and .total_time) includes blk_read_time and blk_write_time implicitly.
 		// Remember that when creating metrics.
 
-		ch <- c.query.newConstMetric(1, stat.user, stat.database, stat.queryid, query)
+		ch <- c.query.newConstMetric(1, stat.user, stat.database, stat.queryid, query).WithTS(metricsTs)
 
-		// temporary, for test
-		if metricsTs != nil {
-			ch <- prometheus.NewMetricWithTimestamp(*metricsTs, c.calls.newConstMetric(stat.calls, stat.user, stat.database, stat.queryid))
-		} else {
-			ch <- c.calls.newConstMetric(stat.calls, stat.user, stat.database, stat.queryid)
-		}
-		ch <- c.rows.newConstMetric(stat.rows, stat.user, stat.database, stat.queryid)
+		ch <- c.calls.newConstMetric(stat.calls, stat.user, stat.database, stat.queryid).WithTS(metricsTs)
+
+		ch <- c.rows.newConstMetric(stat.rows, stat.user, stat.database, stat.queryid).WithTS(metricsTs)
 
 		// total = planning + execution; execution already includes io time.
-		ch <- c.allTimes.newConstMetric(stat.totalPlanTime+stat.totalExecTime, stat.user, stat.database, stat.queryid)
-		ch <- c.times.newConstMetric(stat.totalPlanTime, stat.user, stat.database, stat.queryid, "planning")
+		ch <- c.allTimes.newConstMetric(stat.totalPlanTime+stat.totalExecTime, stat.user, stat.database, stat.queryid).WithTS(metricsTs)
+		ch <- c.times.newConstMetric(stat.totalPlanTime, stat.user, stat.database, stat.queryid, "planning").WithTS(metricsTs)
 
 		// execution time = execution - io times.
-		ch <- c.times.newConstMetric(stat.totalExecTime-(stat.blkReadTime+stat.blkWriteTime), stat.user, stat.database, stat.queryid, "executing")
+		ch <- c.times.newConstMetric(stat.totalExecTime-(stat.blkReadTime+stat.blkWriteTime), stat.user, stat.database, stat.queryid, "executing").WithTS(metricsTs)
 
 		// avoid metrics spamming and send metrics only if they greater than zero.
 		if stat.blkReadTime > 0 {
-			ch <- c.times.newConstMetric(stat.blkReadTime, stat.user, stat.database, stat.queryid, "ioread")
+			ch <- c.times.newConstMetric(stat.blkReadTime, stat.user, stat.database, stat.queryid, "ioread").WithTS(metricsTs)
 		}
 		if stat.blkWriteTime > 0 {
-			ch <- c.times.newConstMetric(stat.blkWriteTime, stat.user, stat.database, stat.queryid, "iowrite")
+			ch <- c.times.newConstMetric(stat.blkWriteTime, stat.user, stat.database, stat.queryid, "iowrite").WithTS(metricsTs)
 		}
 		if stat.sharedBlksHit > 0 {
-			ch <- c.sharedHit.newConstMetric(stat.sharedBlksHit, stat.user, stat.database, stat.queryid)
+			ch <- c.sharedHit.newConstMetric(stat.sharedBlksHit, stat.user, stat.database, stat.queryid).WithTS(metricsTs)
 		}
 		if stat.sharedBlksRead > 0 {
-			ch <- c.sharedRead.newConstMetric(stat.sharedBlksRead*blockSize, stat.user, stat.database, stat.queryid)
+			ch <- c.sharedRead.newConstMetric(stat.sharedBlksRead*blockSize, stat.user, stat.database, stat.queryid).WithTS(metricsTs)
 		}
 		if stat.sharedBlksDirtied > 0 {
-			ch <- c.sharedDirtied.newConstMetric(stat.sharedBlksDirtied, stat.user, stat.database, stat.queryid)
+			ch <- c.sharedDirtied.newConstMetric(stat.sharedBlksDirtied, stat.user, stat.database, stat.queryid).WithTS(metricsTs)
 		}
 		if stat.sharedBlksWritten > 0 {
-			ch <- c.sharedWritten.newConstMetric(stat.sharedBlksWritten*blockSize, stat.user, stat.database, stat.queryid)
+			ch <- c.sharedWritten.newConstMetric(stat.sharedBlksWritten*blockSize, stat.user, stat.database, stat.queryid).WithTS(metricsTs)
 		}
 		if stat.localBlksHit > 0 {
-			ch <- c.localHit.newConstMetric(stat.localBlksHit, stat.user, stat.database, stat.queryid)
+			ch <- c.localHit.newConstMetric(stat.localBlksHit, stat.user, stat.database, stat.queryid).WithTS(metricsTs)
 		}
 		if stat.localBlksRead > 0 {
-			ch <- c.localRead.newConstMetric(stat.localBlksRead*blockSize, stat.user, stat.database, stat.queryid)
+			ch <- c.localRead.newConstMetric(stat.localBlksRead*blockSize, stat.user, stat.database, stat.queryid).WithTS(metricsTs)
 		}
 		if stat.localBlksDirtied > 0 {
-			ch <- c.localDirtied.newConstMetric(stat.localBlksDirtied, stat.user, stat.database, stat.queryid)
+			ch <- c.localDirtied.newConstMetric(stat.localBlksDirtied, stat.user, stat.database, stat.queryid).WithTS(metricsTs)
 		}
 		if stat.localBlksWritten > 0 {
-			ch <- c.localWritten.newConstMetric(stat.localBlksWritten*blockSize, stat.user, stat.database, stat.queryid)
+			ch <- c.localWritten.newConstMetric(stat.localBlksWritten*blockSize, stat.user, stat.database, stat.queryid).WithTS(metricsTs)
 		}
 		if stat.tempBlksRead > 0 {
-			ch <- c.tempRead.newConstMetric(stat.tempBlksRead*blockSize, stat.user, stat.database, stat.queryid)
+			ch <- c.tempRead.newConstMetric(stat.tempBlksRead*blockSize, stat.user, stat.database, stat.queryid).WithTS(metricsTs)
 		}
 		if stat.tempBlksWritten > 0 {
-			ch <- c.tempWritten.newConstMetric(stat.tempBlksWritten*blockSize, stat.user, stat.database, stat.queryid)
+			ch <- c.tempWritten.newConstMetric(stat.tempBlksWritten*blockSize, stat.user, stat.database, stat.queryid).WithTS(metricsTs)
 		}
 		if stat.walRecords > 0 {
 			// WAL records
-			ch <- c.walRecords.newConstMetric(stat.walRecords, stat.user, stat.database, stat.queryid)
+			ch <- c.walRecords.newConstMetric(stat.walRecords, stat.user, stat.database, stat.queryid).WithTS(metricsTs)
 
 			// WAL total bytes
-			ch <- c.walAllBytes.newConstMetric((stat.walFPI*blockSize)+stat.walBytes, stat.user, stat.database, stat.queryid)
+			ch <- c.walAllBytes.newConstMetric((stat.walFPI*blockSize)+stat.walBytes, stat.user, stat.database, stat.queryid).WithTS(metricsTs)
 
 			// WAL bytes by type (regular of fpi)
-			ch <- c.walBytes.newConstMetric(stat.walFPI*blockSize, stat.user, stat.database, stat.queryid, "fpi")
-			ch <- c.walBytes.newConstMetric(stat.walBytes, stat.user, stat.database, stat.queryid, "regular")
+			ch <- c.walBytes.newConstMetric(stat.walFPI*blockSize, stat.user, stat.database, stat.queryid, "fpi").WithTS(metricsTs)
+			ch <- c.walBytes.newConstMetric(stat.walBytes, stat.user, stat.database, stat.queryid, "regular").WithTS(metricsTs)
 
 			if config.pgVersion.Numeric >= PostgresV18 {
 				// WAL buffers
-				ch <- c.walBuffers.newConstMetric(stat.walBuffers, stat.user, stat.database, stat.queryid)
+				ch <- c.walBuffers.newConstMetric(stat.walBuffers, stat.user, stat.database, stat.queryid).WithTS(metricsTs)
 			}
 		}
 	}

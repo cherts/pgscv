@@ -10,6 +10,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/cherts/pgscv/internal/filter"
 	"github.com/cherts/pgscv/internal/log"
@@ -58,6 +59,8 @@ func (c *meminfoCollector) Update(_ context.Context, _ Config, ch chan<- prometh
 		return fmt.Errorf("get /proc/vmstat stats failed: %s", err)
 	}
 
+	metricsTs := time.Now()
+
 	// Processing meminfo stats.
 	for param, value := range meminfo {
 		param = c.re.ReplaceAllString(param, "_${1}")
@@ -72,8 +75,8 @@ func (c *meminfoCollector) Update(_ context.Context, _ Config, ch chan<- prometh
 	}
 
 	// MemUsed and SwapUsed are composite metrics and not present in /proc/meminfo.
-	ch <- c.memused.newConstMetric(meminfo["MemTotal"] - meminfo["MemFree"] - meminfo["Buffers"] - meminfo["Cached"])
-	ch <- c.swapused.newConstMetric(meminfo["SwapTotal"] - meminfo["SwapFree"])
+	ch <- c.memused.newConstMetric(meminfo["MemTotal"] - meminfo["MemFree"] - meminfo["Buffers"] - meminfo["Cached"]).WithTS(&metricsTs)
+	ch <- c.swapused.newConstMetric(meminfo["SwapTotal"] - meminfo["SwapFree"]).WithTS(&metricsTs)
 
 	// Processing vmstat stats.
 	for param, value := range vmstat {
@@ -92,7 +95,7 @@ func (c *meminfoCollector) Update(_ context.Context, _ Config, ch chan<- prometh
 			t, nil, c.constLabels, c.subsysFilters,
 		)
 
-		ch <- desc.newConstMetric(value)
+		ch <- desc.newConstMetric(value).WithTS(&metricsTs)
 	}
 
 	return nil

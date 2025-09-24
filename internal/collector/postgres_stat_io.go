@@ -170,7 +170,7 @@ func (c *postgresStatIOCollector) Update(ctx context.Context, config Config, ch 
 	defer wg.Wait()
 	var err error
 
-	cacheKey, res, _ := getFromCache(config.CacheConfig, config.ConnString, collectorPostgresStatIO, query)
+	cacheKey, res, metricsTs := getFromCache(config.CacheConfig, config.ConnString, collectorPostgresStatIO, query)
 	if res == nil {
 		res, err = conn.Query(ctx, query)
 		if err != nil {
@@ -183,22 +183,22 @@ func (c *postgresStatIOCollector) Update(ctx context.Context, config Config, ch 
 	stats := parsePostgresStatIO(res, c.labelNames)
 
 	for _, stat := range stats {
-		ch <- c.reads.newConstMetric(stat.Reads, stat.BackendType, stat.IoObject, stat.IoContext)
-		ch <- c.readTime.newConstMetric(stat.ReadTime, stat.BackendType, stat.IoObject, stat.IoContext)
-		ch <- c.writes.newConstMetric(stat.Writes, stat.BackendType, stat.IoObject, stat.IoContext)
-		ch <- c.writeTime.newConstMetric(stat.WriteTime, stat.BackendType, stat.IoObject, stat.IoContext)
-		ch <- c.writebacks.newConstMetric(stat.Writebacks, stat.BackendType, stat.IoObject, stat.IoContext)
-		ch <- c.writebackTime.newConstMetric(stat.WritebackTime, stat.BackendType, stat.IoObject, stat.IoContext)
-		ch <- c.extends.newConstMetric(stat.Extends, stat.BackendType, stat.IoObject, stat.IoContext)
-		ch <- c.extendTime.newConstMetric(stat.ExtendTime, stat.BackendType, stat.IoObject, stat.IoContext)
-		ch <- c.hits.newConstMetric(stat.Hits, stat.BackendType, stat.IoObject, stat.IoContext)
-		ch <- c.evictions.newConstMetric(stat.Evictions, stat.BackendType, stat.IoObject, stat.IoContext)
-		ch <- c.reuses.newConstMetric(stat.Reuses, stat.BackendType, stat.IoObject, stat.IoContext)
-		ch <- c.fsyncs.newConstMetric(stat.Fsyncs, stat.BackendType, stat.IoObject, stat.IoContext)
-		ch <- c.fsyncTime.newConstMetric(stat.FsyncTime, stat.BackendType, stat.IoObject, stat.IoContext)
-		ch <- c.readBytes.newConstMetric(stat.ReadBytes, stat.BackendType, stat.IoObject, stat.IoContext)
-		ch <- c.writeBytes.newConstMetric(stat.WriteBytes, stat.BackendType, stat.IoObject, stat.IoContext)
-		ch <- c.extendBytes.newConstMetric(stat.ExtendBytes, stat.BackendType, stat.IoObject, stat.IoContext)
+		ch <- c.reads.newConstMetric(stat.Reads, stat.BackendType, stat.IoObject, stat.IoContext).WithTS(metricsTs)
+		ch <- c.readTime.newConstMetric(stat.ReadTime, stat.BackendType, stat.IoObject, stat.IoContext).WithTS(metricsTs)
+		ch <- c.writes.newConstMetric(stat.Writes, stat.BackendType, stat.IoObject, stat.IoContext).WithTS(metricsTs)
+		ch <- c.writeTime.newConstMetric(stat.WriteTime, stat.BackendType, stat.IoObject, stat.IoContext).WithTS(metricsTs)
+		ch <- c.writebacks.newConstMetric(stat.Writebacks, stat.BackendType, stat.IoObject, stat.IoContext).WithTS(metricsTs)
+		ch <- c.writebackTime.newConstMetric(stat.WritebackTime, stat.BackendType, stat.IoObject, stat.IoContext).WithTS(metricsTs)
+		ch <- c.extends.newConstMetric(stat.Extends, stat.BackendType, stat.IoObject, stat.IoContext).WithTS(metricsTs)
+		ch <- c.extendTime.newConstMetric(stat.ExtendTime, stat.BackendType, stat.IoObject, stat.IoContext).WithTS(metricsTs)
+		ch <- c.hits.newConstMetric(stat.Hits, stat.BackendType, stat.IoObject, stat.IoContext).WithTS(metricsTs)
+		ch <- c.evictions.newConstMetric(stat.Evictions, stat.BackendType, stat.IoObject, stat.IoContext).WithTS(metricsTs)
+		ch <- c.reuses.newConstMetric(stat.Reuses, stat.BackendType, stat.IoObject, stat.IoContext).WithTS(metricsTs)
+		ch <- c.fsyncs.newConstMetric(stat.Fsyncs, stat.BackendType, stat.IoObject, stat.IoContext).WithTS(metricsTs)
+		ch <- c.fsyncTime.newConstMetric(stat.FsyncTime, stat.BackendType, stat.IoObject, stat.IoContext).WithTS(metricsTs)
+		ch <- c.readBytes.newConstMetric(stat.ReadBytes, stat.BackendType, stat.IoObject, stat.IoContext).WithTS(metricsTs)
+		ch <- c.writeBytes.newConstMetric(stat.WriteBytes, stat.BackendType, stat.IoObject, stat.IoContext).WithTS(metricsTs)
+		ch <- c.extendBytes.newConstMetric(stat.ExtendBytes, stat.BackendType, stat.IoObject, stat.IoContext).WithTS(metricsTs)
 	}
 
 	return nil

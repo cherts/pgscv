@@ -11,22 +11,24 @@ import (
 )
 
 func getFromCache(cacheConfig *cache.Config, args ...any) (string, *model.PGResult, *time.Time) {
+	now := time.Now()
+
 	if cacheConfig == nil {
-		return "", nil, nil
+		return "", nil, &now
 	}
 	cacheKey := cacheConfig.Cache.Hash(args)
 	if cacheKey == "" {
-		return "", nil, nil
+		return "", nil, &now
 	}
 	res, ts, err := cacheConfig.Cache.Get(cacheKey)
 	if err != nil && !errors.Is(err, memcache.ErrCacheMiss) {
 		log.Errorf("failed to fetch from cache, err: %v", err)
-		return "", nil, nil
+		return "", nil, &now
 	}
 	if err == nil {
 		return cacheKey, res, &ts
 	}
-	return cacheKey, nil, nil
+	return cacheKey, nil, &now
 }
 
 func saveToCache(collector string, wg *sync.WaitGroup, cacheConfig *cache.Config, cacheKey string, res *model.PGResult) {

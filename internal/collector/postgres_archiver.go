@@ -5,6 +5,7 @@ import (
 	"context"
 	"strconv"
 	"sync"
+	"time"
 
 	"github.com/cherts/pgscv/internal/log"
 	"github.com/cherts/pgscv/internal/model"
@@ -63,8 +64,12 @@ func (c *postgresWalArchivingCollector) Update(ctx context.Context, config Confi
 	}
 	wg := &sync.WaitGroup{}
 	defer wg.Wait()
+
 	var err error
-	cacheKey, res, _ := getFromCache(config.CacheConfig, config.ConnString, collectorPostgresArchiver, walArchivingQuery)
+
+	var metricsTs *time.Time
+
+	cacheKey, res, metricsTs := getFromCache(config.CacheConfig, config.ConnString, collectorPostgresArchiver, walArchivingQuery)
 	if res == nil {
 		res, err = config.DB.Query(ctx, walArchivingQuery)
 		if err != nil {
@@ -80,9 +85,9 @@ func (c *postgresWalArchivingCollector) Update(ctx context.Context, config Confi
 		return nil
 	}
 
-	ch <- c.archived.newConstMetric(stats.archived)
-	ch <- c.failed.newConstMetric(stats.failed)
-	ch <- c.sinceArchivedSeconds.newConstMetric(stats.sinceArchivedSeconds)
+	ch <- c.archived.newConstMetric(stats.archived).WithTS(metricsTs)
+	ch <- c.failed.newConstMetric(stats.failed).WithTS(metricsTs)
+	ch <- c.sinceArchivedSeconds.newConstMetric(stats.sinceArchivedSeconds).WithTS(metricsTs)
 	ch <- c.archivingLag.newConstMetric(stats.lagFiles * float64(config.walSegmentSize))
 
 	return nil

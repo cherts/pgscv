@@ -435,6 +435,7 @@ func getSchemaFKDatatypeMismatch(ctx context.Context, config Config, wg *sync.Wa
 		"WHERE a1.atttypid <> a2.atttypid AND contype = 'f'"
 	var err error
 	conn := config.DB
+
 	cacheKey, res, _ := getFromCache(config.CacheConfig, config.ConnString, collectorPostgresSchemas, query)
 	if res == nil {
 		res, err = conn.Query(ctx, query)

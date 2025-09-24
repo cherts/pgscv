@@ -9,6 +9,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/cherts/pgscv/internal/filter"
 	"github.com/cherts/pgscv/internal/log"
@@ -67,6 +68,8 @@ func (c *netdevCollector) Update(_ context.Context, _ Config, ch chan<- promethe
 		return fmt.Errorf("get /proc/net/dev stats failed: %s", err)
 	}
 
+	metricsTs := time.Now()
+
 	for device, stat := range stats {
 		if len(stat) < 16 {
 			log.Warnf("too few stats columns (%d), skip", len(stat))
@@ -74,24 +77,24 @@ func (c *netdevCollector) Update(_ context.Context, _ Config, ch chan<- promethe
 		}
 
 		// recv
-		ch <- c.bytes.newConstMetric(stat[0], device, "recv")
-		ch <- c.packets.newConstMetric(stat[1], device, "recv")
-		ch <- c.events.newConstMetric(stat[2], device, "recv", "errs")
-		ch <- c.events.newConstMetric(stat[3], device, "recv", "drop")
-		ch <- c.events.newConstMetric(stat[4], device, "recv", "fifo")
-		ch <- c.events.newConstMetric(stat[5], device, "recv", "frame")
-		ch <- c.events.newConstMetric(stat[6], device, "recv", "compressed")
-		ch <- c.events.newConstMetric(stat[7], device, "recv", "multicast")
+		ch <- c.bytes.newConstMetric(stat[0], device, "recv").WithTS(&metricsTs)
+		ch <- c.packets.newConstMetric(stat[1], device, "recv").WithTS(&metricsTs)
+		ch <- c.events.newConstMetric(stat[2], device, "recv", "errs").WithTS(&metricsTs)
+		ch <- c.events.newConstMetric(stat[3], device, "recv", "drop").WithTS(&metricsTs)
+		ch <- c.events.newConstMetric(stat[4], device, "recv", "fifo").WithTS(&metricsTs)
+		ch <- c.events.newConstMetric(stat[5], device, "recv", "frame").WithTS(&metricsTs)
+		ch <- c.events.newConstMetric(stat[6], device, "recv", "compressed").WithTS(&metricsTs)
+		ch <- c.events.newConstMetric(stat[7], device, "recv", "multicast").WithTS(&metricsTs)
 
 		// sent
-		ch <- c.bytes.newConstMetric(stat[8], device, "sent")
-		ch <- c.packets.newConstMetric(stat[9], device, "sent")
-		ch <- c.events.newConstMetric(stat[10], device, "sent", "errs")
-		ch <- c.events.newConstMetric(stat[11], device, "sent", "drop")
-		ch <- c.events.newConstMetric(stat[12], device, "sent", "fifo")
-		ch <- c.events.newConstMetric(stat[13], device, "sent", "colls")
-		ch <- c.events.newConstMetric(stat[14], device, "sent", "carrier")
-		ch <- c.events.newConstMetric(stat[15], device, "sent", "compressed")
+		ch <- c.bytes.newConstMetric(stat[8], device, "sent").WithTS(&metricsTs)
+		ch <- c.packets.newConstMetric(stat[9], device, "sent").WithTS(&metricsTs)
+		ch <- c.events.newConstMetric(stat[10], device, "sent", "errs").WithTS(&metricsTs)
+		ch <- c.events.newConstMetric(stat[11], device, "sent", "drop").WithTS(&metricsTs)
+		ch <- c.events.newConstMetric(stat[12], device, "sent", "fifo").WithTS(&metricsTs)
+		ch <- c.events.newConstMetric(stat[13], device, "sent", "colls").WithTS(&metricsTs)
+		ch <- c.events.newConstMetric(stat[14], device, "sent", "carrier").WithTS(&metricsTs)
+		ch <- c.events.newConstMetric(stat[15], device, "sent", "compressed").WithTS(&metricsTs)
 	}
 
 	return nil

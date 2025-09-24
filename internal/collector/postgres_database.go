@@ -8,6 +8,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"strconv"
 	"sync"
+	"time"
 )
 
 const (
@@ -238,8 +239,10 @@ func (c *postgresDatabasesCollector) Update(ctx context.Context, config Config, 
 	wg := &sync.WaitGroup{}
 	defer wg.Wait()
 
+	var metricsTs *time.Time
+
 	query := selectDatabasesQuery(config.pgVersion.Numeric)
-	cacheKey, res, _ := getFromCache(config.CacheConfig, config.ConnString, collectorPostgresDatabases, query)
+	cacheKey, res, metricsTs := getFromCache(config.CacheConfig, config.ConnString, collectorPostgresDatabases, query)
 	if res == nil {
 		res, err = conn.Query(ctx, query)
 		if err != nil {
@@ -250,7 +253,7 @@ func (c *postgresDatabasesCollector) Update(ctx context.Context, config Config, 
 
 	stats := parsePostgresDatabasesStats(res, c.labelNames)
 
-	cacheKey, res, _ = getFromCache(config.CacheConfig, config.ConnString, collectorPostgresDatabases, xidLimitQuery)
+	cacheKey, res, metricsTs = getFromCache(config.CacheConfig, config.ConnString, collectorPostgresDatabases, xidLimitQuery)
 	if res == nil {
 		res, err = conn.Query(ctx, xidLimitQuery)
 		if err != nil {
@@ -262,52 +265,52 @@ func (c *postgresDatabasesCollector) Update(ctx context.Context, config Config, 
 	xidStats := parsePostgresXidLimitStats(res)
 
 	for _, stat := range stats {
-		ch <- c.commits.newConstMetric(stat.xactcommit, stat.database)
-		ch <- c.rollbacks.newConstMetric(stat.xactrollback, stat.database)
-		ch <- c.blocks.newConstMetric(stat.blksread, stat.database, "read")
-		ch <- c.blocks.newConstMetric(stat.blkshit, stat.database, "hit")
-		ch <- c.tuplesReturned.newConstMetric(stat.tupreturned, stat.database)
-		ch <- c.tuplesFetched.newConstMetric(stat.tupfetched, stat.database)
-		ch <- c.tuplesInserted.newConstMetric(stat.tupinserted, stat.database)
-		ch <- c.tuplesUpdated.newConstMetric(stat.tupupdated, stat.database)
-		ch <- c.tuplesDeleted.newConstMetric(stat.tupdeleted, stat.database)
+		ch <- c.commits.newConstMetric(stat.xactcommit, stat.database).WithTS(metricsTs)
+		ch <- c.rollbacks.newConstMetric(stat.xactrollback, stat.database).WithTS(metricsTs)
+		ch <- c.blocks.newConstMetric(stat.blksread, stat.database, "read").WithTS(metricsTs)
+		ch <- c.blocks.newConstMetric(stat.blkshit, stat.database, "hit").WithTS(metricsTs)
+		ch <- c.tuplesReturned.newConstMetric(stat.tupreturned, stat.database).WithTS(metricsTs)
+		ch <- c.tuplesFetched.newConstMetric(stat.tupfetched, stat.database).WithTS(metricsTs)
+		ch <- c.tuplesInserted.newConstMetric(stat.tupinserted, stat.database).WithTS(metricsTs)
+		ch <- c.tuplesUpdated.newConstMetric(stat.tupupdated, stat.database).WithTS(metricsTs)
+		ch <- c.tuplesDeleted.newConstMetric(stat.tupdeleted, stat.database).WithTS(metricsTs)
 
-		ch <- c.tempbytes.newConstMetric(stat.tempbytes, stat.database)
-		ch <- c.tempfiles.newConstMetric(stat.tempfiles, stat.database)
-		ch <- c.conflicts.newConstMetric(stat.conflicts, stat.database)
-		ch <- c.deadlocks.newConstMetric(stat.deadlocks, stat.database)
+		ch <- c.tempbytes.newConstMetric(stat.tempbytes, stat.database).WithTS(metricsTs)
+		ch <- c.tempfiles.newConstMetric(stat.tempfiles, stat.database).WithTS(metricsTs)
+		ch <- c.conflicts.newConstMetric(stat.conflicts, stat.database).WithTS(metricsTs)
+		ch <- c.deadlocks.newConstMetric(stat.deadlocks, stat.database).WithTS(metricsTs)
 
-		ch <- c.blockstime.newConstMetric(stat.blkreadtime, stat.database, "read")
-		ch <- c.blockstime.newConstMetric(stat.blkwritetime, stat.database, "write")
-		ch <- c.sizes.newConstMetric(stat.sizebytes, stat.database)
-		ch <- c.statsage.newConstMetric(stat.statsage, stat.database)
+		ch <- c.blockstime.newConstMetric(stat.blkreadtime, stat.database, "read").WithTS(metricsTs)
+		ch <- c.blockstime.newConstMetric(stat.blkwritetime, stat.database, "write").WithTS(metricsTs)
+		ch <- c.sizes.newConstMetric(stat.sizebytes, stat.database).WithTS(metricsTs)
+		ch <- c.statsage.newConstMetric(stat.statsage, stat.database).WithTS(metricsTs)
 
 		if config.pgVersion.Numeric >= PostgresV12 {
-			ch <- c.csumfails.newConstMetric(stat.csumfails, stat.database)
-			ch <- c.csumlastfailunixts.newConstMetric(stat.csumlastfailunixts, stat.database)
+			ch <- c.csumfails.newConstMetric(stat.csumfails, stat.database).WithTS(metricsTs)
+			ch <- c.csumlastfailunixts.newConstMetric(stat.csumlastfailunixts, stat.database).WithTS(metricsTs)
 		}
 
 		if config.pgVersion.Numeric >= PostgresV14 {
-			ch <- c.sessionalltime.newConstMetric(stat.sessiontime, stat.database)
-			ch <- c.sessiontime.newConstMetric(stat.activetime, stat.database, "active")
-			ch <- c.sessiontime.newConstMetric(stat.idletxtime, stat.database, "idle_in_transaction")
+			ch <- c.sessionalltime.newConstMetric(stat.sessiontime, stat.database).WithTS(metricsTs)
+			ch <- c.sessiontime.newConstMetric(stat.activetime, stat.database, "active").WithTS(metricsTs)
+			ch <- c.sessiontime.newConstMetric(stat.idletxtime, stat.database, "idle_in_transaction").WithTS(metricsTs)
 			ch <- c.sessiontime.newConstMetric(stat.sessiontime-(stat.activetime+stat.idletxtime), stat.database, "idle")
-			ch <- c.sessionsall.newConstMetric(stat.sessions, stat.database)
-			ch <- c.sessions.newConstMetric(stat.sessabandoned, stat.database, "abandoned")
-			ch <- c.sessions.newConstMetric(stat.sessfatal, stat.database, "fatal")
-			ch <- c.sessions.newConstMetric(stat.sesskilled, stat.database, "killed")
+			ch <- c.sessionsall.newConstMetric(stat.sessions, stat.database).WithTS(metricsTs)
+			ch <- c.sessions.newConstMetric(stat.sessabandoned, stat.database, "abandoned").WithTS(metricsTs)
+			ch <- c.sessions.newConstMetric(stat.sessfatal, stat.database, "fatal").WithTS(metricsTs)
+			ch <- c.sessions.newConstMetric(stat.sesskilled, stat.database, "killed").WithTS(metricsTs)
 			ch <- c.sessions.newConstMetric(stat.sessions-(stat.sessabandoned+stat.sessfatal+stat.sesskilled), stat.database, "normal")
 		}
 
 		if config.pgVersion.Numeric >= PostgresV18 {
-			ch <- c.parallelWorkers.newConstMetric(stat.prlworkplan, stat.database, "planned")
-			ch <- c.parallelWorkers.newConstMetric(stat.prlworkfact, stat.database, "fact")
+			ch <- c.parallelWorkers.newConstMetric(stat.prlworkplan, stat.database, "planned").WithTS(metricsTs)
+			ch <- c.parallelWorkers.newConstMetric(stat.prlworkfact, stat.database, "fact").WithTS(metricsTs)
 		}
 	}
 
-	ch <- c.xidlimit.newConstMetric(xidStats.database, "pg_database")
-	ch <- c.xidlimit.newConstMetric(xidStats.prepared, "pg_prepared_xacts")
-	ch <- c.xidlimit.newConstMetric(xidStats.replSlot, "pg_replication_slots")
+	ch <- c.xidlimit.newConstMetric(xidStats.database, "pg_database").WithTS(metricsTs)
+	ch <- c.xidlimit.newConstMetric(xidStats.prepared, "pg_prepared_xacts").WithTS(metricsTs)
+	ch <- c.xidlimit.newConstMetric(xidStats.replSlot, "pg_replication_slots").WithTS(metricsTs)
 
 	return nil
 }

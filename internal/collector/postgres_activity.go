@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/cherts/pgscv/internal/log"
 	"github.com/cherts/pgscv/internal/model"
@@ -149,8 +150,11 @@ func NewPostgresActivityCollector(constLabels labels, settings model.CollectorSe
 // Update method collects statistics, parse it and produces metrics that are sent to Prometheus.
 func (c *postgresActivityCollector) Update(ctx context.Context, config Config, ch chan<- prometheus.Metric) error {
 	conn := config.DB
+
+	var metricsTs *time.Time
+
 	if err := conn.Conn().Ping(ctx); err != nil { // not caching
-		ch <- c.up.newConstMetric(0)
+		ch <- c.up.newConstMetric(0).WithTS(metricsTs)
 		return err
 	}
 
@@ -159,7 +163,7 @@ func (c *postgresActivityCollector) Update(ctx context.Context, config Config, c
 	defer wg.Wait()
 
 	query := selectActivityQuery(config.pgVersion.Numeric)
-	cacheKey, res, _ := getFromCache(config.CacheConfig, config.ConnString, collectorPostgresActivity, query)
+	cacheKey, res, metricsTs := getFromCache(config.CacheConfig, config.ConnString, collectorPostgresActivity, query)
 	if res == nil {
 		res, err = conn.Query(ctx, query)
 		if err != nil {
@@ -173,7 +177,7 @@ func (c *postgresActivityCollector) Update(ctx context.Context, config Config, c
 
 	// get pg_prepared_xacts stats
 	var count int64
-	cacheKey, res, _ = getFromCache(config.CacheConfig, config.ConnString, collectorPostgresActivity, postgresPreparedXactQuery)
+	cacheKey, res, metricsTs = getFromCache(config.CacheConfig, config.ConnString, collectorPostgresActivity, postgresPreparedXactQuery)
 	if res == nil {
 		res, err = conn.Query(ctx, postgresPreparedXactQuery)
 		if err != nil {
@@ -192,7 +196,7 @@ func (c *postgresActivityCollector) Update(ctx context.Context, config Config, c
 
 	// get postmaster start time
 	var startTime float64
-	cacheKey, res, _ = getFromCache(config.CacheConfig, config.ConnString, postgresStartTimeQuery, postgresPreparedXactQuery)
+	cacheKey, res, metricsTs = getFromCache(config.CacheConfig, config.ConnString, postgresStartTimeQuery, postgresPreparedXactQuery)
 	if res == nil {
 		res, err = conn.Query(ctx, postgresStartTimeQuery)
 		if err != nil {
@@ -215,7 +219,7 @@ func (c *postgresActivityCollector) Update(ctx context.Context, config Config, c
 	for k, v := range stats.waitEvents {
 		// 'key' is the pair of wait_event_type/wait_event - split them and use as label values.
 		if labels := strings.Split(k, "/"); len(labels) >= 2 {
-			ch <- c.waitEvents.newConstMetric(v, labels[0], labels[1])
+			ch <- c.waitEvents.newConstMetric(v, labels[0], labels[1]).WithTS(metricsTs)
 		} else {
 			log.Warnf("create wait_event activity failed: invalid input '%s'; skip", k)
 		}
@@ -234,7 +238,7 @@ func (c *postgresActivityCollector) Update(ctx context.Context, config Config, c
 	} {
 		for k, v := range values {
 			if names := strings.Split(k, "/"); len(names) >= 2 {
-				ch <- c.states.newConstMetric(v, names[0], names[1], tag)
+				ch <- c.states.newConstMetric(v, names[0], names[1], tag).WithTS(metricsTs)
 
 				// totals shouldn't include waiting state, because it's already included in 'active' state.
 				if tag != "waiting" {
@@ -246,10 +250,10 @@ func (c *postgresActivityCollector) Update(ctx context.Context, config Config, c
 		}
 	}
 
-	ch <- c.statesAll.newConstMetric(total)
+	ch <- c.statesAll.newConstMetric(total).WithTS(metricsTs)
 
 	// prepared transactions
-	ch <- c.prepared.newConstMetric(stats.prepared)
+	ch <- c.prepared.newConstMetric(stats.prepared).WithTS(metricsTs)
 
 	// Longest activity by states, per user/database
 	for tag, values := range map[string]map[string]float64{
@@ -264,7 +268,7 @@ func (c *postgresActivityCollector) Update(ctx context.Context, config Config, c
 			if names := strings.Split(k, "/"); len(names) >= 2 {
 				ff := strings.Split(tag, "/")
 
-				ch <- c.activity.newConstMetric(v, names[0], names[1], ff[0], ff[1])
+				ch <- c.activity.newConstMetric(v, names[0], names[1], ff[0], ff[1]).WithTS(metricsTs)
 			} else {
 				log.Warnf("create '%s' max activity failed: insufficient number of fields in key '%s'; skip", tag, k)
 			}
@@ -272,24 +276,24 @@ func (c *postgresActivityCollector) Update(ctx context.Context, config Config, c
 	}
 
 	// in flight queries
-	ch <- c.inflight.newConstMetric(stats.querySelect, "select")
-	ch <- c.inflight.newConstMetric(stats.queryMod, "mod")
-	ch <- c.inflight.newConstMetric(stats.queryDdl, "ddl")
-	ch <- c.inflight.newConstMetric(stats.queryMaint, "maintenance")
-	ch <- c.inflight.newConstMetric(stats.queryWith, "with")
-	ch <- c.inflight.newConstMetric(stats.queryCopy, "copy")
-	ch <- c.inflight.newConstMetric(stats.queryOther, "other")
+	ch <- c.inflight.newConstMetric(stats.querySelect, "select").WithTS(metricsTs)
+	ch <- c.inflight.newConstMetric(stats.queryMod, "mod").WithTS(metricsTs)
+	ch <- c.inflight.newConstMetric(stats.queryDdl, "ddl").WithTS(metricsTs)
+	ch <- c.inflight.newConstMetric(stats.queryMaint, "maintenance").WithTS(metricsTs)
+	ch <- c.inflight.newConstMetric(stats.queryWith, "with").WithTS(metricsTs)
+	ch <- c.inflight.newConstMetric(stats.queryCopy, "copy").WithTS(metricsTs)
+	ch <- c.inflight.newConstMetric(stats.queryOther, "other").WithTS(metricsTs)
 
 	// vacuums
 	for k, v := range stats.vacuumOps {
-		ch <- c.vacuums.newConstMetric(v, k)
+		ch <- c.vacuums.newConstMetric(v, k).WithTS(metricsTs)
 	}
 
 	// postmaster start time
-	ch <- c.startTime.newConstMetric(stats.startTime)
+	ch <- c.startTime.newConstMetric(stats.startTime).WithTS(metricsTs)
 
 	// All activity metrics collected successfully, now we can collect up metric.
-	ch <- c.up.newConstMetric(1)
+	ch <- c.up.newConstMetric(1).WithTS(metricsTs)
 
 	return nil
 }

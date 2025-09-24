@@ -5,6 +5,7 @@ import (
 	"context"
 	"strconv"
 	"sync"
+	"time"
 
 	"github.com/cherts/pgscv/internal/log"
 	"github.com/cherts/pgscv/internal/model"
@@ -140,8 +141,10 @@ func (c *postgresBgwriterCollector) Update(ctx context.Context, config Config, c
 	defer wg.Wait()
 	var err error
 
+	var metricsTs *time.Time
+
 	query := selectBgwriterQuery(config.pgVersion.Numeric)
-	cacheKey, res, _ := getFromCache(config.CacheConfig, config.ConnString, collectorPostgresBgWriter, query)
+	cacheKey, res, metricsTs := getFromCache(config.CacheConfig, config.ConnString, collectorPostgresBgWriter, query)
 	if res == nil {
 		res, err = config.DB.Query(ctx, query)
 		if err != nil {
@@ -156,41 +159,41 @@ func (c *postgresBgwriterCollector) Update(ctx context.Context, config Config, c
 	for name, desc := range c.descs {
 		switch name {
 		case "checkpoints":
-			ch <- desc.newConstMetric(stats.ckptTimed, "timed")
-			ch <- desc.newConstMetric(stats.ckptReq, "req")
+			ch <- desc.newConstMetric(stats.ckptTimed, "timed").WithTS(metricsTs)
+			ch <- desc.newConstMetric(stats.ckptReq, "req").WithTS(metricsTs)
 			if config.pgVersion.Numeric >= PostgresV18 {
-				ch <- desc.newConstMetric(stats.ckptDone, "done")
+				ch <- desc.newConstMetric(stats.ckptDone, "done").WithTS(metricsTs)
 			}
 		case "checkpoints_all":
 			ch <- desc.newConstMetric(stats.ckptTimed + stats.ckptReq)
 		case "checkpoint_time":
-			ch <- desc.newConstMetric(stats.ckptWriteTime, "write")
-			ch <- desc.newConstMetric(stats.ckptSyncTime, "sync")
+			ch <- desc.newConstMetric(stats.ckptWriteTime, "write").WithTS(metricsTs)
+			ch <- desc.newConstMetric(stats.ckptSyncTime, "sync").WithTS(metricsTs)
 		case "checkpoint_time_all":
-			ch <- desc.newConstMetric(stats.ckptWriteTime + stats.ckptSyncTime)
+			ch <- desc.newConstMetric(stats.ckptWriteTime + stats.ckptSyncTime).WithTS(metricsTs)
 		case "maxwritten_clean":
-			ch <- desc.newConstMetric(stats.bgwrMaxWritten)
+			ch <- desc.newConstMetric(stats.bgwrMaxWritten).WithTS(metricsTs)
 		case "written_bytes":
-			ch <- desc.newConstMetric(stats.ckptBuffers*blockSize, "checkpointer")
-			ch <- desc.newConstMetric(stats.bgwrBuffers*blockSize, "bgwriter")
-			ch <- desc.newConstMetric(stats.backendBuffers*blockSize, "backend")
+			ch <- desc.newConstMetric(stats.ckptBuffers*blockSize, "checkpointer").WithTS(metricsTs)
+			ch <- desc.newConstMetric(stats.bgwrBuffers*blockSize, "bgwriter").WithTS(metricsTs)
+			ch <- desc.newConstMetric(stats.backendBuffers*blockSize, "backend").WithTS(metricsTs)
 			if config.pgVersion.Numeric >= PostgresV18 {
-				ch <- desc.newConstMetric(stats.slruBuffers*blockSize, "slru")
+				ch <- desc.newConstMetric(stats.slruBuffers*blockSize, "slru").WithTS(metricsTs)
 			}
 		case "buffers_backend_fsync":
-			ch <- desc.newConstMetric(stats.backendFsync)
+			ch <- desc.newConstMetric(stats.backendFsync).WithTS(metricsTs)
 		case "alloc_bytes":
-			ch <- desc.newConstMetric(stats.backendAllocated * blockSize)
+			ch <- desc.newConstMetric(stats.backendAllocated * blockSize).WithTS(metricsTs)
 		case "bgwr_stats_age_seconds":
-			ch <- desc.newConstMetric(stats.bgwrStatsAgeSeconds)
+			ch <- desc.newConstMetric(stats.bgwrStatsAgeSeconds).WithTS(metricsTs)
 		case "ckpt_stats_age_seconds":
-			ch <- desc.newConstMetric(stats.ckptStatsAgeSeconds)
+			ch <- desc.newConstMetric(stats.ckptStatsAgeSeconds).WithTS(metricsTs)
 		case "checkpoint_restartpointstimed":
-			ch <- desc.newConstMetric(stats.ckptRestartpointsTimed)
+			ch <- desc.newConstMetric(stats.ckptRestartpointsTimed).WithTS(metricsTs)
 		case "checkpoint_restartpointsreq":
-			ch <- desc.newConstMetric(stats.ckptRestartpointsReq)
+			ch <- desc.newConstMetric(stats.ckptRestartpointsReq).WithTS(metricsTs)
 		case "checkpoint_restartpointsdone":
-			ch <- desc.newConstMetric(stats.ckptRestartpointsDone)
+			ch <- desc.newConstMetric(stats.ckptRestartpointsDone).WithTS(metricsTs)
 		default:
 			log.Debugf("unknown desc name: %s, skip", name)
 			continue

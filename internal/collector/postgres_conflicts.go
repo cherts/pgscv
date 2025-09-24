@@ -5,6 +5,7 @@ import (
 	"context"
 	"strconv"
 	"sync"
+	"time"
 
 	"github.com/cherts/pgscv/internal/log"
 	"github.com/cherts/pgscv/internal/model"
@@ -41,10 +42,13 @@ func (c *postgresConflictsCollector) Update(ctx context.Context, config Config, 
 	conn := config.DB
 	wg := &sync.WaitGroup{}
 	defer wg.Wait()
+
 	var err error
 
+	var metricsTs *time.Time
+
 	query := selectDatabaseConflictsQuery(config.pgVersion.Numeric)
-	cacheKey, res, _ := getFromCache(config.CacheConfig, config.ConnString, collectorPostgresConflicts, query)
+	cacheKey, res, metricsTs := getFromCache(config.CacheConfig, config.ConnString, collectorPostgresConflicts, query)
 	if res == nil {
 		res, err = conn.Query(ctx, query)
 		if err != nil {
@@ -56,12 +60,12 @@ func (c *postgresConflictsCollector) Update(ctx context.Context, config Config, 
 	stats := parsePostgresConflictStats(res, c.conflicts.labelNames)
 
 	for _, stat := range stats {
-		ch <- c.conflicts.newConstMetric(stat.tablespace, stat.database, "tablespace")
-		ch <- c.conflicts.newConstMetric(stat.lock, stat.database, "lock")
-		ch <- c.conflicts.newConstMetric(stat.snapshot, stat.database, "snapshot")
-		ch <- c.conflicts.newConstMetric(stat.bufferpin, stat.database, "bufferpin")
-		ch <- c.conflicts.newConstMetric(stat.deadlock, stat.database, "deadlock")
-		ch <- c.conflicts.newConstMetric(stat.activeLogicalslot, stat.database, "active_logicalslot")
+		ch <- c.conflicts.newConstMetric(stat.tablespace, stat.database, "tablespace").WithTS(metricsTs)
+		ch <- c.conflicts.newConstMetric(stat.lock, stat.database, "lock").WithTS(metricsTs)
+		ch <- c.conflicts.newConstMetric(stat.snapshot, stat.database, "snapshot").WithTS(metricsTs)
+		ch <- c.conflicts.newConstMetric(stat.bufferpin, stat.database, "bufferpin").WithTS(metricsTs)
+		ch <- c.conflicts.newConstMetric(stat.deadlock, stat.database, "deadlock").WithTS(metricsTs)
+		ch <- c.conflicts.newConstMetric(stat.activeLogicalslot, stat.database, "active_logicalslot").WithTS(metricsTs)
 	}
 
 	return nil

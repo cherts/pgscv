@@ -5,6 +5,7 @@ import (
 	"context"
 	"strconv"
 	"sync"
+	"time"
 
 	"github.com/cherts/pgscv/internal/log"
 	"github.com/cherts/pgscv/internal/model"
@@ -103,10 +104,13 @@ func (c *postgresReplicationCollector) Update(ctx context.Context, config Config
 	conn := config.DB
 	wg := &sync.WaitGroup{}
 	defer wg.Wait()
+
 	var err error
 
+	var metricsTs *time.Time
+
 	query := selectReplicationQuery(config.pgVersion)
-	cacheKey, res, _ := getFromCache(config.CacheConfig, config.ConnString, collectorPostgresReplication, query)
+	cacheKey, res, metricsTs := getFromCache(config.CacheConfig, config.ConnString, collectorPostgresReplication, query)
 	if res == nil {
 		res, err = conn.Query(ctx, query)
 		if err != nil {
@@ -120,31 +124,31 @@ func (c *postgresReplicationCollector) Update(ctx context.Context, config Config
 
 	for _, stat := range stats {
 		if value, ok := stat.values["pending_lag_bytes"]; ok {
-			ch <- c.lagbytes.newConstMetric(value, stat.clientaddr, stat.clientport, stat.user, stat.applicationName, stat.state, "pending")
+			ch <- c.lagbytes.newConstMetric(value, stat.clientaddr, stat.clientport, stat.user, stat.applicationName, stat.state, "pending").WithTS(metricsTs)
 		}
 		if value, ok := stat.values["write_lag_bytes"]; ok {
-			ch <- c.lagbytes.newConstMetric(value, stat.clientaddr, stat.clientport, stat.user, stat.applicationName, stat.state, "write")
+			ch <- c.lagbytes.newConstMetric(value, stat.clientaddr, stat.clientport, stat.user, stat.applicationName, stat.state, "write").WithTS(metricsTs)
 		}
 		if value, ok := stat.values["flush_lag_bytes"]; ok {
-			ch <- c.lagbytes.newConstMetric(value, stat.clientaddr, stat.clientport, stat.user, stat.applicationName, stat.state, "flush")
+			ch <- c.lagbytes.newConstMetric(value, stat.clientaddr, stat.clientport, stat.user, stat.applicationName, stat.state, "flush").WithTS(metricsTs)
 		}
 		if value, ok := stat.values["replay_lag_bytes"]; ok {
-			ch <- c.lagbytes.newConstMetric(value, stat.clientaddr, stat.clientport, stat.user, stat.applicationName, stat.state, "replay")
+			ch <- c.lagbytes.newConstMetric(value, stat.clientaddr, stat.clientport, stat.user, stat.applicationName, stat.state, "replay").WithTS(metricsTs)
 		}
 		if value, ok := stat.values["write_lag_seconds"]; ok {
-			ch <- c.lagseconds.newConstMetric(value, stat.clientaddr, stat.clientport, stat.user, stat.applicationName, stat.state, "write")
+			ch <- c.lagseconds.newConstMetric(value, stat.clientaddr, stat.clientport, stat.user, stat.applicationName, stat.state, "write").WithTS(metricsTs)
 		}
 		if value, ok := stat.values["flush_lag_seconds"]; ok {
-			ch <- c.lagseconds.newConstMetric(value, stat.clientaddr, stat.clientport, stat.user, stat.applicationName, stat.state, "flush")
+			ch <- c.lagseconds.newConstMetric(value, stat.clientaddr, stat.clientport, stat.user, stat.applicationName, stat.state, "flush").WithTS(metricsTs)
 		}
 		if value, ok := stat.values["replay_lag_seconds"]; ok {
-			ch <- c.lagseconds.newConstMetric(value, stat.clientaddr, stat.clientport, stat.user, stat.applicationName, stat.state, "replay")
+			ch <- c.lagseconds.newConstMetric(value, stat.clientaddr, stat.clientport, stat.user, stat.applicationName, stat.state, "replay").WithTS(metricsTs)
 		}
 		if value, ok := stat.values["total_lag_bytes"]; ok {
-			ch <- c.lagtotalbytes.newConstMetric(value, stat.clientaddr, stat.clientport, stat.user, stat.applicationName, stat.state)
+			ch <- c.lagtotalbytes.newConstMetric(value, stat.clientaddr, stat.clientport, stat.user, stat.applicationName, stat.state).WithTS(metricsTs)
 		}
 		if value, ok := stat.values["total_lag_seconds"]; ok {
-			ch <- c.lagtotalseconds.newConstMetric(value, stat.clientaddr, stat.clientport, stat.user, stat.applicationName, stat.state)
+			ch <- c.lagtotalseconds.newConstMetric(value, stat.clientaddr, stat.clientport, stat.user, stat.applicationName, stat.state).WithTS(metricsTs)
 		}
 	}
 

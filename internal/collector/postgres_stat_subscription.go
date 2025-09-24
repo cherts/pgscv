@@ -138,7 +138,7 @@ func (c *postgresStatSubscriptionCollector) Update(ctx context.Context, config C
 	var err error
 
 	query := selectSubscriptionQuery(config.pgVersion.Numeric)
-	cacheKey, res, _ := getFromCache(config.CacheConfig, config.ConnString, collectorPostgresStatSubscription, query)
+	cacheKey, res, metricsTs := getFromCache(config.CacheConfig, config.ConnString, collectorPostgresStatSubscription, query)
 	if res == nil {
 		res, err = conn.Query(ctx, query)
 		if err != nil {
@@ -151,46 +151,46 @@ func (c *postgresStatSubscriptionCollector) Update(ctx context.Context, config C
 	stats := parsePostgresSubscriptionStat(res, c.labelNames)
 	for _, stat := range stats {
 		if value, ok := stat.values["received_lsn"]; ok {
-			ch <- c.receivedLsn.newConstMetric(value, stat.SubID, stat.SubName, stat.WorkerType)
+			ch <- c.receivedLsn.newConstMetric(value, stat.SubID, stat.SubName, stat.WorkerType).WithTS(metricsTs)
 		}
 		if value, ok := stat.values["reported_lsn"]; ok {
-			ch <- c.reportedLsn.newConstMetric(value, stat.SubID, stat.SubName, stat.WorkerType)
+			ch <- c.reportedLsn.newConstMetric(value, stat.SubID, stat.SubName, stat.WorkerType).WithTS(metricsTs)
 		}
 		if value, ok := stat.values["msg_send_time"]; ok {
-			ch <- c.msgSendtime.newConstMetric(value, stat.SubID, stat.SubName, stat.WorkerType)
+			ch <- c.msgSendtime.newConstMetric(value, stat.SubID, stat.SubName, stat.WorkerType).WithTS(metricsTs)
 		}
 		if value, ok := stat.values["msg_recv_time"]; ok {
-			ch <- c.msgRecvtime.newConstMetric(value, stat.SubID, stat.SubName, stat.WorkerType)
+			ch <- c.msgRecvtime.newConstMetric(value, stat.SubID, stat.SubName, stat.WorkerType).WithTS(metricsTs)
 		}
 		if value, ok := stat.values["reported_time"]; ok {
-			ch <- c.reportedTime.newConstMetric(value, stat.SubID, stat.SubName, stat.WorkerType)
+			ch <- c.reportedTime.newConstMetric(value, stat.SubID, stat.SubName, stat.WorkerType).WithTS(metricsTs)
 		}
 		if value, ok := stat.values["apply_error_count"]; ok {
-			ch <- c.errorCount.newConstMetric(value, stat.SubID, stat.SubName, stat.WorkerType, "apply")
+			ch <- c.errorCount.newConstMetric(value, stat.SubID, stat.SubName, stat.WorkerType, "apply").WithTS(metricsTs)
 		}
 		if value, ok := stat.values["sync_error_count"]; ok {
-			ch <- c.errorCount.newConstMetric(value, stat.SubID, stat.SubName, stat.WorkerType, "sync")
+			ch <- c.errorCount.newConstMetric(value, stat.SubID, stat.SubName, stat.WorkerType, "sync").WithTS(metricsTs)
 		}
 		if value, ok := stat.values["confl_insert_exists"]; ok {
-			ch <- c.conflCount.newConstMetric(value, stat.SubID, stat.SubName, stat.WorkerType, "insert_exists")
+			ch <- c.conflCount.newConstMetric(value, stat.SubID, stat.SubName, stat.WorkerType, "insert_exists").WithTS(metricsTs)
 		}
 		if value, ok := stat.values["confl_update_origin_differs"]; ok {
-			ch <- c.conflCount.newConstMetric(value, stat.SubID, stat.SubName, stat.WorkerType, "update_origin_differs")
+			ch <- c.conflCount.newConstMetric(value, stat.SubID, stat.SubName, stat.WorkerType, "update_origin_differs").WithTS(metricsTs)
 		}
 		if value, ok := stat.values["confl_update_exists"]; ok {
-			ch <- c.conflCount.newConstMetric(value, stat.SubID, stat.SubName, stat.WorkerType, "update_exists")
+			ch <- c.conflCount.newConstMetric(value, stat.SubID, stat.SubName, stat.WorkerType, "update_exists").WithTS(metricsTs)
 		}
 		if value, ok := stat.values["confl_update_missing"]; ok {
-			ch <- c.conflCount.newConstMetric(value, stat.SubID, stat.SubName, stat.WorkerType, "update_missing")
+			ch <- c.conflCount.newConstMetric(value, stat.SubID, stat.SubName, stat.WorkerType, "update_missing").WithTS(metricsTs)
 		}
 		if value, ok := stat.values["confl_delete_origin_differs"]; ok {
-			ch <- c.conflCount.newConstMetric(value, stat.SubID, stat.SubName, stat.WorkerType, "delete_origin_differs")
+			ch <- c.conflCount.newConstMetric(value, stat.SubID, stat.SubName, stat.WorkerType, "delete_origin_differs").WithTS(metricsTs)
 		}
 		if value, ok := stat.values["confl_delete_missing"]; ok {
-			ch <- c.conflCount.newConstMetric(value, stat.SubID, stat.SubName, stat.WorkerType, "delete_missing")
+			ch <- c.conflCount.newConstMetric(value, stat.SubID, stat.SubName, stat.WorkerType, "delete_missing").WithTS(metricsTs)
 		}
 		if value, ok := stat.values["confl_multiple_unique_conflicts"]; ok {
-			ch <- c.conflCount.newConstMetric(value, stat.SubID, stat.SubName, stat.WorkerType, "multiple_unique_conflicts")
+			ch <- c.conflCount.newConstMetric(value, stat.SubID, stat.SubName, stat.WorkerType, "multiple_unique_conflicts").WithTS(metricsTs)
 		}
 	}
 

@@ -136,7 +136,7 @@ func (c *postgresWalCollector) Update(ctx context.Context, config Config, ch cha
 	defer wg.Wait()
 	var err error
 	query := selectWalQuery(config.pgVersion.Numeric)
-	cacheKey, res, _ := getFromCache(config.CacheConfig, config.ConnString, collectorPostgresWAL, query)
+	cacheKey, res, metricsTs := getFromCache(config.CacheConfig, config.ConnString, collectorPostgresWAL, query)
 	if res == nil {
 		res, err = conn.Query(ctx, query)
 		if err != nil {
@@ -149,31 +149,31 @@ func (c *postgresWalCollector) Update(ctx context.Context, config Config, ch cha
 	for k, v := range stats {
 		switch k {
 		case "recovery":
-			ch <- c.recovery.newConstMetric(v)
+			ch <- c.recovery.newConstMetric(v).WithTS(metricsTs)
 		case "recovery_paused":
-			ch <- c.recoveryPaused.newConstMetric(v)
+			ch <- c.recoveryPaused.newConstMetric(v).WithTS(metricsTs)
 		case "wal_records":
-			ch <- c.records.newConstMetric(v)
+			ch <- c.records.newConstMetric(v).WithTS(metricsTs)
 		case "wal_fpi":
-			ch <- c.fpi.newConstMetric(v)
+			ch <- c.fpi.newConstMetric(v).WithTS(metricsTs)
 		case "wal_bytes":
-			ch <- c.bytes.newConstMetric(v)
+			ch <- c.bytes.newConstMetric(v).WithTS(metricsTs)
 		case "wal_written":
-			ch <- c.writtenBytes.newConstMetric(v)
+			ch <- c.writtenBytes.newConstMetric(v).WithTS(metricsTs)
 		case "wal_buffers_full":
-			ch <- c.buffersFull.newConstMetric(v)
+			ch <- c.buffersFull.newConstMetric(v).WithTS(metricsTs)
 		case "wal_write":
-			ch <- c.writes.newConstMetric(v)
+			ch <- c.writes.newConstMetric(v).WithTS(metricsTs)
 		case "wal_sync":
-			ch <- c.syncs.newConstMetric(v)
+			ch <- c.syncs.newConstMetric(v).WithTS(metricsTs)
 		case "wal_write_time":
-			ch <- c.seconds.newConstMetric(v, "write")
+			ch <- c.seconds.newConstMetric(v, "write").WithTS(metricsTs)
 		case "wal_sync_time":
-			ch <- c.seconds.newConstMetric(v, "sync")
+			ch <- c.seconds.newConstMetric(v, "sync").WithTS(metricsTs)
 		case "wal_all_time":
-			ch <- c.secondsAll.newConstMetric(v)
+			ch <- c.secondsAll.newConstMetric(v).WithTS(metricsTs)
 		case "reset_time":
-			ch <- c.resetUnix.newConstMetric(v)
+			ch <- c.resetUnix.newConstMetric(v).WithTS(metricsTs)
 		default:
 			continue
 		}

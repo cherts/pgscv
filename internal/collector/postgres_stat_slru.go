@@ -92,7 +92,7 @@ func (c *postgresStatSlruCollector) Update(ctx context.Context, config Config, c
 	defer wg.Wait()
 	var err error
 
-	cacheKey, res, _ := getFromCache(config.CacheConfig, config.ConnString, collectorPostgresStatSLRU, postgresStatSlruQuery)
+	cacheKey, res, metricsTs := getFromCache(config.CacheConfig, config.ConnString, collectorPostgresStatSLRU, postgresStatSlruQuery)
 	if res == nil {
 		res, err = conn.Query(ctx, postgresStatSlruQuery)
 		if err != nil {
@@ -105,13 +105,13 @@ func (c *postgresStatSlruCollector) Update(ctx context.Context, config Config, c
 	stats := parsePostgresStatSlru(res, c.labelNames)
 
 	for _, stat := range stats {
-		ch <- c.blksZeroed.newConstMetric(stat.BlksZeroed, stat.SlruName)
-		ch <- c.blksHit.newConstMetric(stat.BlksHit, stat.SlruName)
-		ch <- c.blksRead.newConstMetric(stat.BlksRead, stat.SlruName)
-		ch <- c.blksWritten.newConstMetric(stat.BlksWritten, stat.SlruName)
-		ch <- c.blksExists.newConstMetric(stat.BlksExists, stat.SlruName)
-		ch <- c.flushes.newConstMetric(stat.Flushes, stat.SlruName)
-		ch <- c.truncates.newConstMetric(stat.Truncates, stat.SlruName)
+		ch <- c.blksZeroed.newConstMetric(stat.BlksZeroed, stat.SlruName).WithTS(metricsTs)
+		ch <- c.blksHit.newConstMetric(stat.BlksHit, stat.SlruName).WithTS(metricsTs)
+		ch <- c.blksRead.newConstMetric(stat.BlksRead, stat.SlruName).WithTS(metricsTs)
+		ch <- c.blksWritten.newConstMetric(stat.BlksWritten, stat.SlruName).WithTS(metricsTs)
+		ch <- c.blksExists.newConstMetric(stat.BlksExists, stat.SlruName).WithTS(metricsTs)
+		ch <- c.flushes.newConstMetric(stat.Flushes, stat.SlruName).WithTS(metricsTs)
+		ch <- c.truncates.newConstMetric(stat.Truncates, stat.SlruName).WithTS(metricsTs)
 	}
 
 	return nil

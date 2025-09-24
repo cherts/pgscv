@@ -12,6 +12,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/cherts/pgscv/internal/filter"
 	"github.com/cherts/pgscv/internal/log"
@@ -149,6 +150,8 @@ func (c *diskstatsCollector) Update(_ context.Context, _ Config, ch chan<- prome
 		return fmt.Errorf("get diskstats failed: %s", err)
 	}
 
+	metricsTs := time.Now()
+
 	for dev, stat := range stats {
 		// totals
 		var completedTotal, mergedTotal, bytesTotal, secondsTotal float64
@@ -158,17 +161,17 @@ func (c *diskstatsCollector) Update(_ context.Context, _ Config, ch chan<- prome
 			mergedTotal = stat[1] + stat[5]
 			bytesTotal = stat[2] + stat[6]
 			secondsTotal = stat[3] + stat[7]
-			ch <- c.completed.newConstMetric(stat[0], dev, "read")
-			ch <- c.merged.newConstMetric(stat[1], dev, "read")
-			ch <- c.bytes.newConstMetric(stat[2], dev, "read")
-			ch <- c.times.newConstMetric(stat[3], dev, "read")
-			ch <- c.completed.newConstMetric(stat[4], dev, "write")
-			ch <- c.merged.newConstMetric(stat[5], dev, "write")
-			ch <- c.bytes.newConstMetric(stat[6], dev, "write")
-			ch <- c.times.newConstMetric(stat[7], dev, "write")
-			ch <- c.ionow.newConstMetric(stat[8], dev)
-			ch <- c.iotime.newConstMetric(stat[9], dev)
-			ch <- c.iotimeweighted.newConstMetric(stat[10], dev)
+			ch <- c.completed.newConstMetric(stat[0], dev, "read").WithTS(&metricsTs)
+			ch <- c.merged.newConstMetric(stat[1], dev, "read").WithTS(&metricsTs)
+			ch <- c.bytes.newConstMetric(stat[2], dev, "read").WithTS(&metricsTs)
+			ch <- c.times.newConstMetric(stat[3], dev, "read").WithTS(&metricsTs)
+			ch <- c.completed.newConstMetric(stat[4], dev, "write").WithTS(&metricsTs)
+			ch <- c.merged.newConstMetric(stat[5], dev, "write").WithTS(&metricsTs)
+			ch <- c.bytes.newConstMetric(stat[6], dev, "write").WithTS(&metricsTs)
+			ch <- c.times.newConstMetric(stat[7], dev, "write").WithTS(&metricsTs)
+			ch <- c.ionow.newConstMetric(stat[8], dev).WithTS(&metricsTs)
+			ch <- c.iotime.newConstMetric(stat[9], dev).WithTS(&metricsTs)
+			ch <- c.iotimeweighted.newConstMetric(stat[10], dev).WithTS(&metricsTs)
 		}
 
 		// for kernels 4.18+
@@ -177,25 +180,25 @@ func (c *diskstatsCollector) Update(_ context.Context, _ Config, ch chan<- prome
 			mergedTotal += stat[12]
 			bytesTotal += stat[13]
 			secondsTotal += stat[14]
-			ch <- c.completed.newConstMetric(stat[11], dev, "discard")
-			ch <- c.merged.newConstMetric(stat[12], dev, "discard")
-			ch <- c.bytes.newConstMetric(stat[13], dev, "discard")
-			ch <- c.times.newConstMetric(stat[14], dev, "discard")
+			ch <- c.completed.newConstMetric(stat[11], dev, "discard").WithTS(&metricsTs)
+			ch <- c.merged.newConstMetric(stat[12], dev, "discard").WithTS(&metricsTs)
+			ch <- c.bytes.newConstMetric(stat[13], dev, "discard").WithTS(&metricsTs)
+			ch <- c.times.newConstMetric(stat[14], dev, "discard").WithTS(&metricsTs)
 		}
 
 		// for kernels 5.5+
 		if len(stat) >= 17 {
 			completedTotal += stat[15]
 			secondsTotal += stat[16]
-			ch <- c.completed.newConstMetric(stat[15], dev, "flush")
-			ch <- c.times.newConstMetric(stat[16], dev, "flush")
+			ch <- c.completed.newConstMetric(stat[15], dev, "flush").WithTS(&metricsTs)
+			ch <- c.times.newConstMetric(stat[16], dev, "flush").WithTS(&metricsTs)
 		}
 
 		// Send accumulated totals.
-		ch <- c.completedAll.newConstMetric(completedTotal, dev)
-		ch <- c.mergedAll.newConstMetric(mergedTotal, dev)
-		ch <- c.bytesAll.newConstMetric(bytesTotal, dev)
-		ch <- c.timesAll.newConstMetric(secondsTotal, dev)
+		ch <- c.completedAll.newConstMetric(completedTotal, dev).WithTS(&metricsTs)
+		ch <- c.mergedAll.newConstMetric(mergedTotal, dev).WithTS(&metricsTs)
+		ch <- c.bytesAll.newConstMetric(bytesTotal, dev).WithTS(&metricsTs)
+		ch <- c.timesAll.newConstMetric(secondsTotal, dev).WithTS(&metricsTs)
 	}
 
 	// Collect storages properties.
@@ -204,8 +207,8 @@ func (c *diskstatsCollector) Update(_ context.Context, _ Config, ch chan<- prome
 		log.Warnf("get storage devices properties failed: %s; skip", err)
 	} else {
 		for _, s := range storages {
-			ch <- c.storageInfo.newConstMetric(1, s.device, s.rotational, s.scheduler)
-			ch <- c.storageSize.newConstMetric(float64(s.size), s.device, s.rotational, s.scheduler, s.virtual, s.model)
+			ch <- c.storageInfo.newConstMetric(1, s.device, s.rotational, s.scheduler).WithTS(&metricsTs)
+			ch <- c.storageSize.newConstMetric(float64(s.size), s.device, s.rotational, s.scheduler, s.virtual, s.model).WithTS(&metricsTs)
 		}
 	}
 

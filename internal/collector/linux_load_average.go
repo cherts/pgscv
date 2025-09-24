@@ -7,6 +7,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/cherts/pgscv/internal/log"
 	"github.com/cherts/pgscv/internal/model"
@@ -50,9 +51,11 @@ func (c *loadaverageCollector) Update(_ context.Context, _ Config, ch chan<- pro
 		return fmt.Errorf("get load average stats failed: %s", err)
 	}
 
-	ch <- c.load1.newConstMetric(stats[0])
-	ch <- c.load5.newConstMetric(stats[1])
-	ch <- c.load15.newConstMetric(stats[2])
+	metricsTs := time.Now()
+
+	ch <- c.load1.newConstMetric(stats[0]).WithTS(&metricsTs)
+	ch <- c.load5.newConstMetric(stats[1]).WithTS(&metricsTs)
+	ch <- c.load15.newConstMetric(stats[2]).WithTS(&metricsTs)
 
 	return nil
 }

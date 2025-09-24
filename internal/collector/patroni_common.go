@@ -230,14 +230,16 @@ func (c *patroniCommonCollector) Update(_ context.Context, config Config, ch cha
 		c.client.EnableTLSInsecure()
 	}
 
+	metricsTs := time.Now()
+
 	// Check liveness.
 	err := requestAPILiveness(c.client, config.BaseURL)
 	if err != nil {
-		ch <- c.up.newConstMetric(0)
+		ch <- c.up.newConstMetric(0).WithTS(&metricsTs)
 		return err
 	}
 
-	ch <- c.up.newConstMetric(1)
+	ch <- c.up.newConstMetric(1).WithTS(&metricsTs)
 
 	// Request general info.
 	respInfo, err := requestAPIPatroni(c.client, config.BaseURL)
@@ -250,30 +252,30 @@ func (c *patroniCommonCollector) Update(_ context.Context, config Config, ch cha
 		return err
 	}
 
-	ch <- c.name.newConstMetric(0, info.scope, info.name)
-	ch <- c.version.newConstMetric(info.version, info.scope, info.versionStr)
-	ch <- c.pgup.newConstMetric(info.running, info.scope)
-	ch <- c.pgstart.newConstMetric(info.startTime, info.scope)
+	ch <- c.name.newConstMetric(0, info.scope, info.name).WithTS(&metricsTs)
+	ch <- c.version.newConstMetric(info.version, info.scope, info.versionStr).WithTS(&metricsTs)
+	ch <- c.pgup.newConstMetric(info.running, info.scope).WithTS(&metricsTs)
+	ch <- c.pgstart.newConstMetric(info.startTime, info.scope).WithTS(&metricsTs)
 
-	ch <- c.roleMaster.newConstMetric(info.master, info.scope)
-	ch <- c.roleStandbyLeader.newConstMetric(info.standbyLeader, info.scope)
-	ch <- c.roleReplica.newConstMetric(info.replica, info.scope)
+	ch <- c.roleMaster.newConstMetric(info.master, info.scope).WithTS(&metricsTs)
+	ch <- c.roleStandbyLeader.newConstMetric(info.standbyLeader, info.scope).WithTS(&metricsTs)
+	ch <- c.roleReplica.newConstMetric(info.replica, info.scope).WithTS(&metricsTs)
 
-	ch <- c.xlogLoc.newConstMetric(info.xlogLoc, info.scope)
-	ch <- c.xlogRecvLoc.newConstMetric(info.xlogRecvLoc, info.scope)
-	ch <- c.xlogReplLoc.newConstMetric(info.xlogReplLoc, info.scope)
-	ch <- c.xlogReplTs.newConstMetric(info.xlogReplTs, info.scope)
-	ch <- c.xlogPaused.newConstMetric(info.xlogPaused, info.scope)
+	ch <- c.xlogLoc.newConstMetric(info.xlogLoc, info.scope).WithTS(&metricsTs)
+	ch <- c.xlogRecvLoc.newConstMetric(info.xlogRecvLoc, info.scope).WithTS(&metricsTs)
+	ch <- c.xlogReplLoc.newConstMetric(info.xlogReplLoc, info.scope).WithTS(&metricsTs)
+	ch <- c.xlogReplTs.newConstMetric(info.xlogReplTs, info.scope).WithTS(&metricsTs)
+	ch <- c.xlogPaused.newConstMetric(info.xlogPaused, info.scope).WithTS(&metricsTs)
 
-	ch <- c.pgversion.newConstMetric(info.pgversion, info.scope)
-	ch <- c.unlocked.newConstMetric(info.unlocked, info.scope)
-	ch <- c.timeline.newConstMetric(info.timeline, info.scope)
-	ch <- c.dcslastseen.newConstMetric(info.dcslastseen, info.scope)
-	ch <- c.replicationState.newConstMetric(info.replicationState, info.scope)
-	ch <- c.pendingRestart.newConstMetric(info.pendingRestart, info.scope)
-	ch <- c.pause.newConstMetric(info.pause, info.scope)
-	ch <- c.inArchiveRecovery.newConstMetric(info.inArchiveRecovery, info.scope)
-	ch <- c.syncStandby.newConstMetric(info.syncStandby, info.scope)
+	ch <- c.pgversion.newConstMetric(info.pgversion, info.scope).WithTS(&metricsTs)
+	ch <- c.unlocked.newConstMetric(info.unlocked, info.scope).WithTS(&metricsTs)
+	ch <- c.timeline.newConstMetric(info.timeline, info.scope).WithTS(&metricsTs)
+	ch <- c.dcslastseen.newConstMetric(info.dcslastseen, info.scope).WithTS(&metricsTs)
+	ch <- c.replicationState.newConstMetric(info.replicationState, info.scope).WithTS(&metricsTs)
+	ch <- c.pendingRestart.newConstMetric(info.pendingRestart, info.scope).WithTS(&metricsTs)
+	ch <- c.pause.newConstMetric(info.pause, info.scope).WithTS(&metricsTs)
+	ch <- c.inArchiveRecovery.newConstMetric(info.inArchiveRecovery, info.scope).WithTS(&metricsTs)
+	ch <- c.syncStandby.newConstMetric(info.syncStandby, info.scope).WithTS(&metricsTs)
 
 	// Request and parse config.
 	respConfig, err := requestAPIPatroniConfig(c.client, config.BaseURL)
@@ -283,11 +285,11 @@ func (c *patroniCommonCollector) Update(_ context.Context, config Config, ch cha
 
 	patroniConfig, err := parsePatroniConfigResponse(respConfig)
 	if err == nil {
-		ch <- c.failsafeMode.newConstMetric(patroniConfig.failsafeMode, info.scope)
-		ch <- c.loopWait.newConstMetric(patroniConfig.loopWait, info.scope)
-		ch <- c.maximumLagOnFailover.newConstMetric(patroniConfig.maximumLagOnFailover, info.scope)
-		ch <- c.retryTimeout.newConstMetric(patroniConfig.retryTimeout, info.scope)
-		ch <- c.ttl.newConstMetric(patroniConfig.ttl, info.scope)
+		ch <- c.failsafeMode.newConstMetric(patroniConfig.failsafeMode, info.scope).WithTS(&metricsTs)
+		ch <- c.loopWait.newConstMetric(patroniConfig.loopWait, info.scope).WithTS(&metricsTs)
+		ch <- c.maximumLagOnFailover.newConstMetric(patroniConfig.maximumLagOnFailover, info.scope).WithTS(&metricsTs)
+		ch <- c.retryTimeout.newConstMetric(patroniConfig.retryTimeout, info.scope).WithTS(&metricsTs)
+		ch <- c.ttl.newConstMetric(patroniConfig.ttl, info.scope).WithTS(&metricsTs)
 	}
 
 	// Request and parse history.
@@ -298,7 +300,7 @@ func (c *patroniCommonCollector) Update(_ context.Context, config Config, ch cha
 
 	history, err := parseHistoryResponse(respHist)
 	if err == nil {
-		ch <- c.changetime.newConstMetric(history.lastTimelineChangeUnix, info.scope)
+		ch <- c.changetime.newConstMetric(history.lastTimelineChangeUnix, info.scope).WithTS(&metricsTs)
 	}
 
 	return nil

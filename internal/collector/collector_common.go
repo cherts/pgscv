@@ -12,6 +12,7 @@ import (
 	"slices"
 	"strconv"
 	"strings"
+	"time"
 )
 
 // labels is a local wrapper over prometheus.Labels which is a simple map[string]string.
@@ -82,8 +83,28 @@ func newCustomTypedDesc(opts descOpts, dtype prometheus.ValueType, valueSource s
 	}
 }
 
+type pgSCVMetric struct {
+	prometheus.Metric
+}
+
+func (m *pgSCVMetric) WithTS(t *time.Time) prometheus.Metric {
+	if t == nil {
+		return m
+	}
+	return prometheus.NewMetricWithTimestamp(*t, m)
+}
+
+func newPgSCVMetric(m prometheus.Metric) *pgSCVMetric {
+	return &pgSCVMetric{Metric: m}
+}
+
+type PgSCVMetric interface {
+	prometheus.Metric
+	WithTS(t *time.Time) prometheus.Metric
+}
+
 // newConstMetric is the wrapper on prometheus.NewConstMetric
-func (d *typedDesc) newConstMetric(value float64, labelValues ...string) prometheus.Metric {
+func (d *typedDesc) newConstMetric(value float64, labelValues ...string) PgSCVMetric {
 	if d.factor != 0 {
 		value *= d.factor
 	}
@@ -103,7 +124,7 @@ func (d *typedDesc) newConstMetric(value float64, labelValues ...string) prometh
 		log.Errorf("create const metric failed: %s; skip. Failed metric descriptor: '%s'", err, d.desc.String())
 	}
 
-	return m
+	return newPgSCVMetric(m)
 }
 
 // hasFilter checks label values against configured filters. Returns true if metric has to be filtered and false otherwise.
