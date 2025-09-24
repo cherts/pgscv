@@ -7,6 +7,15 @@ on:
     branches:
       - beta/*
       - dev/*
+  pull_request:
+    types: [assigned, unassigned]
+    paths:
+      - "cmd/**"
+      - "internal/**"
+      - "discovery/**"
+      - "Makefile"
+      - "go.mod"
+      - "go.sum"
 
 jobs:
   test:
