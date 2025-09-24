@@ -138,7 +138,7 @@ func (c *postgresStatSubscriptionCollector) Update(ctx context.Context, config C
 	var err error
 
 	query := selectSubscriptionQuery(config.pgVersion.Numeric)
-	cacheKey, res := getFromCache(config.CacheConfig, config.ConnString, collectorPostgresStatSubscription, query)
+	cacheKey, res, _ := getFromCache(config.CacheConfig, config.ConnString, collectorPostgresStatSubscription, query)
 	if res == nil {
 		res, err = conn.Query(ctx, query)
 		if err != nil {

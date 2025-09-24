@@ -279,6 +279,10 @@ func (c *Config) Validate() error {
 	validate := validator.New()
 	registerCustomValidators(validate)
 
+	if c.CacheConfig != nil {
+		log.Infof("option cache is enabled (%s)", c.CacheConfig.String())
+	}
+
 	err = validate.Struct(c)
 	if err != nil {
 		return err

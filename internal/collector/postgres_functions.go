@@ -56,7 +56,7 @@ func (c *postgresFunctionsCollector) Update(ctx context.Context, config Config, 
 	defer wg.Wait()
 	var err error
 
-	cacheKey, res := getFromCache(config.CacheConfig, config.ConnString, collectorPostgresFunctions, postgresFunctionsQuery)
+	cacheKey, res, _ := getFromCache(config.CacheConfig, config.ConnString, collectorPostgresFunctions, postgresFunctionsQuery)
 	if res == nil {
 		res, err = conn.Query(ctx, postgresFunctionsQuery)
 		if err != nil {

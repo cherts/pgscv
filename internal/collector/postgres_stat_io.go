@@ -170,7 +170,7 @@ func (c *postgresStatIOCollector) Update(ctx context.Context, config Config, ch 
 	defer wg.Wait()
 	var err error
 
-	cacheKey, res := getFromCache(config.CacheConfig, config.ConnString, collectorPostgresStatIO, query)
+	cacheKey, res, _ := getFromCache(config.CacheConfig, config.ConnString, collectorPostgresStatIO, query)
 	if res == nil {
 		res, err = conn.Query(ctx, query)
 		if err != nil {

@@ -34,7 +34,7 @@ type CollectorConfig struct {
 
 // Cache abstract interface
 type Cache interface {
-	Get(key string) (*model.PGResult, error)
+	Get(key string) (*model.PGResult, time.Time, error)
 	Set(key string, value *model.PGResult, ttl time.Duration) error
 	Delete(key string) error
 	Hash(args ...any) string
@@ -106,4 +106,18 @@ func (c *Config) GetCollectorTTL(collector string) (int32, error) {
 		return coll.getTTLSeconds()
 	}
 	return c.getTTLSeconds()
+}
+
+func (c *Config) String() string {
+	ttl := fmt.Sprintf("default ttl %v", c.TTL)
+	if c.Collectors != nil {
+		for k, v := range c.Collectors {
+			ttl += fmt.Sprintf(", %s:%s", k, v.TTL)
+		}
+	}
+	ret := fmt.Sprintf("type: %s", c.Type)
+	if c.Server != "" {
+		ret += fmt.Sprintf(", server: %s", c.Server)
+	}
+	return ret + " " + ttl
 }

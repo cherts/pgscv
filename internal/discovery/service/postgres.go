@@ -44,7 +44,7 @@ func NewPostgresDiscovery(id string) *PostgresDiscovery {
 
 // Init implementation Init method of Discovery interface
 func (p *PostgresDiscovery) Init(c discovery.Config) error {
-	log.Debug("[Postgres SD] Init discovery config...")
+	log.Debug(fmt.Sprintf("[Postgres:%s SD] Init discovery config...", p.id))
 	pc, err := ensureConfigPostgres(c)
 	if err != nil {
 		log.Errorf("[Postgres SD] Failed to init discovery config, error: %v", err)
@@ -64,12 +64,12 @@ func (p *PostgresDiscovery) Start(ctx context.Context, errCh chan<- error) error
 	for {
 		err := p.sync(ctx)
 		if err != nil {
-			log.Errorf("[Postgres SD] Failed to sync, error: %s", err.Error())
+			log.Errorf("[Postgres:%s SD] Failed to sync, error: %s", p.id, err.Error())
 			errCh <- err
 		}
 		select {
 		case <-ctx.Done():
-			log.Debug("[Postgres SD] Context done.")
+			log.Debug(fmt.Sprintf("[Postgres:%s SD] Context done.", p.id))
 			return nil
 		default:
 			time.Sleep(refreshInterval)
@@ -110,7 +110,7 @@ func (p *PostgresDiscovery) sync(ctx context.Context) error {
 	}
 	dbs, err := store.Databases(ctx, p.db)
 	if err != nil {
-		log.Errorf("[Postgres SD] Failed to sync databases, error: %v", err)
+		log.Errorf("[Postgres:%s SD] Failed to sync databases, error: %v", p.id, err)
 		return nil
 	}
 	services := p.getServices(dbs)

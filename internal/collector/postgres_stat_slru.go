@@ -92,7 +92,7 @@ func (c *postgresStatSlruCollector) Update(ctx context.Context, config Config, c
 	defer wg.Wait()
 	var err error
 
-	cacheKey, res := getFromCache(config.CacheConfig, config.ConnString, collectorPostgresStatSLRU, postgresStatSlruQuery)
+	cacheKey, res, _ := getFromCache(config.CacheConfig, config.ConnString, collectorPostgresStatSLRU, postgresStatSlruQuery)
 	if res == nil {
 		res, err = conn.Query(ctx, postgresStatSlruQuery)
 		if err != nil {

@@ -10,23 +10,23 @@ import (
 	"time"
 )
 
-func getFromCache(cacheConfig *cache.Config, args ...any) (string, *model.PGResult) {
+func getFromCache(cacheConfig *cache.Config, args ...any) (string, *model.PGResult, *time.Time) {
 	if cacheConfig == nil {
-		return "", nil
+		return "", nil, nil
 	}
 	cacheKey := cacheConfig.Cache.Hash(args)
 	if cacheKey == "" {
-		return "", nil
+		return "", nil, nil
 	}
-	res, err := cacheConfig.Cache.Get(cacheKey)
+	res, ts, err := cacheConfig.Cache.Get(cacheKey)
 	if err != nil && !errors.Is(err, memcache.ErrCacheMiss) {
 		log.Errorf("failed to fetch from cache, err: %v", err)
-		return "", nil
+		return "", nil, nil
 	}
 	if err == nil {
-		return cacheKey, res
+		return cacheKey, res, &ts
 	}
-	return cacheKey, nil
+	return cacheKey, nil, nil
 }
 
 func saveToCache(collector string, wg *sync.WaitGroup, cacheConfig *cache.Config, cacheKey string, res *model.PGResult) {

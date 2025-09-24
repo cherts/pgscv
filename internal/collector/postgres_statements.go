@@ -4,13 +4,12 @@ package collector
 import (
 	"context"
 	"fmt"
-	"strconv"
-	"strings"
-	"sync"
-
 	"github.com/cherts/pgscv/internal/log"
 	"github.com/cherts/pgscv/internal/model"
 	"github.com/prometheus/client_golang/prometheus"
+	"strconv"
+	"strings"
+	"sync"
 )
 
 const (
@@ -336,7 +335,7 @@ func (c *postgresStatementsCollector) Update(ctx context.Context, config Config,
 	// get pg_stat_statements stats
 	if config.CollectTopQuery > 0 {
 		query := selectStatementsQuery(config.pgVersion.Numeric, config.pgStatStatementsSchema, config.NoTrackMode, config.CollectTopQuery)
-		cacheKey, res = getFromCache(config.CacheConfig, config.ConnString, collectorPostgresStatements, query, config.CollectTopQuery)
+		cacheKey, res, _ = getFromCache(config.CacheConfig, config.ConnString, collectorPostgresStatements, query, config.CollectTopQuery)
 		if res == nil {
 			res, err = conn.Query(ctx, query, config.CollectTopQuery)
 			if err != nil {
@@ -346,7 +345,7 @@ func (c *postgresStatementsCollector) Update(ctx context.Context, config Config,
 		}
 	} else {
 		query := selectStatementsQuery(config.pgVersion.Numeric, config.pgStatStatementsSchema, config.NoTrackMode, config.CollectTopQuery)
-		cacheKey, res = getFromCache(config.CacheConfig, config.ConnString, collectorPostgresStatements, query)
+		cacheKey, res, _ = getFromCache(config.CacheConfig, config.ConnString, collectorPostgresStatements, query)
 		if res == nil {
 			res, err = conn.Query(ctx, query)
 			if err != nil {
@@ -373,7 +372,6 @@ func (c *postgresStatementsCollector) Update(ctx context.Context, config Config,
 		// Remember that when creating metrics.
 
 		ch <- c.query.newConstMetric(1, stat.user, stat.database, stat.queryid, query)
-
 		ch <- c.calls.newConstMetric(stat.calls, stat.user, stat.database, stat.queryid)
 		ch <- c.rows.newConstMetric(stat.rows, stat.user, stat.database, stat.queryid)
 
