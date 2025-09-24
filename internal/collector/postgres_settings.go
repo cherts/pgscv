@@ -50,7 +50,7 @@ func (c *postgresSettingsCollector) Update(ctx context.Context, config Config, c
 	// For complete list of displayable names of GUC's sources types check guc.c (see GucSource_Names[]).
 	query := "SELECT name, setting, unit, vartype FROM pg_show_all_settings() " +
 		"WHERE source IN ('default','configuration file','override','environment variable','command line','global')"
-	cacheKey, res, metricsTs := getFromCache(config.CacheConfig, config.ConnString, collectorPostgresSettings, query)
+	cacheKey, res, _ := getFromCache(config.CacheConfig, config.ConnString, collectorPostgresSettings, query)
 	if res == nil {
 		res, err = conn.Query(ctx, query)
 		if err != nil {
@@ -62,7 +62,7 @@ func (c *postgresSettingsCollector) Update(ctx context.Context, config Config, c
 	settings := parsePostgresSettings(res)
 
 	for _, s := range settings {
-		ch <- c.settings.newConstMetric(s.value, s.name, s.setting, s.unit, s.vartype, "main").WithTS(metricsTs)
+		ch <- c.settings.newConstMetric(s.value, s.name, s.setting, s.unit, s.vartype, "main")
 	}
 
 	// Collecting metrics about filesystem attributes of configuration files, requires
@@ -74,7 +74,7 @@ func (c *postgresSettingsCollector) Update(ctx context.Context, config Config, c
 	}
 
 	query = `SELECT name, setting FROM pg_show_all_settings() WHERE name IN ('config_file','hba_file','ident_file','data_directory')`
-	cacheKey, res, metricsTs = getFromCache(config.CacheConfig, config.ConnString, collectorPostgresSettings, query)
+	cacheKey, res, _ = getFromCache(config.CacheConfig, config.ConnString, collectorPostgresSettings, query)
 	if res == nil {
 		res, err = conn.Query(ctx, query)
 		if err != nil {
@@ -86,7 +86,7 @@ func (c *postgresSettingsCollector) Update(ctx context.Context, config Config, c
 	files := parsePostgresFiles(res)
 
 	for _, f := range files {
-		ch <- c.files.newConstMetric(1, f.guc, f.mode, f.path).WithTS(metricsTs)
+		ch <- c.files.newConstMetric(1, f.guc, f.mode, f.path)
 	}
 
 	return nil

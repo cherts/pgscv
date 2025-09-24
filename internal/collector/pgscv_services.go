@@ -5,7 +5,6 @@ import (
 	"context"
 	"github.com/cherts/pgscv/internal/model"
 	"github.com/prometheus/client_golang/prometheus"
-	"time"
 )
 
 // pgscvServicesCollector defines metrics about discovered and monitored services.
@@ -26,9 +25,7 @@ func NewPgscvServicesCollector(constLabels labels, settings model.CollectorSetti
 
 // Update method is used for sending pgscvServicesCollector's metrics.
 func (c *pgscvServicesCollector) Update(_ context.Context, config Config, ch chan<- prometheus.Metric) error {
-	metricsTs := time.Now()
-
-	ch <- c.service.newConstMetric(1, config.ServiceType).WithTS(&metricsTs)
+	ch <- c.service.newConstMetric(1, config.ServiceType)
 
 	return nil
 }

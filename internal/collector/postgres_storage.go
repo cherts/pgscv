@@ -9,7 +9,6 @@ import (
 	"strconv"
 	"strings"
 	"sync"
-	"time"
 
 	"github.com/cherts/pgscv/internal/log"
 	"github.com/cherts/pgscv/internal/model"
@@ -120,11 +119,9 @@ func (c *postgresStorageCollector) Update(ctx context.Context, config Config, ch
 	var cacheKey string
 	var res *model.PGResult
 
-	var metricsTs *time.Time
-
 	// Collecting in-flight temp only since Postgres 12.
 	if config.pgVersion.Numeric >= PostgresV12 {
-		cacheKey, res, metricsTs = getFromCache(config.CacheConfig, config.ConnString, collectorPostgresStorage, postgresTempFilesInflightQuery)
+		cacheKey, res, _ = getFromCache(config.CacheConfig, config.ConnString, collectorPostgresStorage, postgresTempFilesInflightQuery)
 		if res == nil {
 			res, err = conn.Query(ctx, postgresTempFilesInflightQuery)
 			if err != nil {
@@ -136,9 +133,9 @@ func (c *postgresStorageCollector) Update(ctx context.Context, config Config, ch
 
 		stats := parsePostgresTempFileInflght(res)
 		for _, stat := range stats {
-			ch <- c.tempFiles.newConstMetric(stat.tempfiles, stat.tablespace).WithTS(metricsTs)
-			ch <- c.tempBytes.newConstMetric(stat.tempbytes, stat.tablespace).WithTS(metricsTs)
-			ch <- c.tempFilesMaxAge.newConstMetric(stat.tempmaxage, stat.tablespace).WithTS(metricsTs)
+			ch <- c.tempFiles.newConstMetric(stat.tempfiles, stat.tablespace)
+			ch <- c.tempBytes.newConstMetric(stat.tempbytes, stat.tablespace)
+			ch <- c.tempFilesMaxAge.newConstMetric(stat.tempmaxage, stat.tablespace)
 		}
 	}
 
@@ -153,26 +150,24 @@ func (c *postgresStorageCollector) Update(ctx context.Context, config Config, ch
 			return err
 		}
 		// WAL directory
-		ch <- c.waldirBytes.newConstMetric(dirstats.waldirSizeBytes, "unknown", "unknown", dirstats.waldirPath).WithTS(metricsTs)
-		ch <- c.waldirFiles.newConstMetric(dirstats.waldirFilesCount, "unknown", "unknown", dirstats.waldirPath).WithTS(metricsTs)
+		ch <- c.waldirBytes.newConstMetric(dirstats.waldirSizeBytes, "unknown", "unknown", dirstats.waldirPath)
+		ch <- c.waldirFiles.newConstMetric(dirstats.waldirFilesCount, "unknown", "unknown", dirstats.waldirPath)
 
 		// Log directory (only if logging_collector is enabled).
 		if config.loggingCollector {
-			ch <- c.logdirBytes.newConstMetric(dirstats.logdirSizeBytes, "unknown", "unknown", dirstats.logdirPath).WithTS(metricsTs)
-			ch <- c.logdirFiles.newConstMetric(dirstats.logdirFilesCount, "unknown", "unknown", dirstats.logdirPath).WithTS(metricsTs)
+			ch <- c.logdirBytes.newConstMetric(dirstats.logdirSizeBytes, "unknown", "unknown", dirstats.logdirPath)
+			ch <- c.logdirFiles.newConstMetric(dirstats.logdirFilesCount, "unknown", "unknown", dirstats.logdirPath)
 		}
 
 		// Temp directory
 		if config.pgVersion.Numeric >= PostgresV12 {
-			ch <- c.tmpfilesBytes.newConstMetric(dirstats.tmpfilesSizeBytes, "temp", "temp", "temp").WithTS(metricsTs)
+			ch <- c.tmpfilesBytes.newConstMetric(dirstats.tmpfilesSizeBytes, "temp", "temp", "temp")
 		}
 
 		log.Debugln("[postgres storage collector]: skip collecting full directories metrics from remote services")
 		return nil
 	}
 
-	now := time.Now()
-	
 	// Collecting other server-directories stats (DATADIR and tablespaces, WALDIR, LOGDIR, TEMPDIR).
 	dirstats, tblspcStats, err := newPostgresDirStat(ctx, config, wg)
 	if err != nil {
@@ -180,25 +175,25 @@ func (c *postgresStorageCollector) Update(ctx context.Context, config Config, ch
 	}
 
 	// Data directory
-	ch <- c.datadirBytes.newConstMetric(dirstats.datadirSizeBytes, dirstats.datadirDevice, dirstats.datadirMountpoint, dirstats.datadirPath).WithTS(&now)
+	ch <- c.datadirBytes.newConstMetric(dirstats.datadirSizeBytes, dirstats.datadirDevice, dirstats.datadirMountpoint, dirstats.datadirPath)
 
 	for _, ts := range tblspcStats {
-		ch <- c.tblspcBytes.newConstMetric(ts.size, ts.name, ts.device, ts.mountpoint, ts.path).WithTS(&now)
+		ch <- c.tblspcBytes.newConstMetric(ts.size, ts.name, ts.device, ts.mountpoint, ts.path)
 	}
 
 	// WAL directory
-	ch <- c.waldirBytes.newConstMetric(dirstats.waldirSizeBytes, dirstats.waldirDevice, dirstats.waldirMountpoint, dirstats.waldirPath).WithTS(&now)
-	ch <- c.waldirFiles.newConstMetric(dirstats.waldirFilesCount, dirstats.waldirDevice, dirstats.waldirMountpoint, dirstats.waldirPath).WithTS(&now)
+	ch <- c.waldirBytes.newConstMetric(dirstats.waldirSizeBytes, dirstats.waldirDevice, dirstats.waldirMountpoint, dirstats.waldirPath)
+	ch <- c.waldirFiles.newConstMetric(dirstats.waldirFilesCount, dirstats.waldirDevice, dirstats.waldirMountpoint, dirstats.waldirPath)
 
 	// Log directory (only if logging_collector is enabled).
 	if config.loggingCollector {
-		ch <- c.logdirBytes.newConstMetric(dirstats.logdirSizeBytes, dirstats.logdirDevice, dirstats.logdirMountpoint, dirstats.logdirPath).WithTS(&now)
-		ch <- c.logdirFiles.newConstMetric(dirstats.logdirFilesCount, dirstats.logdirDevice, dirstats.logdirMountpoint, dirstats.logdirPath).WithTS(&now)
+		ch <- c.logdirBytes.newConstMetric(dirstats.logdirSizeBytes, dirstats.logdirDevice, dirstats.logdirMountpoint, dirstats.logdirPath)
+		ch <- c.logdirFiles.newConstMetric(dirstats.logdirFilesCount, dirstats.logdirDevice, dirstats.logdirMountpoint, dirstats.logdirPath)
 	}
 
 	// Temp directory
 	if config.pgVersion.Numeric >= PostgresV12 {
-		ch <- c.tmpfilesBytes.newConstMetric(dirstats.tmpfilesSizeBytes, "temp", "temp", "temp").WithTS(&now)
+		ch <- c.tmpfilesBytes.newConstMetric(dirstats.tmpfilesSizeBytes, "temp", "temp", "temp")
 	}
 
 	return nil

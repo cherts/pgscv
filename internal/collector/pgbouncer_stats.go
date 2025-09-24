@@ -4,7 +4,6 @@ package collector
 import (
 	"context"
 	"strconv"
-	"time"
 
 	"github.com/cherts/pgscv/internal/log"
 	"github.com/cherts/pgscv/internal/model"
@@ -69,29 +68,26 @@ func NewPgbouncerStatsCollector(constLabels labels, settings model.CollectorSett
 // Update method collects statistics, parse it and produces metrics that are sent to Prometheus.
 func (c *pgbouncerStatsCollector) Update(ctx context.Context, config Config, ch chan<- prometheus.Metric) error {
 	conn := config.DB
-
-	metricsTs := time.Now()
-
 	res, err := conn.Query(ctx, pgbouncerStatsQuery)
 	if err != nil {
-		ch <- c.up.newConstMetric(0).WithTS(&metricsTs)
+		ch <- c.up.newConstMetric(0)
 		return err
 	}
 
 	stats := parsePgbouncerStatsStats(res, c.labelNames)
 
 	for _, stat := range stats {
-		ch <- c.xacts.newConstMetric(stat.xacts, stat.database).WithTS(&metricsTs)
-		ch <- c.queries.newConstMetric(stat.queries, stat.database).WithTS(&metricsTs)
-		ch <- c.bytes.newConstMetric(stat.received, stat.database, "received").WithTS(&metricsTs)
-		ch <- c.bytes.newConstMetric(stat.sent, stat.database, "sent").WithTS(&metricsTs)
-		ch <- c.time.newConstMetric(stat.xacttime, stat.database, "running", "xact").WithTS(&metricsTs)
-		ch <- c.time.newConstMetric(stat.querytime, stat.database, "running", "query").WithTS(&metricsTs)
-		ch <- c.time.newConstMetric(stat.waittime, stat.database, "waiting", "none").WithTS(&metricsTs)
+		ch <- c.xacts.newConstMetric(stat.xacts, stat.database)
+		ch <- c.queries.newConstMetric(stat.queries, stat.database)
+		ch <- c.bytes.newConstMetric(stat.received, stat.database, "received")
+		ch <- c.bytes.newConstMetric(stat.sent, stat.database, "sent")
+		ch <- c.time.newConstMetric(stat.xacttime, stat.database, "running", "xact")
+		ch <- c.time.newConstMetric(stat.querytime, stat.database, "running", "query")
+		ch <- c.time.newConstMetric(stat.waittime, stat.database, "waiting", "none")
 	}
 
 	// All is ok, collect up metric.
-	ch <- c.up.newConstMetric(1).WithTS(&metricsTs)
+	ch <- c.up.newConstMetric(1)
 
 	return nil
 }

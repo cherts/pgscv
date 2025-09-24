@@ -12,7 +12,6 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/cherts/pgscv/internal/log"
 	"github.com/cherts/pgscv/internal/model"
@@ -89,27 +88,25 @@ func (c *cpuCollector) Update(_ context.Context, _ Config, ch chan<- prometheus.
 		return fmt.Errorf("collect uptime stats failed: %s; skip", err)
 	}
 
-	metricsTs := time.Now()
-
 	// Collected time represents summary time spent by ALL cpu cores.
-	ch <- c.cpu.newConstMetric(stat.user, "user").WithTS(&metricsTs)
-	ch <- c.cpu.newConstMetric(stat.nice, "nice").WithTS(&metricsTs)
-	ch <- c.cpu.newConstMetric(stat.system, "system").WithTS(&metricsTs)
-	ch <- c.cpu.newConstMetric(stat.idle, "idle").WithTS(&metricsTs)
-	ch <- c.cpu.newConstMetric(stat.iowait, "iowait").WithTS(&metricsTs)
-	ch <- c.cpu.newConstMetric(stat.irq, "irq").WithTS(&metricsTs)
-	ch <- c.cpu.newConstMetric(stat.softirq, "softirq").WithTS(&metricsTs)
-	ch <- c.cpu.newConstMetric(stat.steal, "steal").WithTS(&metricsTs)
+	ch <- c.cpu.newConstMetric(stat.user, "user")
+	ch <- c.cpu.newConstMetric(stat.nice, "nice")
+	ch <- c.cpu.newConstMetric(stat.system, "system")
+	ch <- c.cpu.newConstMetric(stat.idle, "idle")
+	ch <- c.cpu.newConstMetric(stat.iowait, "iowait")
+	ch <- c.cpu.newConstMetric(stat.irq, "irq")
+	ch <- c.cpu.newConstMetric(stat.softirq, "softirq")
+	ch <- c.cpu.newConstMetric(stat.steal, "steal")
 
-	ch <- c.cpuAll.newConstMetric(stat.user + stat.nice + stat.system + stat.idle + stat.iowait + stat.irq + stat.softirq + stat.steal).WithTS(&metricsTs)
+	ch <- c.cpuAll.newConstMetric(stat.user + stat.nice + stat.system + stat.idle + stat.iowait + stat.irq + stat.softirq + stat.steal)
 
 	// Guest CPU is also accounted for in stat.user and stat.nice, expose these as separate metrics.
-	ch <- c.cpuGuest.newConstMetric(stat.guest, "user").WithTS(&metricsTs)
-	ch <- c.cpuGuest.newConstMetric(stat.guestnice, "nice").WithTS(&metricsTs)
+	ch <- c.cpuGuest.newConstMetric(stat.guest, "user")
+	ch <- c.cpuGuest.newConstMetric(stat.guestnice, "nice")
 
 	// Up and idle time values from /proc/uptime. Idle time accounted as summary for all cpu cores.
-	ch <- c.uptime.newConstMetric(uptime).WithTS(&metricsTs)
-	ch <- c.idletime.newConstMetric(idletime).WithTS(&metricsTs)
+	ch <- c.uptime.newConstMetric(uptime)
+	ch <- c.idletime.newConstMetric(idletime)
 
 	return nil
 }

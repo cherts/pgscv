@@ -9,7 +9,6 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
-	"time"
 
 	"github.com/cherts/pgscv/internal/log"
 	"github.com/cherts/pgscv/internal/model"
@@ -46,10 +45,8 @@ func (c *sysinfoCollector) Update(_ context.Context, _ Config, ch chan<- prometh
 		return err
 	}
 
-	metricsTs := time.Now()
-
-	ch <- c.platform.newConstMetric(1, info.sysVendor, info.productName).WithTS(&metricsTs)
-	ch <- c.os.newConstMetric(1, info.kernel, info.osType, info.osName, info.osVersion).WithTS(&metricsTs)
+	ch <- c.platform.newConstMetric(1, info.sysVendor, info.productName)
+	ch <- c.os.newConstMetric(1, info.kernel, info.osType, info.osName, info.osVersion)
 
 	return nil
 }

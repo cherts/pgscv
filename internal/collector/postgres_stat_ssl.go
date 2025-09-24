@@ -59,7 +59,7 @@ func (c *postgresStatSslCollector) Update(ctx context.Context, config Config, ch
 	defer wg.Wait()
 	var err error
 
-	cacheKey, res, metricsTs := getFromCache(config.CacheConfig, config.ConnString, collectorPostgresStatSSL, postgresStatSslQueryLatest)
+	cacheKey, res, _ := getFromCache(config.CacheConfig, config.ConnString, collectorPostgresStatSSL, postgresStatSslQueryLatest)
 	if res == nil {
 		res, err = conn.Query(ctx, postgresStatSslQueryLatest)
 		if err != nil {
@@ -72,7 +72,7 @@ func (c *postgresStatSslCollector) Update(ctx context.Context, config Config, ch
 	// Parse pg_stat_ssl stats.
 	stats := parsePostgresStatSsl(res, c.labelNames)
 	for _, stat := range stats {
-		ch <- c.sslConnNumber.newConstMetric(stat.ConnNumber, stat.Database, stat.Username).WithTS(metricsTs)
+		ch <- c.sslConnNumber.newConstMetric(stat.ConnNumber, stat.Database, stat.Username)
 	}
 
 	return nil

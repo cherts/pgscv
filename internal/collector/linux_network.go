@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"net"
 	"strings"
-	"time"
 
 	"github.com/cherts/pgscv/internal/log"
 	"github.com/cherts/pgscv/internal/model"
@@ -42,12 +41,10 @@ func (c *networkCollector) Update(_ context.Context, _ Config, ch chan<- prometh
 		return err
 	}
 
-	metricsTs := time.Now()
-
 	stats := parseInterfaceAddresses(addresses)
 
-	ch <- c.publicAddresses.newConstMetric(float64(stats["public"])).WithTS(&metricsTs)
-	ch <- c.privateAddresses.newConstMetric(float64(stats["private"])).WithTS(&metricsTs)
+	ch <- c.publicAddresses.newConstMetric(float64(stats["public"]))
+	ch <- c.privateAddresses.newConstMetric(float64(stats["private"]))
 
 	return nil
 }

@@ -5,7 +5,6 @@ import (
 	"context"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/cherts/pgscv/internal/log"
 	"github.com/cherts/pgscv/internal/model"
@@ -69,20 +68,18 @@ func (c *pgbouncerPoolsCollector) Update(ctx context.Context, config Config, ch 
 		return err
 	}
 
-	metricsTs := time.Now()
-
 	clientsStats := parsePgbouncerClientsStats(res)
 
 	// Process pools stats.
 	for _, stat := range poolsStats {
-		ch <- c.conns.newConstMetric(stat.clActive, stat.user, stat.database, stat.mode, "cl_active").WithTS(&metricsTs)
-		ch <- c.conns.newConstMetric(stat.clWaiting, stat.user, stat.database, stat.mode, "cl_waiting").WithTS(&metricsTs)
-		ch <- c.conns.newConstMetric(stat.svActive, stat.user, stat.database, stat.mode, "sv_active").WithTS(&metricsTs)
-		ch <- c.conns.newConstMetric(stat.svIdle, stat.user, stat.database, stat.mode, "sv_idle").WithTS(&metricsTs)
-		ch <- c.conns.newConstMetric(stat.svUsed, stat.user, stat.database, stat.mode, "sv_used").WithTS(&metricsTs)
-		ch <- c.conns.newConstMetric(stat.svTested, stat.user, stat.database, stat.mode, "sv_tested").WithTS(&metricsTs)
-		ch <- c.conns.newConstMetric(stat.svLogin, stat.user, stat.database, stat.mode, "sv_login").WithTS(&metricsTs)
-		ch <- c.maxwait.newConstMetric(stat.maxWait, stat.user, stat.database, stat.mode).WithTS(&metricsTs)
+		ch <- c.conns.newConstMetric(stat.clActive, stat.user, stat.database, stat.mode, "cl_active")
+		ch <- c.conns.newConstMetric(stat.clWaiting, stat.user, stat.database, stat.mode, "cl_waiting")
+		ch <- c.conns.newConstMetric(stat.svActive, stat.user, stat.database, stat.mode, "sv_active")
+		ch <- c.conns.newConstMetric(stat.svIdle, stat.user, stat.database, stat.mode, "sv_idle")
+		ch <- c.conns.newConstMetric(stat.svUsed, stat.user, stat.database, stat.mode, "sv_used")
+		ch <- c.conns.newConstMetric(stat.svTested, stat.user, stat.database, stat.mode, "sv_tested")
+		ch <- c.conns.newConstMetric(stat.svLogin, stat.user, stat.database, stat.mode, "sv_login")
+		ch <- c.maxwait.newConstMetric(stat.maxWait, stat.user, stat.database, stat.mode)
 	}
 
 	// Process client connections stats.
@@ -95,7 +92,7 @@ func (c *pgbouncerPoolsCollector) Update(ctx context.Context, config Config, ch 
 
 		user, database, address := vals[0], vals[1], vals[2]
 
-		ch <- c.clients.newConstMetric(v, user, database, address).WithTS(&metricsTs)
+		ch <- c.clients.newConstMetric(v, user, database, address)
 	}
 
 	return nil

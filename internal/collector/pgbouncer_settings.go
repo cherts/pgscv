@@ -10,7 +10,6 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/cherts/pgscv/internal/log"
 	"github.com/cherts/pgscv/internal/model"
@@ -92,16 +91,14 @@ func (c *pgbouncerSettingsCollector) Update(ctx context.Context, config Config, 
 
 	settings := parsePgbouncerSettings(res)
 
-	metricsTs := time.Now()
-
 	for k, v := range settings {
 		f, err := strconv.ParseFloat(v, 64)
 		// If value could be converted to numeric, send it as value. For string values use "1".
 		if err != nil {
-			ch <- c.settings.newConstMetric(1, k, v).WithTS(&metricsTs)
+			ch <- c.settings.newConstMetric(1, k, v)
 			continue
 		}
-		ch <- c.settings.newConstMetric(f, k, v).WithTS(&metricsTs)
+		ch <- c.settings.newConstMetric(f, k, v)
 	}
 
 	// Determine is service running locally.
@@ -123,14 +120,14 @@ func (c *pgbouncerSettingsCollector) Update(ctx context.Context, config Config, 
 		}
 
 		for _, p := range dbSettings {
-			ch <- c.dbSettings.newConstMetric(1, p.name, p.mode, p.size).WithTS(&metricsTs)
+			ch <- c.dbSettings.newConstMetric(1, p.name, p.mode, p.size)
 
 			f, err := strconv.ParseFloat(p.size, 64)
 			if err != nil {
 				log.Warnf("invalid input, parse '%s' failed: %s; skip", p.size, err)
 				continue
 			}
-			ch <- c.poolSize.newConstMetric(f, p.name).WithTS(&metricsTs)
+			ch <- c.poolSize.newConstMetric(f, p.name)
 		}
 	}
 

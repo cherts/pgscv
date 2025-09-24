@@ -6,7 +6,6 @@ import (
 	"strconv"
 	"strings"
 	"sync"
-	"time"
 
 	"github.com/cherts/pgscv/internal/log"
 	"github.com/cherts/pgscv/internal/model"
@@ -57,9 +56,7 @@ func (c *postgresFunctionsCollector) Update(ctx context.Context, config Config, 
 	defer wg.Wait()
 	var err error
 
-	var metricsTs *time.Time
-
-	cacheKey, res, metricsTs := getFromCache(config.CacheConfig, config.ConnString, collectorPostgresFunctions, postgresFunctionsQuery)
+	cacheKey, res, _ := getFromCache(config.CacheConfig, config.ConnString, collectorPostgresFunctions, postgresFunctionsQuery)
 	if res == nil {
 		res, err = conn.Query(ctx, postgresFunctionsQuery)
 		if err != nil {
@@ -70,9 +67,9 @@ func (c *postgresFunctionsCollector) Update(ctx context.Context, config Config, 
 
 	stats := parsePostgresFunctionsStats(res, c.labelNames)
 	for _, stat := range stats {
-		ch <- c.calls.newConstMetric(stat.calls, stat.database, stat.schema, stat.function).WithTS(metricsTs)
-		ch <- c.totaltime.newConstMetric(stat.totaltime, stat.database, stat.schema, stat.function).WithTS(metricsTs)
-		ch <- c.selftime.newConstMetric(stat.selftime, stat.database, stat.schema, stat.function).WithTS(metricsTs)
+		ch <- c.calls.newConstMetric(stat.calls, stat.database, stat.schema, stat.function)
+		ch <- c.totaltime.newConstMetric(stat.totaltime, stat.database, stat.schema, stat.function)
+		ch <- c.selftime.newConstMetric(stat.selftime, stat.database, stat.schema, stat.function)
 	}
 	return nil
 }

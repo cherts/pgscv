@@ -5,7 +5,6 @@ import (
 	"context"
 	"strconv"
 	"sync"
-	"time"
 
 	"github.com/cherts/pgscv/internal/log"
 	"github.com/cherts/pgscv/internal/model"
@@ -63,12 +62,9 @@ func (c *postgresLocksCollector) Update(ctx context.Context, config Config, ch c
 	conn := config.DB
 	wg := &sync.WaitGroup{}
 	defer wg.Wait()
-
 	var err error
 
-	var metricsTs *time.Time
-
-	cacheKey, res, metricsTs := getFromCache(config.CacheConfig, config.ConnString, collectorPostgresLocks, locksQuery)
+	cacheKey, res, _ := getFromCache(config.CacheConfig, config.ConnString, collectorPostgresLocks, locksQuery)
 	if res == nil {
 		res, err = conn.Query(ctx, locksQuery)
 		if err != nil {
@@ -80,16 +76,16 @@ func (c *postgresLocksCollector) Update(ctx context.Context, config Config, ch c
 	// parse pg_stat_activity stats
 	stats := parsePostgresLocksStats(res)
 
-	ch <- c.locks.newConstMetric(stats.accessShareLock, "AccessShareLock").WithTS(metricsTs)
-	ch <- c.locks.newConstMetric(stats.rowShareLock, "RowShareLock").WithTS(metricsTs)
-	ch <- c.locks.newConstMetric(stats.rowExclusiveLock, "RowExclusiveLock").WithTS(metricsTs)
-	ch <- c.locks.newConstMetric(stats.shareUpdateExclusiveLock, "ShareUpdateExclusiveLock").WithTS(metricsTs)
-	ch <- c.locks.newConstMetric(stats.shareLock, "ShareLock").WithTS(metricsTs)
-	ch <- c.locks.newConstMetric(stats.shareRowExclusiveLock, "ShareRowExclusiveLock").WithTS(metricsTs)
-	ch <- c.locks.newConstMetric(stats.exclusiveLock, "ExclusiveLock").WithTS(metricsTs)
-	ch <- c.locks.newConstMetric(stats.accessExclusiveLock, "AccessExclusiveLock").WithTS(metricsTs)
-	ch <- c.notgranted.newConstMetric(stats.notGranted).WithTS(metricsTs)
-	ch <- c.locksAll.newConstMetric(stats.total).WithTS(metricsTs)
+	ch <- c.locks.newConstMetric(stats.accessShareLock, "AccessShareLock")
+	ch <- c.locks.newConstMetric(stats.rowShareLock, "RowShareLock")
+	ch <- c.locks.newConstMetric(stats.rowExclusiveLock, "RowExclusiveLock")
+	ch <- c.locks.newConstMetric(stats.shareUpdateExclusiveLock, "ShareUpdateExclusiveLock")
+	ch <- c.locks.newConstMetric(stats.shareLock, "ShareLock")
+	ch <- c.locks.newConstMetric(stats.shareRowExclusiveLock, "ShareRowExclusiveLock")
+	ch <- c.locks.newConstMetric(stats.exclusiveLock, "ExclusiveLock")
+	ch <- c.locks.newConstMetric(stats.accessExclusiveLock, "AccessExclusiveLock")
+	ch <- c.notgranted.newConstMetric(stats.notGranted)
+	ch <- c.locksAll.newConstMetric(stats.total)
 
 	return nil
 }

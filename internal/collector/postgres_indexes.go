@@ -6,7 +6,6 @@ import (
 	"strconv"
 	"strings"
 	"sync"
-	"time"
 
 	"github.com/cherts/pgscv/internal/log"
 	"github.com/cherts/pgscv/internal/model"
@@ -89,10 +88,8 @@ func (c *postgresIndexesCollector) Update(ctx context.Context, config Config, ch
 	defer wg.Wait()
 	var res *model.PGResult
 
-	var metricsTs *time.Time
-
 	if config.CollectTopIndex > 0 {
-		cacheKey, res, metricsTs = getFromCache(config.CacheConfig, config.ConnString, collectorPostgresIndexes, userIndexesQueryTopK, config.CollectTopIndex)
+		cacheKey, res, _ = getFromCache(config.CacheConfig, config.ConnString, collectorPostgresIndexes, userIndexesQueryTopK, config.CollectTopIndex)
 		if res == nil {
 			res, err = conn.Query(ctx, userIndexesQueryTopK, config.CollectTopIndex)
 			if err != nil {
@@ -101,7 +98,7 @@ func (c *postgresIndexesCollector) Update(ctx context.Context, config Config, ch
 			saveToCache(collectorPostgresIndexes, wg, config.CacheConfig, cacheKey, res)
 		}
 	} else {
-		cacheKey, res, metricsTs = getFromCache(config.CacheConfig, config.ConnString, collectorPostgresIndexes, userIndexesQuery)
+		cacheKey, res, _ = getFromCache(config.CacheConfig, config.ConnString, collectorPostgresIndexes, userIndexesQuery)
 		if res == nil {
 			res, err = conn.Query(ctx, userIndexesQuery)
 			if err != nil {
@@ -119,21 +116,21 @@ func (c *postgresIndexesCollector) Update(ctx context.Context, config Config, ch
 
 	for _, stat := range stats {
 		// always send idx scan metrics and indexes size
-		ch <- c.indexes.newConstMetric(stat.idxscan, stat.database, stat.schema, stat.table, stat.index, stat.key, stat.isvalid).WithTS(metricsTs)
-		ch <- c.sizes.newConstMetric(stat.sizebytes, stat.database, stat.schema, stat.table, stat.index).WithTS(metricsTs)
+		ch <- c.indexes.newConstMetric(stat.idxscan, stat.database, stat.schema, stat.table, stat.index, stat.key, stat.isvalid)
+		ch <- c.sizes.newConstMetric(stat.sizebytes, stat.database, stat.schema, stat.table, stat.index)
 
 		// avoid metrics spamming and send metrics only if they greater than zero.
 		if stat.idxtupread > 0 {
-			ch <- c.tuples.newConstMetric(stat.idxtupread, stat.database, stat.schema, stat.table, stat.index, "read").WithTS(metricsTs)
+			ch <- c.tuples.newConstMetric(stat.idxtupread, stat.database, stat.schema, stat.table, stat.index, "read")
 		}
 		if stat.idxtupfetch > 0 {
-			ch <- c.tuples.newConstMetric(stat.idxtupfetch, stat.database, stat.schema, stat.table, stat.index, "fetched").WithTS(metricsTs)
+			ch <- c.tuples.newConstMetric(stat.idxtupfetch, stat.database, stat.schema, stat.table, stat.index, "fetched")
 		}
 		if stat.idxread > 0 {
-			ch <- c.io.newConstMetric(stat.idxread, stat.database, stat.schema, stat.table, stat.index, "read").WithTS(metricsTs)
+			ch <- c.io.newConstMetric(stat.idxread, stat.database, stat.schema, stat.table, stat.index, "read")
 		}
 		if stat.idxhit > 0 {
-			ch <- c.io.newConstMetric(stat.idxhit, stat.database, stat.schema, stat.table, stat.index, "hit").WithTS(metricsTs)
+			ch <- c.io.newConstMetric(stat.idxhit, stat.database, stat.schema, stat.table, stat.index, "hit")
 		}
 	}
 	return nil

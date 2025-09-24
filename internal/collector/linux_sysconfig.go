@@ -13,7 +13,6 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/cherts/pgscv/internal/log"
 	"github.com/cherts/pgscv/internal/model"
@@ -97,10 +96,8 @@ func NewSysconfigCollector(constLabels labels, settings model.CollectorSettings)
 func (c *systemCollector) Update(_ context.Context, _ Config, ch chan<- prometheus.Metric) error {
 	sysctls := readSysctls(c.sysctlList)
 
-	metricsTs := time.Now()
-
 	for name, value := range sysctls {
-		ch <- c.sysctl.newConstMetric(value, name).WithTS(&metricsTs)
+		ch <- c.sysctl.newConstMetric(value, name)
 	}
 
 	// Count CPU cores by state.
@@ -108,8 +105,8 @@ func (c *systemCollector) Update(_ context.Context, _ Config, ch chan<- promethe
 	if err != nil {
 		log.Warnf("cpu count failed: %s; skip", err)
 	} else {
-		ch <- c.cpucores.newConstMetric(cpuonline, "online").WithTS(&metricsTs)
-		ch <- c.cpucores.newConstMetric(cpuoffline, "offline").WithTS(&metricsTs)
+		ch <- c.cpucores.newConstMetric(cpuonline, "online")
+		ch <- c.cpucores.newConstMetric(cpuoffline, "offline")
 	}
 
 	// Count CPU scaling governors.
@@ -118,7 +115,7 @@ func (c *systemCollector) Update(_ context.Context, _ Config, ch chan<- promethe
 		log.Warnf("count CPU scaling governors failed: %s; skip", err)
 	} else {
 		for governor, total := range governors {
-			ch <- c.governors.newConstMetric(total, governor).WithTS(&metricsTs)
+			ch <- c.governors.newConstMetric(total, governor)
 		}
 	}
 
@@ -127,7 +124,7 @@ func (c *systemCollector) Update(_ context.Context, _ Config, ch chan<- promethe
 	if err != nil {
 		log.Warnf("count NUMA nodes failed: %s; skip", err)
 	} else {
-		ch <- c.numanodes.newConstMetric(nodes).WithTS(&metricsTs)
+		ch <- c.numanodes.newConstMetric(nodes)
 	}
 
 	// Collect /proc/stat based metrics.
@@ -135,9 +132,9 @@ func (c *systemCollector) Update(_ context.Context, _ Config, ch chan<- promethe
 	if err != nil {
 		log.Warnf("parse /proc/stat failed: %s; skip", err)
 	} else {
-		ch <- c.ctxt.newConstMetric(stat.ctxt).WithTS(&metricsTs)
-		ch <- c.btime.newConstMetric(stat.btime).WithTS(&metricsTs)
-		ch <- c.forks.newConstMetric(stat.forks).WithTS(&metricsTs)
+		ch <- c.ctxt.newConstMetric(stat.ctxt)
+		ch <- c.btime.newConstMetric(stat.btime)
+		ch <- c.forks.newConstMetric(stat.forks)
 	}
 
 	return nil

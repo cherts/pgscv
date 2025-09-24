@@ -78,21 +78,19 @@ func (c *filesystemCollector) Update(_ context.Context, _ Config, ch chan<- prom
 		return fmt.Errorf("get filesystem stats failed: %s", err)
 	}
 
-	metricsTs := time.Now()
-
 	for _, s := range stats {
 		// Truncate device paths to device names, e.g /dev/sda -> sda
 		device := truncateDeviceName(s.mount.device)
 
 		// bytes; free = avail + reserved; total = used + free
-		ch <- c.bytesTotal.newConstMetric(s.size, device, s.mount.mountpoint, s.mount.fstype).WithTS(&metricsTs)
-		ch <- c.bytes.newConstMetric(s.avail, device, s.mount.mountpoint, s.mount.fstype, "avail").WithTS(&metricsTs)
-		ch <- c.bytes.newConstMetric(s.free-s.avail, device, s.mount.mountpoint, s.mount.fstype, "reserved").WithTS(&metricsTs)
-		ch <- c.bytes.newConstMetric(s.size-s.free, device, s.mount.mountpoint, s.mount.fstype, "used").WithTS(&metricsTs)
+		ch <- c.bytesTotal.newConstMetric(s.size, device, s.mount.mountpoint, s.mount.fstype)
+		ch <- c.bytes.newConstMetric(s.avail, device, s.mount.mountpoint, s.mount.fstype, "avail")
+		ch <- c.bytes.newConstMetric(s.free-s.avail, device, s.mount.mountpoint, s.mount.fstype, "reserved")
+		ch <- c.bytes.newConstMetric(s.size-s.free, device, s.mount.mountpoint, s.mount.fstype, "used")
 		// files (inodes)
-		ch <- c.filesTotal.newConstMetric(s.files, device, s.mount.mountpoint, s.mount.fstype).WithTS(&metricsTs)
-		ch <- c.files.newConstMetric(s.filesfree, device, s.mount.mountpoint, s.mount.fstype, "free").WithTS(&metricsTs)
-		ch <- c.files.newConstMetric(s.files-s.filesfree, device, s.mount.mountpoint, s.mount.fstype, "used").WithTS(&metricsTs)
+		ch <- c.filesTotal.newConstMetric(s.files, device, s.mount.mountpoint, s.mount.fstype)
+		ch <- c.files.newConstMetric(s.filesfree, device, s.mount.mountpoint, s.mount.fstype, "free")
+		ch <- c.files.newConstMetric(s.files-s.filesfree, device, s.mount.mountpoint, s.mount.fstype, "used")
 	}
 
 	return nil

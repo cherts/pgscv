@@ -6,7 +6,6 @@ import (
 	"strconv"
 	"strings"
 	"sync"
-	"time"
 
 	"github.com/cherts/pgscv/internal/log"
 	"github.com/cherts/pgscv/internal/model"
@@ -223,10 +222,8 @@ func (c *postgresTablesCollector) Update(ctx context.Context, config Config, ch 
 	wg := &sync.WaitGroup{}
 	defer wg.Wait()
 
-	var metricsTs *time.Time
-
 	if config.CollectTopTable > 0 {
-		cacheKey, res, metricsTs = getFromCache(config.CacheConfig, config.ConnString, collectorPostgresTables, userTablesQueryTopK, config.CollectTopTable)
+		cacheKey, res, _ = getFromCache(config.CacheConfig, config.ConnString, collectorPostgresTables, userTablesQueryTopK, config.CollectTopTable)
 		if res == nil {
 			res, err = conn.Query(ctx, userTablesQueryTopK, config.CollectTopTable)
 			if err != nil {
@@ -236,7 +233,7 @@ func (c *postgresTablesCollector) Update(ctx context.Context, config Config, ch 
 			saveToCache(collectorPostgresTables, wg, config.CacheConfig, cacheKey, res)
 		}
 	} else {
-		cacheKey, res, metricsTs = getFromCache(config.CacheConfig, config.ConnString, collectorPostgresTables, userTablesQuery)
+		cacheKey, res, _ = getFromCache(config.CacheConfig, config.ConnString, collectorPostgresTables, userTablesQuery)
 		if res == nil {
 			res, err = conn.Query(ctx, userTablesQuery)
 			if err != nil {
@@ -251,76 +248,76 @@ func (c *postgresTablesCollector) Update(ctx context.Context, config Config, ch 
 
 	for _, stat := range stats {
 		// scan stats
-		ch <- c.seqscan.newConstMetric(stat.seqscan, stat.database, stat.schema, stat.table).WithTS(metricsTs)
-		ch <- c.seqtupread.newConstMetric(stat.seqtupread, stat.database, stat.schema, stat.table).WithTS(metricsTs)
-		ch <- c.idxscan.newConstMetric(stat.idxscan, stat.database, stat.schema, stat.table).WithTS(metricsTs)
-		ch <- c.idxtupfetch.newConstMetric(stat.idxtupfetch, stat.database, stat.schema, stat.table).WithTS(metricsTs)
+		ch <- c.seqscan.newConstMetric(stat.seqscan, stat.database, stat.schema, stat.table)
+		ch <- c.seqtupread.newConstMetric(stat.seqtupread, stat.database, stat.schema, stat.table)
+		ch <- c.idxscan.newConstMetric(stat.idxscan, stat.database, stat.schema, stat.table)
+		ch <- c.idxtupfetch.newConstMetric(stat.idxtupfetch, stat.database, stat.schema, stat.table)
 
 		// tuples stats
-		ch <- c.tupInserted.newConstMetric(stat.inserted, stat.database, stat.schema, stat.table).WithTS(metricsTs)
-		ch <- c.tupUpdated.newConstMetric(stat.updated, stat.database, stat.schema, stat.table).WithTS(metricsTs)
-		ch <- c.tupDeleted.newConstMetric(stat.deleted, stat.database, stat.schema, stat.table).WithTS(metricsTs)
-		ch <- c.tupHotUpdated.newConstMetric(stat.hotUpdated, stat.database, stat.schema, stat.table).WithTS(metricsTs)
+		ch <- c.tupInserted.newConstMetric(stat.inserted, stat.database, stat.schema, stat.table)
+		ch <- c.tupUpdated.newConstMetric(stat.updated, stat.database, stat.schema, stat.table)
+		ch <- c.tupDeleted.newConstMetric(stat.deleted, stat.database, stat.schema, stat.table)
+		ch <- c.tupHotUpdated.newConstMetric(stat.hotUpdated, stat.database, stat.schema, stat.table)
 
 		// tuples total stats
-		ch <- c.tupLive.newConstMetric(stat.live, stat.database, stat.schema, stat.table).WithTS(metricsTs)
-		ch <- c.tupDead.newConstMetric(stat.dead, stat.database, stat.schema, stat.table).WithTS(metricsTs)
-		ch <- c.tupModified.newConstMetric(stat.modified, stat.database, stat.schema, stat.table).WithTS(metricsTs)
+		ch <- c.tupLive.newConstMetric(stat.live, stat.database, stat.schema, stat.table)
+		ch <- c.tupDead.newConstMetric(stat.dead, stat.database, stat.schema, stat.table)
+		ch <- c.tupModified.newConstMetric(stat.modified, stat.database, stat.schema, stat.table)
 
 		// maintenance stats -- avoid metrics spam produced by inactive tables, don't send metrics if counters are zero.
 		if stat.lastvacuumAge > 0 {
-			ch <- c.maintLastVacuumAge.newConstMetric(stat.lastvacuumAge, stat.database, stat.schema, stat.table).WithTS(metricsTs)
+			ch <- c.maintLastVacuumAge.newConstMetric(stat.lastvacuumAge, stat.database, stat.schema, stat.table)
 		}
 		if stat.lastanalyzeAge > 0 {
-			ch <- c.maintLastAnalyzeAge.newConstMetric(stat.lastanalyzeAge, stat.database, stat.schema, stat.table).WithTS(metricsTs)
+			ch <- c.maintLastAnalyzeAge.newConstMetric(stat.lastanalyzeAge, stat.database, stat.schema, stat.table)
 		}
 		if stat.lastvacuumTime > 0 {
-			ch <- c.maintLastVacuumTime.newConstMetric(stat.lastvacuumTime, stat.database, stat.schema, stat.table).WithTS(metricsTs)
+			ch <- c.maintLastVacuumTime.newConstMetric(stat.lastvacuumTime, stat.database, stat.schema, stat.table)
 		}
 		if stat.lastanalyzeTime > 0 {
-			ch <- c.maintLastAnalyzeTime.newConstMetric(stat.lastanalyzeTime, stat.database, stat.schema, stat.table).WithTS(metricsTs)
+			ch <- c.maintLastAnalyzeTime.newConstMetric(stat.lastanalyzeTime, stat.database, stat.schema, stat.table)
 		}
 		if stat.vacuum > 0 {
-			ch <- c.maintenance.newConstMetric(stat.vacuum, stat.database, stat.schema, stat.table, "vacuum").WithTS(metricsTs)
+			ch <- c.maintenance.newConstMetric(stat.vacuum, stat.database, stat.schema, stat.table, "vacuum")
 		}
 		if stat.autovacuum > 0 {
-			ch <- c.maintenance.newConstMetric(stat.autovacuum, stat.database, stat.schema, stat.table, "autovacuum").WithTS(metricsTs)
+			ch <- c.maintenance.newConstMetric(stat.autovacuum, stat.database, stat.schema, stat.table, "autovacuum")
 		}
 		if stat.analyze > 0 {
-			ch <- c.maintenance.newConstMetric(stat.analyze, stat.database, stat.schema, stat.table, "analyze").WithTS(metricsTs)
+			ch <- c.maintenance.newConstMetric(stat.analyze, stat.database, stat.schema, stat.table, "analyze")
 		}
 		if stat.autoanalyze > 0 {
-			ch <- c.maintenance.newConstMetric(stat.autoanalyze, stat.database, stat.schema, stat.table, "autoanalyze").WithTS(metricsTs)
+			ch <- c.maintenance.newConstMetric(stat.autoanalyze, stat.database, stat.schema, stat.table, "autoanalyze")
 		}
 
 		// io stats -- avoid metrics spam produced by inactive tables, don't send metrics if counters are zero.
 		if stat.heapread > 0 {
-			ch <- c.io.newConstMetric(stat.heapread, stat.database, stat.schema, stat.table, "heap", "read").WithTS(metricsTs)
+			ch <- c.io.newConstMetric(stat.heapread, stat.database, stat.schema, stat.table, "heap", "read")
 		}
 		if stat.heaphit > 0 {
-			ch <- c.io.newConstMetric(stat.heaphit, stat.database, stat.schema, stat.table, "heap", "hit").WithTS(metricsTs)
+			ch <- c.io.newConstMetric(stat.heaphit, stat.database, stat.schema, stat.table, "heap", "hit")
 		}
 		if stat.idxread > 0 {
-			ch <- c.io.newConstMetric(stat.idxread, stat.database, stat.schema, stat.table, "idx", "read").WithTS(metricsTs)
+			ch <- c.io.newConstMetric(stat.idxread, stat.database, stat.schema, stat.table, "idx", "read")
 		}
 		if stat.idxhit > 0 {
-			ch <- c.io.newConstMetric(stat.idxhit, stat.database, stat.schema, stat.table, "idx", "hit").WithTS(metricsTs)
+			ch <- c.io.newConstMetric(stat.idxhit, stat.database, stat.schema, stat.table, "idx", "hit")
 		}
 		if stat.toastread > 0 {
-			ch <- c.io.newConstMetric(stat.toastread, stat.database, stat.schema, stat.table, "toast", "read").WithTS(metricsTs)
+			ch <- c.io.newConstMetric(stat.toastread, stat.database, stat.schema, stat.table, "toast", "read")
 		}
 		if stat.toasthit > 0 {
-			ch <- c.io.newConstMetric(stat.toasthit, stat.database, stat.schema, stat.table, "toast", "hit").WithTS(metricsTs)
+			ch <- c.io.newConstMetric(stat.toasthit, stat.database, stat.schema, stat.table, "toast", "hit")
 		}
 		if stat.tidxread > 0 {
-			ch <- c.io.newConstMetric(stat.tidxread, stat.database, stat.schema, stat.table, "tidx", "read").WithTS(metricsTs)
+			ch <- c.io.newConstMetric(stat.tidxread, stat.database, stat.schema, stat.table, "tidx", "read")
 		}
 		if stat.tidxhit > 0 {
-			ch <- c.io.newConstMetric(stat.tidxhit, stat.database, stat.schema, stat.table, "tidx", "hit").WithTS(metricsTs)
+			ch <- c.io.newConstMetric(stat.tidxhit, stat.database, stat.schema, stat.table, "tidx", "hit")
 		}
 
-		ch <- c.sizes.newConstMetric(stat.sizebytes, stat.database, stat.schema, stat.table).WithTS(metricsTs)
-		ch <- c.reltuples.newConstMetric(stat.reltuples, stat.database, stat.schema, stat.table).WithTS(metricsTs)
+		ch <- c.sizes.newConstMetric(stat.sizebytes, stat.database, stat.schema, stat.table)
+		ch <- c.reltuples.newConstMetric(stat.reltuples, stat.database, stat.schema, stat.table)
 	}
 	return nil
 
