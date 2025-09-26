@@ -63,4 +63,4 @@ jobs:
           context: .
           platforms: linux/amd64
           push: true
-          tags: cherts/pgscv:v${{ steps.version.outputs.VERSION }}-${{ steps.version.outputs.GIT_BRANCH }}-${{ steps.version.outputs.GIT_COMMIT }}-${{ steps.version.outputs.GIT_DATE }}-beta
+          tags: ghcr.io/${{ github.repository }}:v${{ steps.version.outputs.VERSION }}-${{ steps.version.outputs.GIT_BRANCH }}-${{ steps.version.outputs.GIT_COMMIT }}-${{ steps.version.outputs.GIT_DATE }}-beta
