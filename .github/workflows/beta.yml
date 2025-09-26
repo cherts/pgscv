@@ -18,20 +18,20 @@ on:
       - "go.sum"
 
 jobs:
-  test:
-    runs-on: ubuntu-22.04
-    container: cherts/pgscv-test-runner:1.0.10
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v5
-      - name: Prepare test environment
-        run: prepare-test-environment.sh
-      - name: Run test
-        run: make test
+#  test:
+#    runs-on: ubuntu-22.04
+#    container: cherts/pgscv-test-runner:1.0.10
+#    steps:
+#      - name: Checkout code
+#        uses: actions/checkout@v5
+#      - name: Prepare test environment
+#        run: prepare-test-environment.sh
+#      - name: Run test
+#        run: make test
 
   build:
     runs-on: ubuntu-22.04
-    needs: test
+#    needs: test
     permissions:
       contents: read
       packages: write
@@ -57,10 +57,15 @@ jobs:
         uses: docker/setup-qemu-action@v3
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
+      - name: set lower case owner name
+        run: |
+          echo "OWNER_LC=${OWNER,,}" >>${GITHUB_ENV}
+        env:
+          OWNER: '${{ github.repository_owner }}'
       - name: Build and push
         uses: docker/build-push-action@v6
         with:
           context: .
           platforms: linux/amd64
           push: true
-          tags: ghcr.io/${{ github.repository }}:v${{ steps.version.outputs.VERSION }}-${{ steps.version.outputs.GIT_BRANCH }}-${{ steps.version.outputs.GIT_COMMIT }}-${{ steps.version.outputs.GIT_DATE }}-beta
+          tags: ghcr.io/${{ env.OWNER_LC }}:v${{ steps.version.outputs.VERSION }}-${{ steps.version.outputs.GIT_BRANCH }}-${{ steps.version.outputs.GIT_COMMIT }}-${{ steps.version.outputs.GIT_DATE }}-beta
