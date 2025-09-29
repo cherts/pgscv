@@ -37,6 +37,9 @@ jobs:
       packages: write
       id-token: write
       attestations: write
+    env:
+      REGISTRY: ghcr.io
+      IMAGE_NAME: ${{ github.repository }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v5
@@ -52,14 +55,14 @@ jobs:
       - name: Login to registry
         uses: docker/login-action@v3
         with:
-          registry: ghcr.io
+          registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Set up Docker meta
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ghcr.io/${{ github.repository }}
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           tags: |
             type=raw,value=v${{ steps.version.outputs.VERSION }}-${{ steps.version.outputs.GIT_BRANCH }}-${{ steps.version.outputs.GIT_COMMIT }}-${{ steps.version.outputs.GIT_DATE }}-beta
       - name: Set up QEMU
@@ -78,8 +81,7 @@ jobs:
         uses: actions/attest-build-provenance@v3
         id: attest
         with:
-          subject-name: ghcr.io/${{ github.repository }}
-          subject-digest: ${{ steps.push.outputs.digest }}
+          subject-name: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           push-to-registry: true
       - name: Cleanup registry
         uses: actions/delete-package-versions@v5
