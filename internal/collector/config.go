@@ -5,13 +5,14 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/cherts/pgscv/internal/cache"
-	"github.com/jackc/pgx/v5"
-	"github.com/jackc/pgx/v5/pgxpool"
 	"net"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/cherts/pgscv/internal/cache"
+	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
 
 	"github.com/cherts/pgscv/internal/log"
 	"github.com/cherts/pgscv/internal/model"
@@ -59,7 +60,7 @@ type postgresServiceConfig struct {
 	// loggingCollector defines value of 'logging_collector' GUC.
 	loggingCollector bool
 	// logDestination defines value of 'log_destination' GUC.
-	logDestination string
+	logDestination postgresLogsDestination
 	// pgStatStatements defines is pg_stat_statements available in shared_preload_libraries and available for queries.
 	pgStatStatements bool
 	// pgStatStatementsSchema defines the schema name where pg_stat_statements is installed.
@@ -209,7 +210,7 @@ func newPostgresServiceConfig(connStr string, connTimeout int) (postgresServiceC
 		return config, fmt.Errorf("failed to get log_destination setting from pg_settings, %s, please check user grants", err)
 	}
 
-	config.logDestination = setting
+	config.logDestination = postgresLogsDestination(setting)
 
 	// Discover pg_stat_statements.
 	exists, schema, err := discoverPgStatStatements(conn)

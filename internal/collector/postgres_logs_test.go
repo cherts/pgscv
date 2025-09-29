@@ -4,13 +4,14 @@ import (
 	"bufio"
 	"context"
 	"fmt"
-	"github.com/cherts/pgscv/internal/model"
-	"github.com/cherts/pgscv/internal/store"
-	"github.com/stretchr/testify/assert"
 	"os"
 	"sync"
 	"testing"
 	"time"
+
+	"github.com/cherts/pgscv/internal/model"
+	"github.com/cherts/pgscv/internal/store"
+	"github.com/stretchr/testify/assert"
 )
 
 func Test_runTailLoop(t *testing.T) {
@@ -139,6 +140,27 @@ func Test_tailCollect(t *testing.T) {
 	wg.Wait()
 }
 
+func Test_tailCollect_jsonLogParser(t *testing.T) {
+	c, err := NewPostgresLogsCollector(nil, model.CollectorSettings{})
+	assert.NoError(t, err)
+	assert.NotNil(t, c)
+	lc := c.(*postgresLogsCollector)
+	lc.logDestination = postgresLogsDestinationJSON
+
+	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
+	defer cancel()
+
+	var wg sync.WaitGroup
+
+	wg.Add(1)
+	tailCollect(ctx, "testdata/datadir/postgresql.jsonlog.golden", false, &wg, lc)
+	assert.Equal(t, float64(2), lc.totals.store["log"])
+	assert.Equal(t, float64(3), lc.totals.store["error"])
+	assert.Equal(t, float64(0), lc.totals.store["fatal"])
+
+	wg.Wait()
+}
+
 func Test_queryCurrentLogfile(t *testing.T) {
 	got, err := queryCurrentLogfile(Config{DB: store.NewTest(t)})
 	assert.NoError(t, err)
@@ -149,20 +171,20 @@ func Test_queryCurrentLogfile(t *testing.T) {
 	assert.Equal(t, got, "")
 }
 
-func Test_newLogParser(t *testing.T) {
-	p := newLogParser()
+func Test_newStderrLogParser(t *testing.T) {
+	p := newStderrLogParser()
 	assert.NotNil(t, p)
 	assert.Greater(t, len(p.reSeverity), 0)
 	assert.Greater(t, len(p.reNormalize), 0)
 }
 
-func Test_logParser_updateMessagesStats(t *testing.T) {
+func Test_stderrLogParser_updateMessagesStats(t *testing.T) {
 	c, err := NewPostgresLogsCollector(nil, model.CollectorSettings{})
 	assert.NoError(t, err)
 	assert.NotNil(t, c)
 	lc := c.(*postgresLogsCollector)
 
-	p := newLogParser()
+	p := newStderrLogParser()
 
 	f, err := os.Open("testdata/datadir/postgresql.log.golden")
 	assert.NoError(t, err)
@@ -189,7 +211,7 @@ func Test_logParser_updateMessagesStats(t *testing.T) {
 	lc.panics.mu.RUnlock()
 }
 
-func Test_logParser_parseMessageSeverity(t *testing.T) {
+func Test_stderrLogParser_parseMessageSeverity(t *testing.T) {
 	testcases := []struct {
 		line  string
 		want  string
@@ -209,7 +231,7 @@ func Test_logParser_parseMessageSeverity(t *testing.T) {
 		{line: "test", want: "", found: false},
 	}
 
-	p := newLogParser()
+	p := newStderrLogParser()
 
 	for _, tc := range testcases {
 		got, ok := p.parseMessageSeverity(tc.line)
@@ -218,7 +240,7 @@ func Test_logParser_parseMessageSeverity(t *testing.T) {
 	}
 }
 
-func Test_logParser_normalizeMessage(t *testing.T) {
+func Test_stderrLogParser_normalizeMessage(t *testing.T) {
 	testcases := []struct {
 		in   string
 		want string
@@ -249,9 +271,135 @@ func Test_logParser_normalizeMessage(t *testing.T) {
 		},
 	}
 
-	parser := newLogParser()
+	parser := newStderrLogParser()
 
 	for _, tc := range testcases {
 		assert.Equal(t, tc.want, parser.normalizeMessage(tc.in))
 	}
+}
+
+func Test_jsonLogParser_normalizeMessage(t *testing.T) {
+	testcases := []struct {
+		jsonLine jsonLine
+		want     string
+	}{
+		{
+			jsonLine: jsonLine{
+				Message:       `syntax error at or near "invalid" at character 1`,
+				ErrorSeverity: "ERROR",
+			},
+			want: `syntax error at or near ? at character ?`,
+		},
+		{
+			jsonLine: jsonLine{
+				Message:       `syntax error at or near ")" at character 721`,
+				ErrorSeverity: "ERROR",
+			},
+			want: `syntax error at or near ? at character ?`,
+		},
+		{
+			jsonLine: jsonLine{
+				Message:       `duplicate key value violates unique constraint "oauth_access_token_authentication_id_uindex"`,
+				ErrorSeverity: "ERROR",
+			},
+			want: `duplicate key value violates unique constraint ?`,
+		},
+		{
+			jsonLine: jsonLine{
+				Message:       `insert or update on table "offer_offer_products" violates foreign key constraint "fkbbwwdruntj50nng01y0g98cof"`,
+				ErrorSeverity: "ERROR",
+			},
+			want: `insert or update on table ? violates foreign key constraint ?`,
+		},
+		{
+			jsonLine: jsonLine{
+				Message:       `could not serialize access due to concurrent update`,
+				ErrorSeverity: "ERROR",
+			},
+			want: `could not serialize access due to concurrent update`,
+		},
+		{
+			jsonLine: jsonLine{
+				Message:       `test`,
+				ErrorSeverity: "LOG",
+			},
+			want: "",
+		},
+	}
+
+	parser := newJSONLogParser()
+
+	for _, tc := range testcases {
+		assert.Equal(t, tc.want, parser.normalizeMessage(tc.jsonLine))
+	}
+}
+
+func Test_jsonLogParser_jsonLine(t *testing.T) {
+	tests := []struct {
+		name    string
+		line    string
+		want    jsonLine
+		wantErr bool
+	}{
+		{
+			line: `{"error_severity":"ERROR","message":"syntax error at or near \"invalid\" at character 1"}`,
+			want: jsonLine{
+				ErrorSeverity: "ERROR",
+				Message:       "syntax error at or near \"invalid\" at character 1",
+			},
+		},
+		{
+			line: `{"error_severity":"ERROR","message":"duplicate key value violates unique constraint \"oauth_access_token_authentication_id_uindex\""}`,
+			want: jsonLine{
+				ErrorSeverity: "ERROR",
+				Message:       "duplicate key value violates unique constraint \"oauth_access_token_authentication_id_uindex\"",
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			parser := newJSONLogParser()
+
+			jsonLine, err := parser.jsonLine(tt.line)
+			if tt.wantErr {
+				assert.Error(t, err)
+
+				return
+			}
+			assert.NoError(t, err)
+			assert.Equal(t, tt.want, jsonLine)
+		})
+	}
+}
+
+func Test_jsonLogParser_updateMessagesStats(t *testing.T) {
+	c, err := NewPostgresLogsCollector(nil, model.CollectorSettings{})
+	assert.NoError(t, err)
+	assert.NotNil(t, c)
+	lc := c.(*postgresLogsCollector)
+
+	p := newJSONLogParser()
+
+	f, err := os.Open("testdata/datadir/postgresql.jsonlog.golden")
+	assert.NoError(t, err)
+
+	scanner := bufio.NewScanner(f)
+	for scanner.Scan() {
+		p.updateMessagesStats(scanner.Text(), lc)
+	}
+
+	lc.totals.mu.RLock()
+	assert.Equal(t, float64(3), lc.totals.store["error"])
+	assert.Equal(t, float64(2), lc.totals.store["log"])
+	lc.totals.mu.RUnlock()
+
+	lc.fatals.mu.RLock()
+	fmt.Println()
+	assert.Equal(t, 1, len(lc.errors.store))
+	lc.fatals.mu.RUnlock()
+
+	lc.panics.mu.RLock()
+	assert.Equal(t, 0, len(lc.panics.store))
+	lc.panics.mu.RUnlock()
 }
