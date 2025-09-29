@@ -92,7 +92,7 @@ func (c *postgresStatTupleCollector) Update(ctx context.Context, config Config, 
 	defer wg.Wait()
 	var err error
 	query := selectStatTupleQuery(config.pgStatTupleSchema)
-	cacheKey, res := getFromCache(config.CacheConfig, config.ConnString, collectorPostgresStatTuple, query)
+	cacheKey, res, _ := getFromCache(config.CacheConfig, config.ConnString, collectorPostgresStatTuple, query)
 	if res == nil {
 		res, err = conn.Query(ctx, query)
 		if err != nil {
