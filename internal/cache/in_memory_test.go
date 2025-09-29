@@ -30,7 +30,7 @@ func TestInMemoryCache_BasicOperations(t *testing.T) {
 		err := cache.Set("test-key", testData, 0)
 		assert.NoError(t, err)
 
-		result, err := cache.Get("test-key")
+		result, _, err := cache.Get("test-key")
 		assert.NoError(t, err)
 		assert.Equal(t, testData.Nrows, result.Nrows)
 		assert.Equal(t, testData.Ncols, result.Ncols)
@@ -38,7 +38,7 @@ func TestInMemoryCache_BasicOperations(t *testing.T) {
 	})
 
 	t.Run("get non-existent key", func(t *testing.T) {
-		result, err := cache.Get("non-existent")
+		result, _, err := cache.Get("non-existent")
 		assert.Error(t, err)
 		assert.Nil(t, result)
 	})
@@ -50,7 +50,7 @@ func TestInMemoryCache_BasicOperations(t *testing.T) {
 		err = cache.Delete("to-delete")
 		assert.NoError(t, err)
 
-		result, err := cache.Get("to-delete")
+		result, _, err := cache.Get("to-delete")
 		assert.Error(t, err)
 		assert.Nil(t, result)
 	})
@@ -77,7 +77,7 @@ func TestInMemoryCache_NullValues(t *testing.T) {
 	err := cache.Set("null-test", nullData, 0)
 	assert.NoError(t, err)
 
-	result, err := cache.Get("null-test")
+	result, _, err := cache.Get("null-test")
 	assert.NoError(t, err)
 
 	assert.False(t, result.Rows[0][1].Valid)

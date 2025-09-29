@@ -31,6 +31,7 @@ func Start(ctx context.Context, config *Config) error {
 	log.Debug("start application")
 
 	serviceRepo := service.NewRepository()
+	constLabels := make(map[string]*map[string]string)
 
 	serviceConfig := service.Config{
 		NoTrackMode:        config.NoTrackMode,
@@ -45,6 +46,7 @@ func Start(ctx context.Context, config *Config) error {
 		ConnTimeout:        config.ConnTimeout,
 		ConcurrencyLimit:   config.ConcurrencyLimit,
 		CacheConfig:        config.CacheConfig,
+		ConstLabels:        &constLabels,
 	}
 	if config.PoolerConfig != nil {
 		serviceConfig.PoolerConfig = &service.PoolConfig{
@@ -56,6 +58,16 @@ func Start(ctx context.Context, config *Config) error {
 
 	if len(config.ServicesConnsSettings) == 0 && config.DiscoveryServices == nil {
 		return errors.New("no services defined")
+	}
+
+	if len(config.ServicesConnsSettings) > 0 {
+		for id, cs := range config.ServicesConnsSettings {
+			labels := make(map[string]string)
+
+			labels["provider"] = cs.ServiceType
+			labels["provider_id"] = "services"
+			constLabels[id] = &labels
+		}
 	}
 
 	// fulfill service repo using passed services

@@ -246,11 +246,22 @@ func (repo *Repository) addServicesFromConfig(config Config) {
 						return
 					}
 				} else {
-					if err := db.Conn().Ping(context.Background()); err != nil && !config.SkipConnErrorMode {
-						log.Warnf("%s@%s:%d/%s: %s skip", pgconfig.ConnConfig.User, pgconfig.ConnConfig.Host, pgconfig.ConnConfig.Port, pgconfig.ConnConfig.Database, err)
-						db.Close()
-						return
+					if !config.SkipConnErrorMode {
+						switch cs.ServiceType {
+						case model.ServiceTypePostgresql:
+							err = db.Conn().Ping(context.Background())
+						case model.ServiceTypePgbouncer:
+							var v string
+							err = db.Conn().QueryRow(context.Background(), "SELECT 1").Scan(&v)
+						}
+
+						if err != nil {
+							log.Warnf("%s@%s:%d/%s: %s skip", pgconfig.ConnConfig.User, pgconfig.ConnConfig.Host, pgconfig.ConnConfig.Port, pgconfig.ConnConfig.Database, err)
+							db.Close()
+							return
+						}
 					}
+
 					msg = fmt.Sprintf("service [%s] available through: %s@%s:%d/%s", k, pgconfig.ConnConfig.User, pgconfig.ConnConfig.Host, pgconfig.ConnConfig.Port, pgconfig.ConnConfig.Database)
 				}
 			}

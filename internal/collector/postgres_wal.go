@@ -136,7 +136,7 @@ func (c *postgresWalCollector) Update(ctx context.Context, config Config, ch cha
 	defer wg.Wait()
 	var err error
 	query := selectWalQuery(config.pgVersion.Numeric)
-	cacheKey, res := getFromCache(config.CacheConfig, config.ConnString, collectorPostgresWAL, query)
+	cacheKey, res, _ := getFromCache(config.CacheConfig, config.ConnString, collectorPostgresWAL, query)
 	if res == nil {
 		res, err = conn.Query(ctx, query)
 		if err != nil {

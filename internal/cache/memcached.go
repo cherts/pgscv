@@ -29,22 +29,23 @@ func NewMemcachedCache(addr string, gitCommit string) *MemcachedCache {
 }
 
 // Get value by key
-func (c *MemcachedCache) Get(key string) (*model.PGResult, error) {
+func (c *MemcachedCache) Get(key string) (*model.PGResult, time.Time, error) {
 	item, err := c.client.Get(key)
 	if err != nil {
-		return nil, err
+		return nil, time.Now(), err
 	}
-	var result model.PGResult
+	var result cacheItem
 	err = json.Unmarshal(item.Value, &result)
 	if err != nil {
-		return nil, err
+		return nil, time.Now(), err
 	}
-	return &result, nil
+	return result.Result, result.TS, nil
 }
 
 // Set value by key with ttl
 func (c *MemcachedCache) Set(key string, value *model.PGResult, ttl time.Duration) error {
-	data, err := json.Marshal(value)
+
+	data, err := json.Marshal(cacheItem{Result: value, TS: time.Now()})
 	if err != nil {
 		return err
 	}

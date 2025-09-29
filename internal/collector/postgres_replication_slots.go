@@ -51,7 +51,7 @@ func (c *postgresReplicationSlotCollector) Update(ctx context.Context, config Co
 	var err error
 
 	query := selectReplicationSlotQuery(config.pgVersion.Numeric)
-	cacheKey, res := getFromCache(config.CacheConfig, config.ConnString, collectorPostgresReplicationSlots, query)
+	cacheKey, res, _ := getFromCache(config.CacheConfig, config.ConnString, collectorPostgresReplicationSlots, query)
 	if res == nil {
 		res, err = conn.Query(ctx, query)
 		if err != nil {

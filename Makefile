@@ -8,7 +8,7 @@ TAG := $(shell git describe --abbrev=0 --tags ${TAG_COMMIT} 2>/dev/null || true)
 COMMIT := $(shell git rev-parse --short HEAD)
 DATE := $(shell git log -1 --format=%cd --date=format:"%Y%m%d")
 ifeq ($(TAG),)
-	VERSION := 0.10
+	VERSION := 1.0
 else
 	#VERSION := $(TAG:v%=%)
 	VERSION := $(TAG)
@@ -23,6 +23,8 @@ ifneq ($(shell git status --porcelain),)
     VERSION := $(VERSION)-dirty
 endif
 BRANCH=$(shell git rev-parse --abbrev-ref HEAD)
+
+VERSION_BETA=1.0-$(BRANCH)-$(COMMIT)-$(DATE)-beta
 
 LDFLAGS = -a -installsuffix cgo -ldflags "-X main.appName=${APPNAME} -X main.gitTag=${VERSION} -X main.gitCommit=${COMMIT} -X main.gitBranch=${BRANCH}"
 MODERNIZE_CMD = go run golang.org/x/tools/gopls/internal/analysis/modernize/cmd/modernize@v0.18.1
@@ -77,6 +79,13 @@ docker-build: ## Build docker image
 docker-push: ## Push docker image
 	docker push ${DOCKER_ACCOUNT}/${APPNAME}:${TAG}
 	docker push ${DOCKER_ACCOUNT}/${APPNAME}:latest
+
+docker-build-beta: ## Build docker image (beta)
+	docker build -t ${DOCKER_ACCOUNT}/${APPNAME}:v${VERSION_BETA} .
+	docker image prune --force --filter label=stage=intermediate
+
+docker-push-beta: ## Push docker image (beta)
+	docker push ${DOCKER_ACCOUNT}/${APPNAME}:v${VERSION_BETA}
 
 docker-build-test-runner: ## Build docker image with testing environment for CI
 	$(eval VERSION := $(shell grep -E 'LABEL version' testing/docker-test-runner/Dockerfile |cut -d = -f2 |tr -d \"))
