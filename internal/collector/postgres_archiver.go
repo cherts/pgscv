@@ -64,7 +64,7 @@ func (c *postgresWalArchivingCollector) Update(ctx context.Context, config Confi
 	wg := &sync.WaitGroup{}
 	defer wg.Wait()
 	var err error
-	cacheKey, res := getFromCache(config.CacheConfig, config.ConnString, collectorPostgresArchiver, walArchivingQuery)
+	cacheKey, res, _ := getFromCache(config.CacheConfig, config.ConnString, collectorPostgresArchiver, walArchivingQuery)
 	if res == nil {
 		res, err = config.DB.Query(ctx, walArchivingQuery)
 		if err != nil {

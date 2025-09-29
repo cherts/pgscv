@@ -131,7 +131,7 @@ func getSystemCatalogSize(ctx context.Context, config Config, wg *sync.WaitGroup
 	conn := config.DB
 	var query = `SELECT sum(pg_total_relation_size(relname::regclass)) AS bytes FROM pg_stat_sys_tables WHERE schemaname = 'pg_catalog'`
 	var err error
-	cacheKey, res := getFromCache(config.CacheConfig, config.ConnString, collectorPostgresSchemas, query)
+	cacheKey, res, _ := getFromCache(config.CacheConfig, config.ConnString, collectorPostgresSchemas, query)
 	if res == nil {
 		res, err = conn.Query(ctx, query)
 		if err != nil {
@@ -180,7 +180,7 @@ func getSchemaNonPKTables(ctx context.Context, config Config, wg *sync.WaitGroup
 		"WHERE NOT EXISTS (SELECT 1 FROM pg_index i WHERE c.oid = i.indrelid AND (i.indisprimary OR i.indisunique)) " +
 		"AND c.relkind = 'r' AND n.nspname NOT IN ('pg_catalog', 'information_schema', 'pg_toast')"
 	var err error
-	cacheKey, res := getFromCache(config.CacheConfig, config.ConnString, collectorPostgresSchemas, query)
+	cacheKey, res, _ := getFromCache(config.CacheConfig, config.ConnString, collectorPostgresSchemas, query)
 	if res == nil {
 		res, err = conn.Query(ctx, query)
 		if err != nil {
@@ -236,7 +236,7 @@ func getSchemaInvalidIndexes(ctx context.Context, config Config, wg *sync.WaitGr
 		"pg_relation_size(i.indexrelid) AS bytes " +
 		"FROM pg_index i JOIN pg_class c1 ON i.indexrelid = c1.oid JOIN pg_class c2 ON i.indrelid = c2.oid WHERE NOT i.indisvalid"
 	var err error
-	cacheKey, res := getFromCache(config.CacheConfig, config.ConnString, collectorPostgresSchemas, query)
+	cacheKey, res, _ := getFromCache(config.CacheConfig, config.ConnString, collectorPostgresSchemas, query)
 	if res == nil {
 		res, err = conn.Query(ctx, query)
 		if err != nil {
@@ -287,7 +287,7 @@ func getSchemaNonIndexedFK(ctx context.Context, config Config, wg *sync.WaitGrou
 		"WHERE NOT EXISTS (SELECT 1 FROM pg_index i WHERE i.indrelid = c.conrelid AND (i.indkey::integer[])[0:cardinality(c.conkey)-1] @> c.conkey::integer[]) " +
 		"AND c.contype = 'f' " +
 		"GROUP BY c.connamespace,s.relname,c.conname,c.confrelid"
-	cacheKey, res := getFromCache(config.CacheConfig, config.ConnString, collectorPostgresSchemas, query)
+	cacheKey, res, _ := getFromCache(config.CacheConfig, config.ConnString, collectorPostgresSchemas, query)
 	if res == nil {
 		res, err = conn.Query(ctx, query)
 		if err != nil {
@@ -342,7 +342,7 @@ func getSchemaRedundantIndexes(ctx context.Context, config Config, wg *sync.Wait
 		"OR (i1.indisunique AND NOT i2.indisunique)))) AND i1.key_array[1:i2.nkeys]=i2.key_array"
 	var err error
 	conn := config.DB
-	cacheKey, res := getFromCache(config.CacheConfig, config.ConnString, collectorPostgresSchemas, query)
+	cacheKey, res, _ := getFromCache(config.CacheConfig, config.ConnString, collectorPostgresSchemas, query)
 	if res == nil {
 		res, err = conn.Query(ctx, query)
 		if err != nil {
@@ -384,7 +384,7 @@ func getSchemaSequences(ctx context.Context, config Config, wg *sync.WaitGroup) 
 	var query = `SELECT schemaname AS schema, sequencename AS sequence, COALESCE(last_value, 0) / max_value::float AS ratio FROM pg_sequences`
 	var err error
 	conn := config.DB
-	cacheKey, res := getFromCache(config.CacheConfig, config.ConnString, collectorPostgresSchemas, query)
+	cacheKey, res, _ := getFromCache(config.CacheConfig, config.ConnString, collectorPostgresSchemas, query)
 	if res == nil {
 		res, err = conn.Query(ctx, query)
 		if err != nil {
@@ -435,7 +435,7 @@ func getSchemaFKDatatypeMismatch(ctx context.Context, config Config, wg *sync.Wa
 		"WHERE a1.atttypid <> a2.atttypid AND contype = 'f'"
 	var err error
 	conn := config.DB
-	cacheKey, res := getFromCache(config.CacheConfig, config.ConnString, collectorPostgresSchemas, query)
+	cacheKey, res, _ := getFromCache(config.CacheConfig, config.ConnString, collectorPostgresSchemas, query)
 	if res == nil {
 		res, err = conn.Query(ctx, query)
 		if err != nil {

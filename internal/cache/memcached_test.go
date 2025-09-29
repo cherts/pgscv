@@ -59,7 +59,7 @@ func TestMemcachedCache_Integration(t *testing.T) {
 		err := cache.Set("test-key", testData, 10*time.Second)
 		require.NoError(t, err)
 
-		result, err := cache.Get("test-key")
+		result, _, err := cache.Get("test-key")
 		require.NoError(t, err)
 		require.NotNil(t, result)
 
@@ -82,7 +82,7 @@ func TestMemcachedCache_Integration(t *testing.T) {
 	})
 
 	t.Run("get non-existent key", func(t *testing.T) {
-		result, err := cache.Get("non-existent-key")
+		result, _, err := cache.Get("non-existent-key")
 		assert.Error(t, err)
 		assert.Nil(t, result)
 		assert.Contains(t, err.Error(), "cache miss")
@@ -92,14 +92,14 @@ func TestMemcachedCache_Integration(t *testing.T) {
 		err := cache.Set("delete-test-key", testData, 10*time.Second)
 		require.NoError(t, err)
 
-		result, err := cache.Get("delete-test-key")
+		result, _, err := cache.Get("delete-test-key")
 		require.NoError(t, err)
 		assert.NotNil(t, result)
 
 		err = cache.Delete("delete-test-key")
 		require.NoError(t, err)
 
-		result, err = cache.Get("delete-test-key")
+		result, _, err = cache.Get("delete-test-key")
 		assert.Error(t, err)
 		assert.Nil(t, result)
 	})
@@ -108,13 +108,13 @@ func TestMemcachedCache_Integration(t *testing.T) {
 		err := cache.Set("ttl-test-key", testData, 2*time.Second)
 		require.NoError(t, err)
 
-		result, err := cache.Get("ttl-test-key")
+		result, _, err := cache.Get("ttl-test-key")
 		require.NoError(t, err)
 		assert.NotNil(t, result)
 
 		time.Sleep(3 * time.Second)
 
-		result, err = cache.Get("ttl-test-key")
+		result, _, err = cache.Get("ttl-test-key")
 		assert.Error(t, err)
 		assert.Nil(t, result)
 	})
@@ -156,7 +156,7 @@ func TestMemcachedCache_Integration(t *testing.T) {
 		err := cache.Set("null-test-key", nullData, 10*time.Second)
 		require.NoError(t, err)
 
-		result, err := cache.Get("null-test-key")
+		result, _, err := cache.Get("null-test-key")
 		require.NoError(t, err)
 		require.NotNil(t, result)
 
@@ -164,7 +164,7 @@ func TestMemcachedCache_Integration(t *testing.T) {
 		assert.Equal(t, "", result.Rows[0][1].String)
 	})
 
-	t.Run("test empty result", func(t *testing.T) {
+	t.Run("test empty Result", func(t *testing.T) {
 		emptyData := &model.PGResult{
 			Nrows:    0,
 			Ncols:    0,
@@ -175,7 +175,7 @@ func TestMemcachedCache_Integration(t *testing.T) {
 		err := cache.Set("empty-test-key", emptyData, 10*time.Second)
 		require.NoError(t, err)
 
-		result, err := cache.Get("empty-test-key")
+		result, _, err := cache.Get("empty-test-key")
 		require.NoError(t, err)
 		require.NotNil(t, result)
 
@@ -207,7 +207,7 @@ func TestMemcachedCache_MultipleServers(t *testing.T) {
 	err := cache.Set("multi-server-test", testData, 5*time.Second)
 	require.NoError(t, err)
 
-	result, err := cache.Get("multi-server-test")
+	result, _, err := cache.Get("multi-server-test")
 	require.NoError(t, err)
 	assert.NotNil(t, result)
 }
@@ -229,7 +229,7 @@ func TestMemcachedCache_ConnectionErrors(t *testing.T) {
 	err := cache.Set("test-key", testData, 5*time.Second)
 	assert.Error(t, err)
 
-	_, err = cache.Get("test-key")
+	_, _, err = cache.Get("test-key")
 	assert.Error(t, err)
 
 	err = cache.Delete("test-key")

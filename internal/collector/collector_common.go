@@ -4,15 +4,14 @@ package collector
 import (
 	"context"
 	"database/sql"
-	"slices"
-	"strconv"
-	"strings"
-
 	"github.com/cherts/pgscv/internal/filter"
 	"github.com/cherts/pgscv/internal/log"
 	"github.com/cherts/pgscv/internal/model"
 	"github.com/cherts/pgscv/internal/store"
 	"github.com/prometheus/client_golang/prometheus"
+	"slices"
+	"strconv"
+	"strings"
 )
 
 // labels is a local wrapper over prometheus.Labels which is a simple map[string]string.
@@ -216,6 +215,7 @@ func updateFromSingleDatabase(ctx context.Context, config Config, descSets []typ
 			continue
 		}
 	}
+
 	return nil
 }
 

@@ -106,7 +106,7 @@ func (c *postgresReplicationCollector) Update(ctx context.Context, config Config
 	var err error
 
 	query := selectReplicationQuery(config.pgVersion)
-	cacheKey, res := getFromCache(config.CacheConfig, config.ConnString, collectorPostgresReplication, query)
+	cacheKey, res, _ := getFromCache(config.CacheConfig, config.ConnString, collectorPostgresReplication, query)
 	if res == nil {
 		res, err = conn.Query(ctx, query)
 		if err != nil {
