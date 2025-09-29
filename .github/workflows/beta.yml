@@ -35,12 +35,6 @@ jobs:
     permissions:
       contents: read
       packages: write
-    strategy:
-      fail-fast: false
-      matrix:
-        platform:
-          - linux/amd64
-          - linux/arm64
     steps:
       - name: Checkout code
         uses: actions/checkout@v5
@@ -53,8 +47,6 @@ jobs:
           echo GIT_BRANCH="${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}" >>$GITHUB_OUTPUT
           echo GIT_COMMIT="$(git rev-parse --short "${GITHUB_SHA}")" >>$GITHUB_OUTPUT
           echo GIT_DATE="$(git log -1 --format=%cd --date=format:"%Y%m%d")" >>$GITHUB_OUTPUT
-          platform=${{ matrix.platform }}
-          echo "PLATFORM_PAIR=${platform//\//-}" >> $GITHUB_ENV
       - name: Login to registry
         uses: docker/login-action@v3
         with:
@@ -77,66 +69,18 @@ jobs:
         with:
           context: .
           file: ./Dockerfile.beta
-          platforms: ${{ matrix.platform }}
+          platforms: linux/amd64,linux/arm64
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: |
             org.opencontainers.image.title=pgSCV
             org.opencontainers.image.description=pgSCV is a PostgreSQL ecosystem metrics collector
             org.opencontainers.image.vendor=pgSCV Team
-          outputs: type=image,push-by-digest=true,name-canonical=true,push=true
-      - name: Export digest
-        run: |
-          mkdir -p ${{ runner.temp }}/digests
-          digest="${{ steps.build.outputs.digest }}"
-          touch "${{ runner.temp }}/digests/${digest#sha256:}"
-      - name: Upload digest
-        uses: actions/upload-artifact@v4
+      - name: Cleanup registry
+        uses: actions/delete-package-versions@v5
         with:
-          name: digests-${{ env.PLATFORM_PAIR }}
-          path: ${{ runner.temp }}/digests/*
-          if-no-files-found: error
-          retention-days: 1
-#      - name: Cleanup registry
-#        uses: actions/delete-package-versions@v5
-#        with:
-#          owner: ${{ github.repository_owner }}
-#          package-name: 'pgscv'
-#          package-type: container
-#          min-versions-to-keep: 1
-#          delete-only-untagged-versions: 'true'
-
-  merge:
-    runs-on: ubuntu-22.04
-    needs:
-      - build
-    steps:
-      - name: Download digests
-        uses: actions/download-artifact@v4
-        with:
-          path: ${{ runner.temp }}/digests
-          pattern: digests-*
-          merge-multiple: true
-      - name: Login to registry
-        uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-      - name: Set up Docker meta
-        id: meta
-        uses: docker/metadata-action@v5
-        with:
-          images: ghcr.io/${{ github.repository }}
-          tags: |
-            type=raw,value=v${{ steps.version.outputs.VERSION }}-${{ steps.version.outputs.GIT_BRANCH }}-${{ steps.version.outputs.GIT_COMMIT }}-${{ steps.version.outputs.GIT_DATE }}-beta
-      - name: Create manifest list and push
-        working-directory: ${{ runner.temp }}/digests
-        run: |
-          docker buildx imagetools create $(jq -cr '.tags | map("-t " + .) | join(" ")' <<< "$DOCKER_METADATA_OUTPUT_JSON") \
-            $(printf 'ghcr.io/${{ github.repository }}@sha256:%s ' *)
-      - name: Inspect image
-        run: |
-          docker buildx imagetools inspect ghcr.io/${{ github.repository }}:${{ steps.meta.outputs.version }}
+          owner: ${{ github.repository_owner }}
+          package-name: 'pgscv'
+          package-type: container
+          min-versions-to-keep: 1
+          delete-only-untagged-versions: 'true'
