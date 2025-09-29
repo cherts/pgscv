@@ -18,20 +18,20 @@ on:
       - "go.sum"
 
 jobs:
-#  test:
-#    runs-on: ubuntu-22.04
-#    container: cherts/pgscv-test-runner:1.0.10
-#    steps:
-#      - name: Checkout code
-#        uses: actions/checkout@v5
-#      - name: Prepare test environment
-#        run: prepare-test-environment.sh
-#      - name: Run test
-#        run: make test
+  test:
+    runs-on: ubuntu-22.04
+    container: cherts/pgscv-test-runner:1.0.10
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+      - name: Prepare test environment
+        run: prepare-test-environment.sh
+      - name: Run test
+        run: make test
 
   build:
     runs-on: ubuntu-22.04
-#    needs: test
+    needs: test
     permissions:
       contents: read
       packages: write
