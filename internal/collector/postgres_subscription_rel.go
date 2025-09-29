@@ -47,7 +47,7 @@ func (c *postgresSubscriptionRelCollector) Update(ctx context.Context, config Co
 	defer wg.Wait()
 	var err error
 
-	cacheKey, res := getFromCache(config.CacheConfig, config.ConnString, collectorPostgresSubscriptionRel, postgresSubscriptionRel)
+	cacheKey, res, _ := getFromCache(config.CacheConfig, config.ConnString, collectorPostgresSubscriptionRel, postgresSubscriptionRel)
 	if res == nil {
 		res, err = conn.Query(ctx, postgresSubscriptionRel)
 		if err != nil {
