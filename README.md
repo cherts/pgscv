@@ -77,7 +77,7 @@ docker run -ti -d --name pgscv \
 or using Docker-compose, edit file `docker-compose.yaml` for setting up a connection to PostgreSQL:
 ```bash
 mkdir ~/pgscv
-curl -s -L https://raw.githubusercontent.com/cherts/pgscv/master/deploy/docker-compose.yaml -o ~/pgscv/docker-compose.yaml && cd ~/pgscv
+curl -s -L https://raw.githubusercontent.com/cherts/pgscv/refs/heads/release/0.15/deploy/docker-compose.yaml -o ~/pgscv/docker-compose.yaml && cd ~/pgscv
 docker-compose up -d
 ```
 
@@ -85,7 +85,7 @@ When pgSCV has been started it is ready to accept HTTP requests at `http://127.0
 
 or using k8s deployment
 ```bash
-curl -s -L https://raw.githubusercontent.com/cherts/pgscv/master/deploy/deployment.yaml -o ~/deployment.yaml
+curl -s -L https://raw.githubusercontent.com/cherts/pgscv/refs/heads/release/0.15/deploy/deployment.yaml -o ~/deployment.yaml
 kubectl apply -f ~/deployment.yaml
 ```
 
