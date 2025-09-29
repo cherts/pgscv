@@ -38,6 +38,7 @@ const (
 	collectorPostgresReplication      = "postgres/replication"
 	collectorPostgresReplicationSlots = "postgres/replication_slots"
 	collectorPostgresStatements       = "postgres/statements"
+	collectorPostgresStatTuple        = "postgres/stattuple"
 	collectorPostgresSchemas          = "postgres/schemas"
 	collectorPostgresSettings         = "postgres/settings"
 	collectorPostgresStorage          = "postgres/storage"
@@ -113,6 +114,7 @@ func (f Factories) RegisterPostgresCollectors(disabled []string) {
 		collectorPostgresReplication:      NewPostgresReplicationCollector,
 		collectorPostgresReplicationSlots: NewPostgresReplicationSlotsCollector,
 		collectorPostgresStatements:       NewPostgresStatementsCollector,
+		collectorPostgresStatTuple:        NewPostgresStatTupleCollector,
 		collectorPostgresSchemas:          NewPostgresSchemasCollector,
 		collectorPostgresSettings:         NewPostgresSettingsCollector,
 		collectorPostgresStorage:          NewPostgresStorageCollector,

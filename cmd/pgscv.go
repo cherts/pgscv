@@ -4,6 +4,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"github.com/alecthomas/kingpin/v2"
 	"github.com/cherts/pgscv/discovery/factory"
 	sdlog "github.com/cherts/pgscv/discovery/log"
 	"github.com/cherts/pgscv/internal/cache"
@@ -12,7 +13,6 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/alecthomas/kingpin/v2"
 	"github.com/cherts/pgscv/internal/log"
 	"github.com/cherts/pgscv/internal/pgscv"
 	//_ "net/http/pprof"

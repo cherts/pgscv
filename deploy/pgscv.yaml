@@ -27,6 +27,8 @@
 #      ttl: 10m
 #    postgres/statements:
 #      ttl: 5m
+#    postgres/stattuple:
+#      ttl: 24h
 #discovery:
 # Monitoring Yandex.Cloud Managed Service for PostgreSQL 
 #  yandex_mdb:

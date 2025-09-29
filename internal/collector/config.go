@@ -66,6 +66,10 @@ type postgresServiceConfig struct {
 	pgStatStatementsSchema string
 	// rolConnLimit defines connection limit for the role used by the collector.
 	rolConnLimit int
+	// pgStatTuple defines is pgstattuple available  for queries.
+	pgStatTuple bool
+	// pgStatTupleSchema defines the schema name where pgstattuple is installed.
+	pgStatTupleSchema string
 }
 
 // PostgresVersion - Identifying information about the PostgreSQL server version and build details
@@ -186,7 +190,7 @@ func newPostgresServiceConfig(connStr string, connTimeout int) (postgresServiceC
 	config.pgVersion.IsCitus = isCitus
 
 	// Get Postgres data directory
-	err = conn.Conn().QueryRow(context.Background(), "SELECT setting FROM pg_settings WHERE name = 'data_directory'").Scan(&setting)
+	err = conn.Conn().QueryRow(context.Background(), "SELECT setting FROM pg_catalog.pg_settings WHERE name = 'data_directory'").Scan(&setting)
 	if err != nil {
 		return config, fmt.Errorf("failed to get data_directory setting from pg_settings, %s, please check user grants", err)
 	}
@@ -194,7 +198,7 @@ func newPostgresServiceConfig(connStr string, connTimeout int) (postgresServiceC
 	config.dataDirectory = setting
 
 	// Get setting of 'logging_collector' GUC.
-	err = conn.Conn().QueryRow(context.Background(), "SELECT setting FROM pg_settings WHERE name = 'logging_collector'").Scan(&setting)
+	err = conn.Conn().QueryRow(context.Background(), "SELECT setting FROM pg_catalog.pg_settings WHERE name = 'logging_collector'").Scan(&setting)
 	if err != nil {
 		return config, fmt.Errorf("failed to get logging_collector setting from pg_settings, %s, please check user grants", err)
 	}
@@ -204,7 +208,7 @@ func newPostgresServiceConfig(connStr string, connTimeout int) (postgresServiceC
 	}
 
 	// Get setting of 'log_destination' GUC.
-	err = conn.Conn().QueryRow(context.Background(), "SELECT setting FROM pg_settings WHERE name = 'log_destination'").Scan(&setting)
+	err = conn.Conn().QueryRow(context.Background(), "SELECT setting FROM pg_catalog.pg_settings WHERE name = 'log_destination'").Scan(&setting)
 	if err != nil {
 		return config, fmt.Errorf("failed to get log_destination setting from pg_settings, %s, please check user grants", err)
 	}
@@ -223,6 +227,11 @@ func newPostgresServiceConfig(connStr string, connTimeout int) (postgresServiceC
 
 	config.pgStatStatements = exists
 	config.pgStatStatementsSchema = schema
+
+	schema = extensionInstalledSchema(conn, "pgstattuple")
+	config.pgStatTuple = schema != ""
+	config.pgStatTupleSchema = schema
+
 	return config, nil
 }
 
