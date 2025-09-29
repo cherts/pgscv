@@ -19,6 +19,7 @@ func Test_runTailLoop(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, c)
 	lc := c.(*postgresLogsCollector)
+	lc.logDestination = postgresLogsDestinationStderr
 
 	fname1 := "/tmp/pgscv_postgres_logs_test_sample_1.log"
 	fstr1 := "2020-09-30 14:26:29.777 +05 797922 LOG: PID 0 in cancel request did not match any process\n"
@@ -125,6 +126,7 @@ func Test_tailCollect(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, c)
 	lc := c.(*postgresLogsCollector)
+	lc.logDestination = postgresLogsDestinationStderr
 
 	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
 	defer cancel()
