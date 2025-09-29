@@ -89,7 +89,7 @@
       "title": "pgSCV Wiki",
       "tooltip": "",
       "type": "link",
-      "url": " https://github.com/CHERTS/pgscv/wiki"
+      "url": " https://github.com/cherts/pgscv/wiki"
     },
     {
       "asDropdown": false,
@@ -101,7 +101,7 @@
       "title": "Found a bug?",
       "tooltip": "",
       "type": "link",
-      "url": " https://github.com/CHERTS/pgscv/issues"
+      "url": " https://github.com/cherts/pgscv/issues"
     }
   ],
   "panels": [

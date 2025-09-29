@@ -70,7 +70,7 @@ docker run -ti -d --name pgscv \
 или используя Docker-compose, отредактируйте файл `docker-compose.yaml` для настройки соединения с PostgreSQL:
 ```bash
 mkdir ~/pgscv
-curl -s -L https://raw.githubusercontent.com/CHERTS/pgscv/master/deploy/docker-compose.yaml -o ~/pgscv/docker-compose.yaml && cd ~/pgscv
+curl -s -L https://raw.githubusercontent.com/cherts/pgscv/master/deploy/docker-compose.yaml -o ~/pgscv/docker-compose.yaml && cd ~/pgscv
 docker-compose up -d
 ```
 
@@ -78,13 +78,13 @@ docker-compose up -d
 
 или используя развертывание приложения в k8s
 ```bash
-curl -s -L https://raw.githubusercontent.com/CHERTS/pgscv/master/deploy/deployment.yaml -o ~/deployment.yaml
+curl -s -L https://raw.githubusercontent.com/cherts/pgscv/master/deploy/deployment.yaml -o ~/deployment.yaml
 kubectl apply -f ~/deployment.yaml
 ```
 
 или используя helm chart для k8s
 ```bash
-git clone https://github.com/CHERTS/pgscv.git && cd pgscv
+git clone https://github.com/cherts/pgscv.git && cd pgscv
 kubectl create ns pgscv-ns
 helm install -n pgscv-ns pgscv deploy/helm-chart/
 ```
