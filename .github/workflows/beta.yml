@@ -72,15 +72,11 @@ jobs:
           platforms: linux/amd64
           push: true
           tags: ${{ steps.meta.outputs.tags }}
-          labels: |
-            org.opencontainers.image.title=pgSCV
-            org.opencontainers.image.description=pgSCV is a PostgreSQL ecosystem metrics collector
-            org.opencontainers.image.vendor=pgSCV Team
       - name: Cleanup registry
         uses: actions/delete-package-versions@v5
         with:
           owner: ${{ github.repository_owner }}
           package-name: 'pgscv'
           package-type: container
-          min-versions-to-keep: 1
+          min-versions-to-keep: 5
 #          delete-only-untagged-versions: 'true'
