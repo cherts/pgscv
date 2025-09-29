@@ -80,8 +80,8 @@ func syncSubscriberServices(
 				}
 
 				appendSvc[(*services)[*v.Left].name] = discovery.Service{
-					DSN: (*services)[*v.Left].dsn,
-					ConstLabels: configLabelsMap,
+					DSN:          (*services)[*v.Left].dsn,
+					ConstLabels:  configLabelsMap,
 					TargetLabels: targetLabelsMap,
 				}
 				subscriber.syncedServices[*v.Left] = appendSvc[*v.Left]
@@ -90,7 +90,6 @@ func syncSubscriberServices(
 
 		if len(removeSvc) > 0 {
 			log.Debugf("[%s SD] Removing '%d' services from subscriber.", provider, len(removeSvc))
-
 			err := subscriber.RemoveService(removeSvc)
 			if err != nil {
 				return err
@@ -99,7 +98,6 @@ func syncSubscriberServices(
 
 		if len(appendSvc) > 0 {
 			log.Debugf("[%s Discovery] Appending '%d' services to subscriber.", provider, len(appendSvc))
-
 			err := subscriber.AddService(appendSvc)
 			if err != nil {
 				return err

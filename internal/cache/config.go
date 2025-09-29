@@ -16,6 +16,7 @@ const (
 	cacheInMemory             = "in-memory"
 	cacheMemcached            = "memcached"
 	memcachedServersValidator = "memcached_servers"
+	ttlValidator              = "ttl"
 )
 
 // Config is part of global pgSCV config

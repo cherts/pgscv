@@ -236,7 +236,7 @@ func (c *Config) Validate() error {
 		}
 	}
 
-	// validate collector settings.
+	// Validate collector settings.
 	err := validateCollectorSettings(c.CollectorsSettings)
 	if err != nil {
 		return err
