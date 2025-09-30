@@ -1,7 +1,7 @@
 # pgSCV - PostgreSQL ecosystem metrics collector
 
-[![Go](https://github.com/CHERTS/pgscv/actions/workflows/release.yml/badge.svg)](https://github.com/CHERTS/pgscv/actions)
-![GitHub Release](https://img.shields.io/github/v/release/CHERTS/pgscv)
+[![Go](https://github.com/cherts/pgscv/actions/workflows/release.yml/badge.svg)](https://github.com/cherts/pgscv/actions)
+![GitHub Release](https://img.shields.io/github/v/release/cherts/pgscv)
 ![GitHub downloads total)](https://img.shields.io/github/downloads/cherts/pgscv/total)
 ![GitHub Downloads (all assets, latest release)](https://img.shields.io/github/downloads/cherts/pgscv/latest/total)
 [![Docker pulls)](https://img.shields.io/docker/pulls/cherts/pgscv.svg)](https://hub.docker.com/r/cherts/pgscv)
@@ -21,7 +21,6 @@ This project is a continuation of the development of the original pgSCV by [Alex
 - **OS metrics:** support collecting metrics of operating system (Linux, Windows, MacOS, FreeBSD).
 - **Discovery and monitoring Cloud Managed Databases:** Yandex Managed Service for PostgreSQL ([see documentation](https://github.com/cherts/pgscv/wiki/Monitoring-Cloud-Managed-Databases)).
 - **Support Prometheus service discovery.** `/targets` endpoint is used to discover all monitoring services ([see documentation](https://github.com/cherts/pgscv/wiki/Service-discovery))
-- **Throttling support** The throttling allows limiting calls to the `/metrics` and `/metrics?target=xxx` endpoints to protect databases from a flood of monitoring requests from multiple collection agents ([see documentation](https://github.com/cherts/pgscv/wiki/Throttling)).
 - **Concurrency limitting support** It is possible to limit the parallel collection of monitoring data from the database to control the load created by the exporter. ([see documentatio](https://github.com/cherts/pgscv/wiki/Concurrency)).
 - **TLS and authentication**. `/metrics` and и `/metrics?target=xxx` endpoint could be protected with basic authentication and TLS.
 - **Collecting metrics from multiple services**. pgSCV can collect metrics from many databases instances.
@@ -78,7 +77,7 @@ docker run -ti -d --name pgscv \
 or using Docker-compose, edit file `docker-compose.yaml` for setting up a connection to PostgreSQL:
 ```bash
 mkdir ~/pgscv
-curl -s -L https://raw.githubusercontent.com/CHERTS/pgscv/master/deploy/docker-compose.yaml -o ~/pgscv/docker-compose.yaml && cd ~/pgscv
+curl -s -L https://raw.githubusercontent.com/cherts/pgscv/master/deploy/docker-compose.yaml -o ~/pgscv/docker-compose.yaml && cd ~/pgscv
 docker-compose up -d
 ```
 
@@ -86,13 +85,13 @@ When pgSCV has been started it is ready to accept HTTP requests at `http://127.0
 
 or using k8s deployment
 ```bash
-curl -s -L https://raw.githubusercontent.com/CHERTS/pgscv/master/deploy/deployment.yaml -o ~/deployment.yaml
+curl -s -L https://raw.githubusercontent.com/cherts/pgscv/master/deploy/deployment.yaml -o ~/deployment.yaml
 kubectl apply -f ~/deployment.yaml
 ```
 
 or using k8s helm chart
 ```bash
-git clone https://github.com/CHERTS/pgscv.git && cd pgscv
+git clone https://github.com/cherts/pgscv.git && cd pgscv
 kubectl create ns pgscv-ns
 helm install -n pgscv-ns pgscv deploy/helm-chart/
 ```

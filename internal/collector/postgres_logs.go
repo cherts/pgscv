@@ -3,14 +3,15 @@ package collector
 
 import (
 	"context"
+	"fmt"
 	"io"
+	"path/filepath"
 	"regexp"
 	"strings"
 	"sync"
 
 	"github.com/cherts/pgscv/internal/log"
 	"github.com/cherts/pgscv/internal/model"
-	"github.com/cherts/pgscv/internal/store"
 	"github.com/nxadm/tail"
 	"github.com/prometheus/client_golang/prometheus"
 )
@@ -107,7 +108,7 @@ func NewPostgresLogsCollector(constLabels labels, settings model.CollectorSettin
 }
 
 // Update method generates metrics based on collected log messages.
-func (c *postgresLogsCollector) Update(config Config, ch chan<- prometheus.Metric) error {
+func (c *postgresLogsCollector) Update(_ context.Context, config Config, ch chan<- prometheus.Metric) error {
 	if !config.localService {
 		log.Debugln("[postgres log collector]: skip collecting metrics from remote services")
 		return nil
@@ -128,7 +129,7 @@ func (c *postgresLogsCollector) Update(config Config, ch chan<- prometheus.Metri
 	}
 
 	// Notify log collector goroutine if logfile has been changed.
-	logfile, err := queryCurrentLogfile(config.ConnString, config.ConnTimeout)
+	logfile, err := queryCurrentLogfile(config)
 	if err != nil {
 		return err
 	}
@@ -249,15 +250,14 @@ func tailCollect(ctx context.Context, logfile string, init bool, wg *sync.WaitGr
 }
 
 // queryCurrentLogfile returns path to logfile used by database.
-func queryCurrentLogfile(conninfo string, connTimeout int) (string, error) {
-	conn, err := store.New(conninfo, connTimeout)
-	if err != nil {
-		return "", err
+func queryCurrentLogfile(config Config) (string, error) {
+	conn := config.DB
+	if conn == nil {
+		return "", fmt.Errorf("postgres logs collector requires a database connection")
 	}
-	defer conn.Close()
 
 	var datadir, logfile string
-	err = conn.Conn().QueryRow(context.TODO(), "SELECT current_setting('data_directory'),pg_current_logfile()").Scan(&datadir, &logfile)
+	err := conn.Conn().QueryRow(context.TODO(), "SELECT current_setting('data_directory'),pg_current_logfile()").Scan(&datadir, &logfile)
 	if err != nil {
 		return "", err
 	}
@@ -265,6 +265,8 @@ func queryCurrentLogfile(conninfo string, connTimeout int) (string, error) {
 	if !strings.HasPrefix(logfile, "/") {
 		logfile = datadir + "/" + logfile
 	}
+
+	logfile = filepath.FromSlash(logfile)
 
 	return logfile, nil
 }

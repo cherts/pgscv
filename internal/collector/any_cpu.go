@@ -1,6 +1,7 @@
 package collector
 
 import (
+	"context"
 	"fmt"
 	"os/exec"
 	"strconv"
@@ -71,7 +72,7 @@ func NewCPUCollector(constLabels labels, settings model.CollectorSettings) (Coll
 }
 
 // Update implements Collector and exposes cpu related metrics from /proc/stat and /sys/.../cpu/.
-func (c *cpuCollector) Update(_ Config, ch chan<- prometheus.Metric) error {
+func (c *cpuCollector) Update(_ context.Context, _ Config, ch chan<- prometheus.Metric) error {
 	cpuStat, err := cpu.Times(false)
 	if err != nil {
 		return fmt.Errorf("collect cpu usage stats failed: %s; skip", err)

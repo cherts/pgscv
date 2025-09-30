@@ -1,6 +1,8 @@
 package collector
 
 import (
+	"context"
+
 	"github.com/cherts/pgscv/internal/model"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/shirou/gopsutil/v4/host"
@@ -51,7 +53,7 @@ func NewSysInfoCollector(constLabels labels, settings model.CollectorSettings) (
 }
 
 // Update implements Collector and exposes system info metrics.
-func (c *sysinfoCollector) Update(_ Config, ch chan<- prometheus.Metric) error {
+func (c *sysinfoCollector) Update(_ context.Context, _ Config, ch chan<- prometheus.Metric) error {
 	info, err := host.Info()
 	if err != nil {
 		return err

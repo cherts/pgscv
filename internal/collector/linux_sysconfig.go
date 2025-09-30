@@ -4,6 +4,7 @@ package collector
 import (
 	"bufio"
 	"bytes"
+	"context"
 	"fmt"
 	"io"
 	"os"
@@ -86,7 +87,7 @@ func NewSysconfigCollector(constLabels labels, settings model.CollectorSettings)
 }
 
 // Update method collects filesystem usage statistics.
-func (c *systemCollector) Update(_ Config, ch chan<- prometheus.Metric) error {
+func (c *systemCollector) Update(_ context.Context, _ Config, ch chan<- prometheus.Metric) error {
 	if runtime.GOOS == "linux" {
 		// Read sysctl settings.
 		sysctls := readSysctls(c.sysctlList)

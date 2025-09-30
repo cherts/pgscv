@@ -2,6 +2,7 @@
 package collector
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/cherts/pgscv/internal/filter"
@@ -55,7 +56,7 @@ func NewNetdevCollector(constLabels labels, settings model.CollectorSettings) (C
 }
 
 // Update method collects network interfaces statistics
-func (c *netdevCollector) Update(_ Config, ch chan<- prometheus.Metric) error {
+func (c *netdevCollector) Update(_ context.Context, _ Config, ch chan<- prometheus.Metric) error {
 	netStat, err := net.IOCounters(true)
 	if err != nil {
 		return fmt.Errorf("Failed to get netdev stats: %s", err)

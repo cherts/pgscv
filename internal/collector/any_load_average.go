@@ -2,6 +2,7 @@
 package collector
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/cherts/pgscv/internal/model"
@@ -40,7 +41,7 @@ func NewLoadAverageCollector(constLabels labels, settings model.CollectorSetting
 }
 
 // Update implements Collector and exposes load average related metrics from /proc/loadavg.
-func (c *loadaverageCollector) Update(_ Config, ch chan<- prometheus.Metric) error {
+func (c *loadaverageCollector) Update(_ context.Context, _ Config, ch chan<- prometheus.Metric) error {
 	stats, err := load.Avg()
 	if err != nil {
 		return fmt.Errorf("failed to get load average stats: %s", err)

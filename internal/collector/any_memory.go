@@ -3,6 +3,7 @@ package collector
 
 import (
 	"bufio"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -42,7 +43,7 @@ func NewMeminfoCollector(constLabels labels, settings model.CollectorSettings) (
 }
 
 // Update method collects network interfaces statistics.
-func (c *meminfoCollector) Update(_ Config, ch chan<- prometheus.Metric) error {
+func (c *meminfoCollector) Update(_ context.Context, _ Config, ch chan<- prometheus.Metric) error {
 	memInfo, err := mem.VirtualMemory()
 	if err != nil {
 		return fmt.Errorf("failed to get VirtualMemory: %s", err)

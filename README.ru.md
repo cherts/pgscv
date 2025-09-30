@@ -14,7 +14,6 @@
 - **Метрики ОС:** поддержка сбора показателей работы операционной системы (Linux, Windows, MacOS, FreeBSD);
 - **Обнаружение и мониторинг Облачных управляемых баз данных** Yandex Managed Service for PostgreSQL ([смотри документацию](https://github.com/cherts/pgscv/wiki/Monitoring-Cloud-Managed-Databases));
 - **Поддержка обнаружения сервисов мониторинга** Через специальный эндпойнт `/targets` можно производить обнаружение всех сервисов мониторинга ([смотри документацию](https://github.com/cherts/pgscv/wiki/Service-discovery))
-- **Поддержка тротлинга** Механизм тротлинга позволяет лимитировать обращения к эндпойнтам `/metrics` и `/metrics?target=xxx` для защиты баз данных от потока запросов мониторинга от множества агентов сбора метрик ([смотри документацию](https://github.com/cherts/pgscv/wiki/Throttling)).
 - **Поддержка контроля параллелизма** Можно ограничить возможности параллельного сбора данных мониторинга из базы данных для контроля нагрузки создаваемой экспортером ([смотри документацию](https://github.com/cherts/pgscv/wiki/Concurrency)).
 - **TLS и аутентификация**: Эндпойнты `/metrics` и `/metrics?target=xxx` могут быть защищены с помощью базовой аутентификации и TLS;
 - **Сбор показателей из нескольких сервисов**: pgSCV может собирать метрики из многих экземпляров баз данных, включая базы данных расположенные в облачных средах (Amazon AWS, Yandex.Cloud, VK.Cloud);
@@ -70,7 +69,7 @@ docker run -ti -d --name pgscv \
 или используя Docker-compose, отредактируйте файл `docker-compose.yaml` для настройки соединения с PostgreSQL:
 ```bash
 mkdir ~/pgscv
-curl -s -L https://raw.githubusercontent.com/CHERTS/pgscv/master/deploy/docker-compose.yaml -o ~/pgscv/docker-compose.yaml && cd ~/pgscv
+curl -s -L https://raw.githubusercontent.com/cherts/pgscv/master/deploy/docker-compose.yaml -o ~/pgscv/docker-compose.yaml && cd ~/pgscv
 docker-compose up -d
 ```
 
@@ -78,13 +77,13 @@ docker-compose up -d
 
 или используя развертывание приложения в k8s
 ```bash
-curl -s -L https://raw.githubusercontent.com/CHERTS/pgscv/master/deploy/deployment.yaml -o ~/deployment.yaml
+curl -s -L https://raw.githubusercontent.com/cherts/pgscv/master/deploy/deployment.yaml -o ~/deployment.yaml
 kubectl apply -f ~/deployment.yaml
 ```
 
 или используя helm chart для k8s
 ```bash
-git clone https://github.com/CHERTS/pgscv.git && cd pgscv
+git clone https://github.com/cherts/pgscv.git && cd pgscv
 kubectl create ns pgscv-ns
 helm install -n pgscv-ns pgscv deploy/helm-chart/
 ```
