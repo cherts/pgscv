@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"os"
 	"path/filepath"
 	"regexp"
 	"strings"
@@ -115,6 +116,7 @@ func (c *postgresLogsCollector) Update(_ context.Context, config Config, ch chan
 	}
 
 	if !config.loggingCollector {
+		log.Debugln("[postgres log collector]: logging collector in PostgreSQL is off, skip collecting metrics")
 		return nil
 	}
 
@@ -267,6 +269,11 @@ func queryCurrentLogfile(config Config) (string, error) {
 	}
 
 	logfile = filepath.FromSlash(logfile)
+
+	// You can also directly use os.PathSeparator for replacement if needed
+	if os.PathSeparator == '\\' { // If on Windows
+		logfile = strings.ReplaceAll(logfile, "/", string(os.PathSeparator))
+	}
 
 	return logfile, nil
 }
