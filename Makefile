@@ -33,7 +33,7 @@ MODERNIZE_CMD = go run golang.org/x/tools/gopls/internal/analysis/modernize/cmd/
 
 .PHONY: help \
 		clean lint test race \
-		build docker-build docker-push go-update \
+		build docker-lint docker-build docker-push go-update \
 		modernize modernize-fix modernize-check
 
 .DEFAULT_GOAL := help
@@ -76,6 +76,11 @@ build: dep ## Build
 build-beta: dep ## Build beta
 	mkdir -p ./bin
 	CGO_ENABLED=0 GOOS=${APPOS} GOARCH=${GOARCH} go build ${LDFLAGS_BETA} -o bin/${APPNAME} ./cmd
+
+docker-lint: ## Lint Dockerfile
+	@echo "Lint container Dockerfile"
+	docker run --rm -i -v $(PWD)/Dockerfile:/Dockerfile \
+	hadolint/hadolint hadolint --ignore DL3002 --ignore DL3008 --ignore DL3059 /Dockerfile
 
 docker-build: ## Build docker image
 	docker build -t ${DOCKER_ACCOUNT}/${APPNAME}:${TAG} .
