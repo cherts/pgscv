@@ -4,12 +4,13 @@ package service
 import (
 	"context"
 	"fmt"
-	"github.com/cherts/pgscv/internal/cache"
-	"github.com/cherts/pgscv/internal/registry"
-	"github.com/jackc/pgx/v5/pgxpool"
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/cherts/pgscv/internal/cache"
+	"github.com/cherts/pgscv/internal/registry"
+	"github.com/jackc/pgx/v5/pgxpool"
 
 	"slices"
 
@@ -62,6 +63,7 @@ type Config struct {
 	CacheKey           string
 	Pool               *pgxpool.Pool
 	PoolerConfig       *PoolConfig
+	LogDirectory       string
 }
 
 // PoolConfig defines pgxPool configuration.
@@ -322,6 +324,7 @@ func (repo *Repository) setupServices(config Config) error {
 					ConcurrencyLimit: config.ConcurrencyLimit,
 					CacheConfig:      config.CacheConfig,
 					DB:               service.DB,
+					LogDirectory:     config.LogDirectory,
 				}
 				if config.ConstLabels != nil && (*config.ConstLabels)[id] != nil {
 					collectorConfig.ConstLabels = (*config.ConstLabels)[id]

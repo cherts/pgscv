@@ -43,6 +43,7 @@ type Config struct {
 	ConcurrencyLimit *int
 	CacheConfig      *cache.Config
 	DB               *store.DB
+	LogDirectory     string
 }
 
 // postgresServiceConfig defines Postgres-specific stuff required during collecting Postgres metrics.

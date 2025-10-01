@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"strings"
 	"sync"
 	"testing"
 	"time"
@@ -171,6 +172,10 @@ func Test_queryCurrentLogfile(t *testing.T) {
 	got, err = queryCurrentLogfile(Config{DB: nil})
 	assert.Error(t, err)
 	assert.Equal(t, got, "")
+
+	got, err = queryCurrentLogfile(Config{DB: store.NewTest(t), LogDirectory: "/custom/dir"})
+	assert.NoError(t, err)
+	assert.True(t, strings.HasPrefix(got, "/custom/dir"))
 }
 
 func Test_newStderrLogParser(t *testing.T) {

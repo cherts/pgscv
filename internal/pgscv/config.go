@@ -3,6 +3,14 @@ package pgscv
 
 import (
 	"fmt"
+	"io/fs"
+	"maps"
+	"os"
+	"path/filepath"
+	"regexp"
+	"strconv"
+	"strings"
+
 	sd "github.com/cherts/pgscv/discovery"
 	"github.com/cherts/pgscv/internal/cache"
 	"github.com/cherts/pgscv/internal/http"
@@ -12,13 +20,6 @@ import (
 	"github.com/go-playground/validator/v10"
 	"github.com/jackc/pgx/v5"
 	"gopkg.in/yaml.v2"
-	"io/fs"
-	"maps"
-	"os"
-	"path/filepath"
-	"regexp"
-	"strconv"
-	"strings"
 )
 
 const (
@@ -49,6 +50,7 @@ type Config struct {
 	ConcurrencyLimit      *int          `yaml:"concurrency_limit"`
 	CacheConfig           *cache.Config `yaml:"cache" validate:"omitempty"`
 	PoolerConfig          *PoolConfig   `yaml:"pooler" validate:"omitempty,pool_config"`
+	LogDirectory          string        `yaml:"log_directory" validate:"omitempty` // Log directory of postgres. Priority over the path provided by the database.
 }
 
 // PoolConfig defines pgxPool configuration.

@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"path/filepath"
 	"regexp"
 	"strings"
 	"sync"
@@ -273,8 +274,12 @@ func queryCurrentLogfile(config Config) (string, error) {
 		return "", err
 	}
 
+	if config.LogDirectory != "" {
+		datadir = config.LogDirectory
+	}
+
 	if !strings.HasPrefix(logfile, "/") {
-		logfile = datadir + "/" + logfile
+		logfile = filepath.Join(datadir, logfile)
 	}
 
 	return logfile, nil
