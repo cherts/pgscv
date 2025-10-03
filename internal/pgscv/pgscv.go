@@ -6,6 +6,10 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	net_http "net/http"
+	"strings"
+	"sync"
+
 	"github.com/cherts/pgscv/discovery"
 	sd "github.com/cherts/pgscv/internal/discovery/service"
 	"github.com/cherts/pgscv/internal/http"
@@ -14,9 +18,6 @@ import (
 	"github.com/cherts/pgscv/internal/service"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
-	net_http "net/http"
-	"strings"
-	"sync"
 )
 
 const pgSCVSubscriber = "pgscv_subscriber"
@@ -47,6 +48,7 @@ func Start(ctx context.Context, config *Config) error {
 		ConcurrencyLimit:   config.ConcurrencyLimit,
 		CacheConfig:        config.CacheConfig,
 		ConstLabels:        &constLabels,
+		LogDirectory:       config.LogDirectory,
 	}
 	if config.PoolerConfig != nil {
 		serviceConfig.PoolerConfig = &service.PoolConfig{
@@ -163,6 +165,7 @@ func subscribe(ds *discovery.Discovery, config *Config, serviceRepo *service.Rep
 				ConnTimeout:        config.ConnTimeout,
 				ConcurrencyLimit:   config.ConcurrencyLimit,
 				CacheConfig:        config.CacheConfig,
+				LogDirectory:       config.LogDirectory,
 			}
 			if config.PoolerConfig != nil {
 				serviceDiscoveryConfig.PoolerConfig = &service.PoolConfig{
