@@ -119,6 +119,10 @@ To help development you are encouraged to:
 - pull requests for new features
 - star the project
 
+### Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=cherts/pgscv&type=Date)](https://www.star-history.com/#cherts/pgscv&Date)
+
 ### Current developer and maintaner
 - [Mikhail Grigorev](https://github.com/cherts)
 
