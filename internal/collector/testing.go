@@ -26,11 +26,24 @@ type pipelineInput struct {
 	service string
 }
 
-// Pipeline accepts input data (see pipelineInput), creates 'collector' and executes Update method for generating metrics.
+const (
+	masterDSN  = "postgres://pgscv@127.0.0.1/pgscv_fixtures"
+	logicalDSN = "postgres://pgscv@127.0.0.1:5435/pgscv_fixtures"
+)
+
+func pipeline(t *testing.T, input pipelineInput) {
+	pipelineDSN(t, input, masterDSN)
+}
+
+func pipelineLogicalReplication(t *testing.T, input pipelineInput) {
+	pipelineDSN(t, input, logicalDSN)
+}
+
+// PipelineDSN accepts input data (see pipelineInput), creates 'collector' and executes Update method for generating metrics.
 // Generated metrics are catched and checked against passed slices of required/optional metrics.
 // Pipeline fails in following cases 1) required metrics are not generated; 2) generated metrics are not present in required
 // or optional slices
-func pipeline(t *testing.T, input pipelineInput) {
+func pipelineDSN(t *testing.T, input pipelineInput, dsn string) {
 	// requiredMetricNamesCounter is the counter of how many times metrics have been collected
 	metricNamesCounter := map[string]int{}
 
@@ -41,7 +54,7 @@ func pipeline(t *testing.T, input pipelineInput) {
 	var config Config
 	switch input.service {
 	case model.ServiceTypePostgresql:
-		config.ConnString = "postgres://pgscv@127.0.0.1/pgscv_fixtures"
+		config.ConnString = dsn
 		cfg, err := newPostgresServiceConfig(config.ConnString, 0)
 		assert.NoError(t, err)
 		config.postgresServiceConfig = cfg
