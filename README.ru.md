@@ -111,6 +111,10 @@ helm install -n pgscv-ns pgscv deploy/helm-chart/
 - запросить новую функциональность;
 - поставить звезду проекту на Github;
 
+### История звезд
+
+[![Star History Chart](https://api.star-history.com/svg?repos=cherts/pgscv&type=Date)](https://www.star-history.com/#cherts/pgscv&Date)
+
 ### Текущий разработчик и сопровождающий
 - [Mikhail Grigorev](https://github.com/cherts)
 
