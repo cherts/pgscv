@@ -38,6 +38,8 @@ const (
 	YandexMDB = "yandex-mdb"
 	// Postgres constant SdConfig.type
 	Postgres = "postgres"
+	// Script constant SdConfig.type
+	Script = "script"
 )
 
 // SdConfig top level of configuration tree

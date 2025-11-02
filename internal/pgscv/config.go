@@ -242,7 +242,7 @@ func (c *Config) Validate() error {
 		return err
 	}
 
-	// Validate authentication settings.
+	// validate authentication settings.
 	enableAuth, enableTLS, err := c.AuthConfig.Validate()
 	if err != nil {
 		return err
@@ -307,7 +307,7 @@ func validateCollectorSettings(cs model.CollectorsSettings) error {
 			return err
 		}
 
-		// Validate subsystems level
+		// validate subsystems level
 		for ssName, subsys := range settings.Subsystems {
 			re2 := regexp.MustCompilePOSIX(`^[a-zA-Z0-9_]+$`)
 
@@ -320,7 +320,7 @@ func validateCollectorSettings(cs model.CollectorsSettings) error {
 				return fmt.Errorf("query is not specified for subsystem '%s' metrics", ssName)
 			}
 
-			// Validate metrics level
+			// validate metrics level
 			reMetric := regexp.MustCompile(`^[a-zA-Z0-9_]+$`)
 
 			for _, m := range subsys.Metrics {
