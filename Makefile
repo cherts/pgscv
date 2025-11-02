@@ -27,11 +27,13 @@ BRANCH=$(shell git rev-parse --abbrev-ref HEAD)
 VERSION_BETA=1.0-$(BRANCH)-$(COMMIT)-$(DATE)-beta
 
 LDFLAGS = -a -installsuffix cgo -ldflags "-X main.appName=${APPNAME} -X main.gitTag=${VERSION} -X main.gitCommit=${COMMIT} -X main.gitBranch=${BRANCH}"
+LDFLAGS_BETA = -a -installsuffix cgo -ldflags "-X main.appName=${APPNAME} -X main.gitTag=${VERSION_BETA} -X main.gitCommit=${COMMIT} -X main.gitBranch=${BRANCH}"
+
 MODERNIZE_CMD = go run golang.org/x/tools/gopls/internal/analysis/modernize/cmd/modernize@v0.18.1
 
 .PHONY: help \
 		clean lint test race \
-		build docker-build docker-push go-update \
+		build docker-lint docker-build docker-push go-update \
 		modernize modernize-fix modernize-check
 
 .DEFAULT_GOAL := help
@@ -70,6 +72,15 @@ race: dep ## Run data race detector
 build: dep ## Build
 	mkdir -p ./bin
 	CGO_ENABLED=0 GOOS=${APPOS} GOARCH=${GOARCH} go build ${LDFLAGS} -o bin/${APPNAME} ./cmd
+
+build-beta: dep ## Build beta
+	mkdir -p ./bin
+	CGO_ENABLED=0 GOOS=${APPOS} GOARCH=${GOARCH} go build ${LDFLAGS_BETA} -o bin/${APPNAME} ./cmd
+
+docker-lint: ## Lint Dockerfile
+	@echo "Lint container Dockerfile"
+	docker run --rm -i -v $(PWD)/Dockerfile:/Dockerfile \
+	hadolint/hadolint hadolint --ignore DL3002 --ignore DL3008 --ignore DL3059 /Dockerfile
 
 docker-build: ## Build docker image
 	docker build -t ${DOCKER_ACCOUNT}/${APPNAME}:${TAG} .
