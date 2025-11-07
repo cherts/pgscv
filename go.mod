@@ -1,6 +1,6 @@
 module github.com/cherts/pgscv
 
-go 1.25.3
+go 1.25.4
 
 require (
 	github.com/alecthomas/kingpin/v2 v2.4.0
@@ -18,8 +18,8 @@ require (
 
 require (
 	github.com/golang-jwt/jwt/v4 v4.5.2
-	github.com/yandex-cloud/go-genproto v0.34.0
-	github.com/yandex-cloud/go-sdk v0.27.0
+	github.com/yandex-cloud/go-genproto v0.35.0
+	github.com/yandex-cloud/go-sdk v0.28.0
 )
 
 require (
@@ -47,9 +47,9 @@ require (
 	github.com/xhit/go-str2duration/v2 v2.1.0 // indirect
 	go.yaml.in/yaml/v2 v2.4.3 // indirect
 	golang.org/x/text v0.30.0 // indirect
-	google.golang.org/genproto v0.0.0-20251029180050-ab9386a59fda // indirect
-	google.golang.org/genproto/googleapis/api v0.0.0-20251029180050-ab9386a59fda // indirect
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20251029180050-ab9386a59fda // indirect
+	google.golang.org/genproto v0.0.0-20251103181224-f26f9409b101 // indirect
+	google.golang.org/genproto/googleapis/api v0.0.0-20251103181224-f26f9409b101 // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20251103181224-f26f9409b101 // indirect
 	google.golang.org/grpc v1.76.0 // indirect
 	google.golang.org/protobuf v1.36.10 // indirect
 	gopkg.in/tomb.v1 v1.0.0-20141024135613-dd632973f1e7 // indirect
