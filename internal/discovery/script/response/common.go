@@ -30,6 +30,8 @@ type ScriptResponse struct {
 	//		    return err <-----
 	//     }
 	DSN string `pgscv:"dsn" json:"dsn"`
+	// Database is the database name
+	Database string `pgscv:"database" json:"database"`
 	// Host is the database server hostname or IP address
 	Host string `pgscv:"host" json:"host"`
 	// Port is the database server port number

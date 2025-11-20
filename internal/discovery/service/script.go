@@ -253,6 +253,10 @@ func fillSvcResponse(svc *response.ScriptResponse) error {
 		}
 	}
 
+	if svc.Database != "" {
+		dbConfig.Database = svc.Database
+	}
+
 	if svc.Host != "" {
 		dbConfig.Host = svc.Host
 	}
