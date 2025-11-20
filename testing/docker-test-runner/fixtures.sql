@@ -8,9 +8,6 @@ CREATE DATABASE pgscv_fixtures OWNER pgscv;
 CREATE EXTENSION IF NOT EXISTS pg_stat_statements;
 SELECT pg_stat_statements_reset();
 
--- create pgstattuple
-CREATE EXTENSION IF NOT EXISTS pgstattuple;
-
 -- create table with invalid index
 CREATE TABLE orders (id SERIAL PRIMARY KEY, name TEXT, status INT);
 CREATE INDEX orders_status_idx ON orders (status);
