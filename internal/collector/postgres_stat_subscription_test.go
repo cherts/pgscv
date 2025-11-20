@@ -18,6 +18,8 @@ func TestPostgresStatSubscriptionCollector_Update(t *testing.T) {
 			"postgres_stat_subscription_msg_recv_time",
 			"postgres_stat_subscription_reported_time",
 			"postgres_stat_subscription_error_count",
+		},
+		optional: []string{
 			"postgres_stat_subscription_confl_count",
 		},
 		collector: NewPostgresStatSubscriptionCollector,
