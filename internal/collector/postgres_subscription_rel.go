@@ -11,12 +11,16 @@ import (
 )
 
 const (
-	postgresSubscriptionRel = `
-		SELECT CURRENT_CATALOG AS datname, subname, srsubstate::TEXT AS state, count(*) AS count
-		FROM pg_subscription_rel sr
-		LEFT JOIN pg_stat_subscription ss ON sr.srsubid = ss.subid
-		GROUP BY 2, 3;
-`
+	postgresSubscriptionRel15 = "SELECT CURRENT_CATALOG AS datname, subname, srsubstate::TEXT AS state, count(*) AS count " +
+		"FROM pg_subscription_rel sr " +
+		"LEFT JOIN pg_stat_subscription ss ON sr.srsubid = ss.subid " +
+		"GROUP BY 2, 3"
+
+	postgresSubscriptionRelLatest = "SELECT CURRENT_CATALOG AS datname, subname, srsubstate::TEXT AS state, count(*) AS count " +
+		"FROM pg_subscription_rel sr " +
+		"LEFT JOIN pg_stat_subscription ss ON sr.srsubid = ss.subid " +
+		"WHERE leader_pid IS NULL " +
+		"GROUP BY 2, 3"
 )
 
 // postgresSubscriptionRelCollector defines metric descriptors.
@@ -47,9 +51,10 @@ func (c *postgresSubscriptionRelCollector) Update(ctx context.Context, config Co
 	defer wg.Wait()
 	var err error
 
-	cacheKey, res, _ := getFromCache(config.CacheConfig, config.ConnString, collectorPostgresSubscriptionRel, postgresSubscriptionRel)
+	query := selectSubscriptionRelQuery(config.pgVersion.Numeric)
+	cacheKey, res, _ := getFromCache(config.CacheConfig, config.ConnString, collectorPostgresSubscriptionRel, query)
 	if res == nil {
-		res, err = conn.Query(ctx, postgresSubscriptionRel)
+		res, err = conn.Query(ctx, query)
 		if err != nil {
 			log.Warnf("get pg_subscription_rel failed: %s; skip", err)
 			return err
@@ -93,4 +98,14 @@ func (c *postgresSubscriptionRelCollector) Update(ctx context.Context, config Co
 		ch <- c.count.newConstMetric(count, datName, subName, state)
 	}
 	return nil
+}
+
+// selectSubscriptionRelQuery returns suitable subscription_rel query depending on passed version.
+func selectSubscriptionRelQuery(version int) string {
+	switch {
+	case version < PostgresV16:
+		return postgresSubscriptionRel15
+	default:
+		return postgresSubscriptionRelLatest
+	}
 }
