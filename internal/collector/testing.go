@@ -2,13 +2,14 @@ package collector
 
 import (
 	"context"
+	"regexp"
+	"testing"
+
 	"github.com/cherts/pgscv/internal/log"
 	"github.com/cherts/pgscv/internal/model"
 	"github.com/cherts/pgscv/internal/store"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/stretchr/testify/assert"
-	"regexp"
-	"testing"
 )
 
 // pipelineInput

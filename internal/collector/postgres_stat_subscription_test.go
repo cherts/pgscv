@@ -2,30 +2,31 @@ package collector
 
 import (
 	"database/sql"
-	"github.com/jackc/pgx/v5/pgconn"
 	"testing"
 
 	"github.com/cherts/pgscv/internal/model"
+	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestPostgresStatSubscriptionCollector_Update(t *testing.T) {
 	var input = pipelineInput{
-		required: []string{},
-		optional: []string{
+		required: []string{
 			"postgres_stat_subscription_received_lsn",
 			"postgres_stat_subscription_reported_lsn",
 			"postgres_stat_subscription_msg_send_time",
 			"postgres_stat_subscription_msg_recv_time",
 			"postgres_stat_subscription_reported_time",
 			"postgres_stat_subscription_error_count",
+		},
+		optional: []string{
 			"postgres_stat_subscription_confl_count",
 		},
 		collector: NewPostgresStatSubscriptionCollector,
 		service:   model.ServiceTypePostgresql,
 	}
 
-	pipeline(t, input)
+	pipelineLogicalReplication(t, input)
 }
 
 func Test_parsePostgresSubscriptionStat(t *testing.T) {
