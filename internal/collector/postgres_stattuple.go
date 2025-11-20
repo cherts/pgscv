@@ -3,11 +3,12 @@ package collector
 import (
 	"context"
 	"fmt"
+	"strconv"
+	"sync"
+
 	"github.com/cherts/pgscv/internal/log"
 	"github.com/cherts/pgscv/internal/model"
 	"github.com/prometheus/client_golang/prometheus"
-	"strconv"
-	"sync"
 )
 
 const (
