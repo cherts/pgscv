@@ -6,17 +6,19 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	net_http "net/http"
+	"strings"
+	"sync"
+
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
+
 	"github.com/cherts/pgscv/discovery"
 	sd "github.com/cherts/pgscv/internal/discovery/service"
 	"github.com/cherts/pgscv/internal/http"
 	"github.com/cherts/pgscv/internal/log"
 	"github.com/cherts/pgscv/internal/model"
 	"github.com/cherts/pgscv/internal/service"
-	"github.com/prometheus/client_golang/prometheus"
-	"github.com/prometheus/client_golang/prometheus/promhttp"
-	net_http "net/http"
-	"strings"
-	"sync"
 )
 
 const pgSCVSubscriber = "pgscv_subscriber"
@@ -102,6 +104,12 @@ func Start(ctx context.Context, config *Config) error {
 					return err
 				}
 			case *sd.PostgresDiscovery:
+				err := subscribe(&ds, config, serviceRepo)
+				if err != nil {
+					cancel()
+					return err
+				}
+			case *sd.ScriptDiscovery:
 				err := subscribe(&ds, config, serviceRepo)
 				if err != nil {
 					cancel()
