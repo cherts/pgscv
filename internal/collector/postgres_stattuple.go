@@ -75,6 +75,7 @@ func NewPostgresStatTupleCollector(constLabels labels, settings model.CollectorS
 
 // Update method collects statistics, parse it and produces metrics that are sent to Prometheus.
 func (c *postgresStatTupleCollector) Update(ctx context.Context, config Config, ch chan<- prometheus.Metric) error {
+	// nothing to do, pgstattuple not found in database
 	if !config.pgStatTuple {
 		return nil
 	}
@@ -93,6 +94,8 @@ func (c *postgresStatTupleCollector) Update(ctx context.Context, config Config, 
 		}
 		saveToCache(collectorPostgresStatTuple, wg, config.CacheConfig, cacheKey, res)
 	}
+
+	log.Debug("parse postgres pgstattuple stats")
 
 	for _, row := range res.Rows {
 		var (
