@@ -10,7 +10,7 @@ require (
 	github.com/prometheus/client_golang v1.23.2
 	github.com/rs/zerolog v1.34.0
 	github.com/stretchr/testify v1.11.1
-	golang.org/x/crypto v0.44.0 // indirect
+	golang.org/x/crypto v0.45.0 // indirect
 	golang.org/x/net v0.47.0
 	golang.org/x/sys v0.38.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0
@@ -18,7 +18,7 @@ require (
 
 require (
 	github.com/golang-jwt/jwt/v4 v4.5.2
-	github.com/yandex-cloud/go-genproto v0.36.0
+	github.com/yandex-cloud/go-genproto v0.37.0
 	github.com/yandex-cloud/go-sdk v0.29.0
 )
 
