@@ -12,19 +12,10 @@ import (
 )
 
 const (
-	postgresStatTupleQuery = `
-		select current_database() as datname,
-			   relname,
-			   schemaname,
-			   approx_tuple_percent,
-			   dead_tuple_count,
-			   dead_tuple_len,
-			   dead_tuple_percent,
-			   approx_free_space,
-			   approx_free_percent
-		from pg_stat_user_tables, %s.pgstattuple_approx(relid) stt
-		where pg_relation_size(relid) > 50 * 1024 * 1024
-`
+	postgresStatTupleQuery = "SELECT current_database() AS datname, relname, schemaname, approx_tuple_percent, dead_tuple_count, " +
+		"dead_tuple_len, dead_tuple_percent, approx_free_space, approx_free_percent " +
+		"FROM pg_stat_user_tables, %s.pgstattuple_approx(relid) stt " +
+		"WHERE pg_relation_size(relid) > 50 * 1024 * 1024"
 )
 
 type postgresStatTupleCollector struct {
@@ -162,6 +153,7 @@ func (c *postgresStatTupleCollector) Update(ctx context.Context, config Config, 
 		ch <- c.approxFreeSpace.newConstMetric(approxFreeSpace, datName, relName, schemaName)
 		ch <- c.approxFreePercent.newConstMetric(approxFreePercent, datName, relName, schemaName)
 	}
+
 	return nil
 }
 
