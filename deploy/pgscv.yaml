@@ -134,7 +134,7 @@ services:
 #  "patroni3":
 #    service_type: "patroni"
 #    baseurl: "http://127.0.0.1:8010"
-#disable_collectors:
+disable_collectors:
 #  - system
 #  - system/pgscv
 #  - system/loadaverage
@@ -159,9 +159,11 @@ services:
 #  - postgres/replication
 #  - postgres/replication_slots
 #  - postgres/statements
+  - postgres/stattuple
 #  - postgres/schemas
 #  - postgres/settings
 #  - postgres/storage
+#  - postgres/subscription_rel
 #  - postgres/stat_io
 #  - postgres/stat_slru
 #  - postgres/stat_subscription
