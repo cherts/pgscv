@@ -39,7 +39,7 @@ This project is a continuation of the development of the original pgSCV by [Alex
 Download the archive from [releases](https://github.com/cherts/pgscv/releases). Unpack the archive. Create minimum config file. Start pgSCV systemd service under `postgres` user.
 
 ```bash
-curl -s -L https://github.com/cherts/pgscv/releases/download/v0.15.0/pgscv_0.15.0_linux_$(uname -m).tar.gz -o - | tar xzf - -C /tmp && \
+curl -s -L https://github.com/cherts/pgscv/releases/download/v1.0.0/pgscv_1.0.0_linux_$(uname -m).tar.gz -o - | tar xzf - -C /tmp && \
 mv /tmp/pgscv.yaml /etc && \
 mv /tmp/pgscv.service /etc/systemd/system &&  \
 mv /tmp/pgscv.default /etc/default/pgscv && \
@@ -117,6 +117,10 @@ To help development you are encouraged to:
 - provide feedback via [email](mailto:sleuthhound@gmail.com) or Telegram [@cherts](https://t.me/cherts) or create an [issue](https://github.com/cherts/pgscv/issues)
 - pull requests for new features
 - star the project
+
+### Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=cherts/pgscv&type=Date)](https://www.star-history.com/#cherts/pgscv&Date)
 
 ### Current developer and maintaner
 - [Mikhail Grigorev](https://github.com/cherts)

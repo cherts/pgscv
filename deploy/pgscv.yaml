@@ -30,15 +30,58 @@
 #    postgres/stattuple:
 #      ttl: 24h
 #discovery:
+# Monitoring local PostgreSQL on macOS (https://postgresapp.com)
+#  local_macos_postgresapp:
+#    type: script
+#    config:
+#      script: discovery-scripts/example-postgresapp-macos-discovery.sh
+#      execution_timeout: 10s
+#      refresh_interval: 5m
+#      args:
+#        - "ALL"
+#      env:
+#        - name: PG_PASSWORD
+#          value: "pgscv"
+#      debug: false
+#      target_labels:
+#        - name: environment
+#          value: "local"
+#        - name: __scrape_interval__
+#          value: 1m
+#
+# Monitoring AWS RDS PostgreSQL 
+#  aws:
+#    type: script
+#    config:
+#      script: discovery-scripts/example-aws-discovery.sh
+#      execution_timeout: 30s
+#      refresh_interval: 5m
+#      args:
+#        - "--profile=default --region=us-west-1"
+#      env:
+#        - name: PG_PASSWORD
+#          value: "pgscv"
+#        - name: AWS_ACCESS_KEY_ID
+#          value: "EXAMPLE"
+#        - name: AWS_SECRET_ACCESS_KEY
+#          value: "XXX/YYY/ZZZ"
+#      debug: false
+#      target_labels:
+#        - name: environment
+#          value: "production"
+#        - name: region
+#          value: "us-west-1"
+#        - name: __scrape_interval__
+#          value: 1m
 # Monitoring Yandex.Cloud Managed Service for PostgreSQL 
 #  yandex_mdb:
 #    type: yandex-mdb
 #    config:
 #      - authorized_key: /path/to/secret/authorized_key.json
 #        folder_id: "b1000000000000"
+#        user: "pgscv"
 #        password: "password"
-#        password_from_env: DB_PASSWORD
-#        user: "postgres_exporter"
+#        #password_from_env: DB_PASSWORD
 #        refresh_interval: 5
 #        clusters:
 #          - name: ".*"
