@@ -10,10 +10,10 @@ on:
 jobs:
   test:
     runs-on: ubuntu-22.04
-    container: cherts/pgscv-test-runner:2.0.11
+    container: cherts/pgscv-test-runner:2.0.12
     steps:
       - name: Checkout code
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
       - name: Prepare test environment
         run: prepare-test-environment.sh
       - name: Run test
@@ -24,18 +24,23 @@ jobs:
     needs: test
     steps:
       - name: Checkout code
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
+      - name: Set docker environment
+        id: docker
+        run: |
+          echo DOCKERHUB_USERNAME="${{ secrets.DOCKERHUB_USERNAME }}" >>$GITHUB_OUTPUT
+          echo DOCKERHUB_TOKEN="${{ secrets.DOCKERHUB_TOKEN }}" >>$GITHUB_OUTPUT
       - name: Lint Dockerfile
         run: make docker-lint
       - name: Build image
         run: make docker-build
       - name: Log in to Docker Hub
-        if: ${{ secrets.DOCKERHUB_USERNAME != '' && secrets.DOCKERHUB_TOKEN != '' }}
-        run: docker login -u ${{ secrets.DOCKERHUB_USERNAME }} -p ${{ secrets.DOCKERHUB_TOKEN }}
+        if: ${{ steps.docker.outputs.DOCKERHUB_USERNAME != '' && steps.docker.outputs.DOCKERHUB_TOKEN != '' }}
+        run: docker login -u ${{ steps.docker.outputs.DOCKERHUB_USERNAME }} -p ${{ steps.docker.outputs.DOCKERHUB_TOKEN }}
       - name: Push image to Docker Hub
-        if: ${{ secrets.DOCKERHUB_USERNAME != '' && secrets.DOCKERHUB_TOKEN != '' }}
+        if: ${{ steps.docker.outputs.DOCKERHUB_USERNAME != '' && steps.docker.outputs.DOCKERHUB_TOKEN != '' }}
         run: make docker-push
 
   goreleaser:
@@ -43,7 +48,7 @@ jobs:
     needs: build
     steps:
       - name: Run checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
       - name: Run setup Go
