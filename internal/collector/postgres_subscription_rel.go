@@ -62,6 +62,8 @@ func (c *postgresSubscriptionRelCollector) Update(ctx context.Context, config Co
 		saveToCache(collectorPostgresSubscriptionRel, wg, config.CacheConfig, cacheKey, res)
 	}
 
+	log.Debug("parse postgres subscription_rel stats")
+
 	for _, row := range res.Rows {
 		var (
 			datName string
@@ -97,6 +99,7 @@ func (c *postgresSubscriptionRelCollector) Update(ctx context.Context, config Co
 		}
 		ch <- c.count.newConstMetric(count, datName, subName, state)
 	}
+
 	return nil
 }
 

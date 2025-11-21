@@ -3,12 +3,13 @@ package collector
 import (
 	"context"
 	"database/sql"
+	"os"
+	"testing"
+
 	"github.com/cherts/pgscv/internal/model"
 	"github.com/cherts/pgscv/internal/store"
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/stretchr/testify/assert"
-	"os"
-	"testing"
 )
 
 func TestPostgresStorageCollector_Update(t *testing.T) {

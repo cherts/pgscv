@@ -215,6 +215,7 @@ func updateFromSingleDatabase(ctx context.Context, config Config, descSets []typ
 			continue
 		}
 	}
+
 	return nil
 }
 
