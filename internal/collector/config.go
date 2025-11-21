@@ -5,17 +5,17 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/cherts/pgscv/internal/cache"
-	"github.com/jackc/pgx/v5"
-	"github.com/jackc/pgx/v5/pgxpool"
 	"net"
 	"strconv"
 	"strings"
 	"time"
 
+	"github.com/cherts/pgscv/internal/cache"
 	"github.com/cherts/pgscv/internal/log"
 	"github.com/cherts/pgscv/internal/model"
 	"github.com/cherts/pgscv/internal/store"
+	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 // Config defines collector's global configuration.
@@ -66,7 +66,7 @@ type postgresServiceConfig struct {
 	pgStatStatementsSchema string
 	// rolConnLimit defines connection limit for the role used by the collector.
 	rolConnLimit int
-	// pgStatTuple defines is pgstattuple available  for queries.
+	// pgStatTuple defines is pgstattuple available for queries.
 	pgStatTuple bool
 	// pgStatTupleSchema defines the schema name where pgstattuple is installed.
 	pgStatTupleSchema string
@@ -215,7 +215,7 @@ func newPostgresServiceConfig(connStr string, connTimeout int) (postgresServiceC
 
 	config.logDestination = setting
 
-	// Discover pg_stat_statements.
+	// Discover pg_stat_statements
 	exists, schema, err := discoverPgStatStatements(conn)
 	if err != nil {
 		return config, err
