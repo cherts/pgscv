@@ -274,23 +274,19 @@ func isAddressLocal(addr string) bool {
 
 // discoverPgStatStatements discovers pg_stat_statements, what schema it is installed.
 func discoverPgStatStatements(conn *store.DB) (bool, string, error) {
-
 	var setting string
 	err := conn.Conn().QueryRow(context.Background(), "SELECT setting FROM pg_settings WHERE name = 'shared_preload_libraries'").Scan(&setting)
 	if err != nil {
-		conn.Close()
 		return false, "", err
 	}
 
 	// If pg_stat_statements is not enabled globally, no reason to continue.
 	if !strings.Contains(setting, "pg_stat_statements") {
-		conn.Close()
 		return false, "", nil
 	}
 
 	// Check for pg_stat_statements in default database specified in connection string.
 	if schema := extensionInstalledSchema(conn, "pg_stat_statements"); schema != "" {
-		conn.Close()
 		return true, schema, nil
 	}
 	return false, "", nil
