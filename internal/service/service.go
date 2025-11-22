@@ -21,6 +21,12 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 )
 
+// PgSCVCollector compatible with prom collector
+type PgSCVCollector interface {
+	Collector
+	FlushServiceConfig()
+}
+
 // Service struct describes service - the target from which should be collected metrics.
 type Service struct {
 	// Service identifier is unique key across all monitored services and used to distinguish services of the same type
@@ -33,7 +39,7 @@ type Service struct {
 	ConnSettings ConnSetting
 	// Prometheus-based metrics collector associated with the service. Each 'service' has its own dedicated collector instance
 	// which implements a service-specific set of metric collectors.
-	Collector    Collector
+	Collector    PgSCVCollector
 	ConstLabels  *map[string]string
 	TargetLabels *map[string]string
 	DB           *store.DB
@@ -370,6 +376,15 @@ func (repo *Repository) setupServices(config Config) error {
 	}
 	wg.Wait()
 	return retErr
+}
+
+// FlushServiceConfig postgresql services config
+func (repo *Repository) FlushServiceConfig() {
+	repo.RLock()
+	defer repo.RUnlock()
+	for _, s := range repo.Services {
+		s.Collector.FlushServiceConfig()
+	}
 }
 
 // attemptRequest tries to make a real HTTP request using passed URL string.

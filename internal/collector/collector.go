@@ -244,6 +244,11 @@ func (n PgscvCollector) Describe(ch chan<- *prometheus.Desc) {
 	ch <- n.anchorDesc.desc
 }
 
+// FlushServiceConfig postgresql service config
+func (n PgscvCollector) FlushServiceConfig() {
+	n.Config.FlushServiceConfig()
+}
+
 // Collect implements the prometheus.Collector interface.
 func (n PgscvCollector) Collect(out chan<- prometheus.Metric) {
 	// Update settings of Postgres collectors if service was unavailabled when register
