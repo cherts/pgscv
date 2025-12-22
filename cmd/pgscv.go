@@ -14,9 +14,8 @@ import (
 	"os/signal"
 	"syscall"
 
-	"net/http"
 	// #nosec
-	_ "net/http/pprof"
+	//_ "net/http/pprof"
 
 	"github.com/cherts/pgscv/internal/log"
 	"github.com/cherts/pgscv/internal/pgscv"
@@ -47,9 +46,9 @@ func main() {
 	log.Infoln("starting ", appName, " ", gitTag, " ", gitCommit, "-", gitBranch)
 
 	// #nosec
-	go func() {
-		log.Infoln(http.ListenAndServe(":6060", nil))
-	}()
+	//go func() {
+	//	log.Infoln(http.ListenAndServe(":6060", nil))
+	//}()
 
 	config, err := pgscv.NewConfig(*configFile)
 	if err != nil {
