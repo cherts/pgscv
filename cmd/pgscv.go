@@ -4,20 +4,18 @@ package main
 import (
 	"context"
 	"fmt"
-
-	"github.com/alecthomas/kingpin/v2"
-	"github.com/cherts/pgscv/discovery/factory"
-	sdlog "github.com/cherts/pgscv/discovery/log"
-	"github.com/cherts/pgscv/internal/cache"
-
+	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
 
 	// #nosec
-	"net/http"
 	_ "net/http/pprof"
 
+	"github.com/alecthomas/kingpin/v2"
+	"github.com/cherts/pgscv/discovery/factory"
+	sdlog "github.com/cherts/pgscv/discovery/log"
+	"github.com/cherts/pgscv/internal/cache"
 	"github.com/cherts/pgscv/internal/log"
 	"github.com/cherts/pgscv/internal/pgscv"
 )
