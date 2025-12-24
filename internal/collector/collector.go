@@ -205,6 +205,7 @@ func (n PgscvCollector) Collect(out chan<- prometheus.Metric) {
 			err := n.Config.FillPostgresServiceConfig(n.Config.ConnTimeout)
 			if err != nil {
 				log.Errorf("update service config failed: %s", err.Error())
+				return
 			}
 		}
 		if n.Config.ConcurrencyLimit != nil {
@@ -240,9 +241,14 @@ func (n PgscvCollector) Collect(out chan<- prometheus.Metric) {
 	wgCollector.Add(len(n.Collectors))
 	for name, c := range n.Collectors {
 		go func(name string, c Collector) {
-			sem <- struct{}{}
+			if concurrencyLimit > 0 {
+				sem <- struct{}{}
+			}
 			defer func() {
-				<-sem
+				if concurrencyLimit > 0 {
+					<-sem
+				}
+
 				wgCollector.Done()
 			}()
 			collect(name, n.Config, c, pipelineIn)
