@@ -199,12 +199,22 @@ func (n PgscvCollector) Describe(ch chan<- *prometheus.Desc) {
 func (n PgscvCollector) Collect(out chan<- prometheus.Metric) {
 	// Update settings of Postgres collectors if service was unavailabled when register
 	var concurrencyLimit int
+
 	if n.Config.ServiceType == "postgres" {
 		if n.Config.postgresServiceConfig.blockSize == 0 {
 			log.Debug("updating service configuration...")
 			err := n.Config.FillPostgresServiceConfig(n.Config.ConnTimeout)
 			if err != nil {
 				log.Errorf("update service config failed: %s", err.Error())
+
+				activityCollector, ok := n.Collectors["postgres/activity"]
+				if !ok {
+					return
+				}
+
+				// ping connection, send postgres_up 0
+				collect("postgres/activity", n.Config, activityCollector, out)
+
 				return
 			}
 		}
