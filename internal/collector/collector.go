@@ -261,6 +261,15 @@ func (n PgscvCollector) Collect(out chan<- prometheus.Metric) {
 			err := n.Config.FillPostgresServiceConfig(ctxFillServiceConfig, n.Config.ConnTimeout)
 			if err != nil {
 				log.Errorf("update service config failed: %s", err.Error())
+
+				activityCollector, ok := n.Collectors[collectorPostgresActivity]
+				if !ok {
+					return
+				}
+
+				// ping connection, send postgres_up 0
+				collect(ctx, collectorPostgresActivity, n.Config, activityCollector, out)
+
 				return
 			}
 		}
