@@ -122,6 +122,16 @@ services:
 databases: "pgbench"
 disable_collectors:
   - system
+#  - system/pgscv
+#  - system/loadaverage
+#  - system/cpu
+#  - system/diskstats
+#  - system/filesystems
+#  - system/netdev
+#  - system/network
+#  - system/memory
+#  - system/sysconfig
+#  - system/sysinfo
 #  - postgres/pgscv
 #  - postgres/activity
 #  - postgres/archiver
@@ -141,10 +151,17 @@ disable_collectors:
 #  - postgres/stat_io
 #  - postgres/stat_slru
 #  - postgres/stat_subscription
+#  - postgres/subscription_rel
 #  - postgres/stat_ssl
 #  - postgres/tables
 #  - postgres/wal
 #  - postgres/custom
+#  - pgbouncer/pgscv
+#  - pgbouncer/pools
+#  - pgbouncer/stats
+#  - pgbouncer/settings
+#  - patroni/pgscv
+#  - patroni/common
 #collectors:
 #  postgres/custom:
 #    filters:
