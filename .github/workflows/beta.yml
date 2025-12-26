@@ -48,7 +48,7 @@ jobs:
       - name: Set environment
         id: version
         run: |
-          echo VERSION="1.0" >>$GITHUB_OUTPUT
+          echo VERSION="0.15" >>$GITHUB_OUTPUT
           echo GIT_BRANCH="${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}" >>$GITHUB_OUTPUT
           echo GIT_COMMIT="$(git rev-parse --short "${GITHUB_SHA}")" >>$GITHUB_OUTPUT
           echo GIT_DATE="$(git log -1 --format=%cd --date=format:"%Y%m%d")" >>$GITHUB_OUTPUT
@@ -93,3 +93,23 @@ jobs:
           package-type: container
           min-versions-to-keep: 50
 #          delete-only-untagged-versions: 'true'
+
+  goreleaser:
+    runs-on: ubuntu-22.04
+    needs: build
+    steps:
+      - name: Run checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      - name: Run setup Go
+        uses: actions/setup-go@v6
+        with:
+          go-version: 1.25
+      - name: Run GoReleaser
+        uses: goreleaser/goreleaser-action@v6
+        with:
+          version: '~> v2'
+          args: release --snapshot --clean --skip=publish --verbose
+        env:
+          GITHUB_TOKEN: ${{ secrets.CUSTOM_GITHUB_TOKEN }}
