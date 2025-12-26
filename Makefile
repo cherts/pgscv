@@ -24,9 +24,11 @@ ifneq ($(shell git status --porcelain),)
 endif
 BRANCH=$(shell git rev-parse --abbrev-ref HEAD)
 
-VERSION_BETA=1.0-$(BRANCH)-$(COMMIT)-$(DATE)-beta
+VERSION_BETA=0.15-$(BRANCH)-$(COMMIT)-$(DATE)-beta
 
 LDFLAGS = -a -installsuffix cgo -ldflags "-X main.appName=${APPNAME} -X main.gitTag=${VERSION} -X main.gitCommit=${COMMIT} -X main.gitBranch=${BRANCH}"
+LDFLAGS_BETA = -a -installsuffix cgo -ldflags "-X main.appName=${APPNAME} -X main.gitTag=${VERSION_BETA} -X main.gitCommit=${COMMIT} -X main.gitBranch=${BRANCH}"
+
 MODERNIZE_CMD = go run golang.org/x/tools/gopls/internal/analysis/modernize/cmd/modernize@v0.18.1
 
 .PHONY: help \
@@ -70,6 +72,10 @@ race: dep ## Run data race detector
 build: dep ## Build
 	mkdir -p ./bin
 	CGO_ENABLED=0 GOOS=${APPOS} GOARCH=${GOARCH} go build ${LDFLAGS} -o bin/${APPNAME} ./cmd
+
+build-beta: dep ## Build beta
+	mkdir -p ./bin
+	CGO_ENABLED=0 GOOS=${APPOS} GOARCH=${GOARCH} go build ${LDFLAGS_BETA} -o bin/${APPNAME} ./cmd
 
 docker-lint: ## Lint Dockerfile
 	@echo "Lint container Dockerfile"
