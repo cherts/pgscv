@@ -71,6 +71,7 @@ func (f Factories) RegisterPostgresCollectors(disabled []string) {
 		"postgres/schemas":           NewPostgresSchemasCollector,
 		"postgres/settings":          NewPostgresSettingsCollector,
 		"postgres/storage":           NewPostgresStorageCollector,
+		"postgres/subscription_rel":  NewPostgresSubscriptionRelCollector,
 		"postgres/stat_io":           NewPostgresStatIOCollector,
 		"postgres/stat_slru":         NewPostgresStatSlruCollector,
 		"postgres/stat_subscription": NewPostgresStatSubscriptionCollector,
