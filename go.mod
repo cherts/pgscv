@@ -17,7 +17,7 @@ require (
 )
 
 require (
-	github.com/go-playground/validator/v10 v10.30.0
+	github.com/go-playground/validator/v10 v10.30.1
 	github.com/yandex-cloud/go-genproto v0.43.0
 	github.com/yandex-cloud/go-sdk v0.30.0
 	google.golang.org/protobuf v1.36.11
