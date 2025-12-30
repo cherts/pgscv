@@ -8,7 +8,7 @@ import (
 )
 
 func Test_parseMounts(t *testing.T) {
-	var diskStat = []disk.PartitionStat{
+	diskStat := []disk.PartitionStat{
 		{Device: "/dev/vda1", Mountpoint: "/", Fstype: "ext4", Opts: []string{"rw", "relatime"}},
 		{Device: "/dev/vda2", Mountpoint: "/var/lib/postgres", Fstype: "ext4", Opts: []string{"rw", "relatime"}},
 	}
