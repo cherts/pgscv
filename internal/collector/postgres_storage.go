@@ -13,6 +13,7 @@ import (
 	"github.com/cherts/pgscv/internal/log"
 	"github.com/cherts/pgscv/internal/model"
 	"github.com/prometheus/client_golang/prometheus"
+	"github.com/shirou/gopsutil/v4/disk"
 )
 
 const (
@@ -677,13 +678,14 @@ func findMountpoint(mounts []mount, path string) (string, string, error) {
 	return findMountpoint(mounts, path)
 }
 
-// getMountpoints opens /proc/mounts file and run parser.
+// getMountpoints get list of partitions and run parser.
 func getMountpoints() ([]mount, error) {
-	file, err := os.Open("/proc/mounts")
+	log.Debug("get disk partitions")
+
+	diskStat, err := disk.Partitions(false)
 	if err != nil {
 		return nil, err
 	}
-	defer func() { _ = file.Close() }()
 
-	return parseProcMounts(file)
+	return parseMounts(diskStat)
 }
