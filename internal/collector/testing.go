@@ -56,7 +56,7 @@ func pipelineDSN(t *testing.T, input pipelineInput, dsn string) {
 	switch input.service {
 	case model.ServiceTypePostgresql:
 		config.ConnString = dsn
-		cfg, err := newPostgresServiceConfig(config.ConnString, 0)
+		cfg, err := newPostgresServiceConfig(context.Background(), config.ConnString, 0)
 		assert.NoError(t, err)
 		config.postgresServiceConfig = cfg
 	case model.ServiceTypePgbouncer:

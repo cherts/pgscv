@@ -11,6 +11,7 @@ import (
 	"maps"
 	"strconv"
 	"sync"
+	"time"
 )
 
 const (
@@ -257,14 +258,31 @@ func (n PgscvCollector) Describe(ch chan<- *prometheus.Desc) {
 func (n PgscvCollector) Collect(out chan<- prometheus.Metric) {
 	// Update settings of Postgres collectors if service was unavailabled when register
 	var concurrencyLimit int
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Minute)
+	defer cancel()
+
 	if n.Config.ServiceType == "postgres" {
 		if n.Config.postgresServiceConfig.blockSize == 0 {
 			log.Debug("updating service configuration...")
-			err := n.Config.FillPostgresServiceConfig(n.Config.ConnTimeout)
+			ctxFillServiceConfig, cancelCtxFillServiceConfig := context.WithTimeout(ctx, 30*time.Second)
+			defer cancelCtxFillServiceConfig()
+			err := n.Config.FillPostgresServiceConfig(ctxFillServiceConfig, n.Config.ConnTimeout)
 			if err != nil {
 				log.Errorf("update service config failed: %s", err.Error())
+
+				activityCollector, ok := n.Collectors[collectorPostgresActivity]
+				if !ok {
+					return
+				}
+
+				// ping connection, send postgres_up 0
+				collect(ctx, collectorPostgresActivity, n.Config, activityCollector, out)
+
+				return
 			}
 		}
+
 		if n.Config.ConcurrencyLimit != nil {
 			log.Debugf("user rolConnLimit: %d", n.Config.rolConnLimit)
 			log.Debugf("current ConcurrencyLimit: %d connection limit set for DB", *n.Config.ConcurrencyLimit)
@@ -273,6 +291,7 @@ func (n PgscvCollector) Collect(out chan<- prometheus.Metric) {
 			} else {
 				concurrencyLimit = len(n.Collectors)
 			}
+
 			if *n.Config.ConcurrencyLimit < concurrencyLimit {
 				concurrencyLimit = *n.Config.ConcurrencyLimit
 			}
@@ -292,18 +311,27 @@ func (n PgscvCollector) Collect(out chan<- prometheus.Metric) {
 
 	// Create pipe channel used transmitting metrics from collectors to sender.
 	pipelineIn := make(chan prometheus.Metric)
-	ctx := context.Background()
 	// Run collectors.
 	sem := make(chan struct{}, concurrencyLimit)
 	wgCollector.Add(len(n.Collectors))
 	for name, c := range n.Collectors {
 		go func(name string, c Collector) {
-			sem <- struct{}{}
+			if concurrencyLimit > 0 {
+				sem <- struct{}{}
+			}
+
 			defer func() {
-				<-sem
+				if concurrencyLimit > 0 {
+					<-sem
+				}
+
 				wgCollector.Done()
 			}()
-			collect(ctx, name, n.Config, c, pipelineIn)
+
+			ctxCollector, cancelCtxCollector := context.WithTimeout(ctx, 30*time.Second)
+			defer cancelCtxCollector()
+
+			collect(ctxCollector, name, n.Config, c, pipelineIn)
 		}(name, c)
 	}
 
