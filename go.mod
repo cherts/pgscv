@@ -1,6 +1,6 @@
 module github.com/cherts/pgscv
 
-go 1.25.3
+go 1.25.4
 
 require (
 	github.com/alecthomas/kingpin/v2 v2.4.0
@@ -18,8 +18,8 @@ require github.com/shirou/gopsutil/v4 v4.25.11
 
 require (
 	github.com/bradfitz/gomemcache v0.0.0-20250403215159-8d39553ac7cf
-	github.com/go-playground/validator/v10 v10.30.0
-	github.com/jackc/pgx/v5 v5.7.6
+	github.com/go-playground/validator/v10 v10.30.1
+	github.com/jackc/pgx/v5 v5.8.0
 	github.com/yandex-cloud/go-genproto v0.43.0
 	github.com/yandex-cloud/go-sdk v0.30.0
 	google.golang.org/protobuf v1.36.11
