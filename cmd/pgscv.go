@@ -4,12 +4,12 @@ package main
 import (
 	"context"
 	"fmt"
-	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
 
 	// #nosec
+	//"net/http"
 	//_ "net/http/pprof"
 
 	"github.com/alecthomas/kingpin/v2"
