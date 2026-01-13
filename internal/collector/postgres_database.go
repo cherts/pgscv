@@ -3,11 +3,12 @@ package collector
 
 import (
 	"context"
+	"strconv"
+	"sync"
+
 	"github.com/cherts/pgscv/internal/log"
 	"github.com/cherts/pgscv/internal/model"
 	"github.com/prometheus/client_golang/prometheus"
-	"strconv"
-	"sync"
 )
 
 const (
@@ -51,7 +52,7 @@ const (
 		"FROM pg_stat_database WHERE datname IN (SELECT datname FROM pg_database WHERE datallowconn AND NOT datistemplate) " +
 		"OR datname IS NULL"
 
-	xidLimitQuery = "SELECT 'database' AS src, 2147483647 - GREATEST(MAX(AGE(datfrozenxid)), MAX(AGE(COALESCE(NULLIF(datminmxid, 1), datfrozenxid)))) AS to_limit FROM pg_database " +
+	xidLimitQuery = "SELECT 'database' AS src, 2147483647 - GREATEST(MAX(AGE(datfrozenxid)), COALESCE(MAX(MXID_AGE(NULLIF(datminmxid, 1))), MAX(AGE(datfrozenxid)))) AS to_limit FROM pg_database " +
 		"UNION SELECT 'prepared_xacts' AS src, 2147483647 - COALESCE(MAX(AGE(transaction)), 0) AS to_limit FROM pg_prepared_xacts " +
 		"UNION SELECT 'replication_slots' AS src, 2147483647 - GREATEST(COALESCE(MIN(AGE(xmin)), 0), COALESCE(MIN(AGE(catalog_xmin)), 0)) AS to_limit FROM pg_replication_slots"
 )
