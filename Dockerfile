@@ -8,6 +8,11 @@ RUN make build
 
 # stage 2: scratch
 # __release_tag__ alpine 3.22.0 was released 2025-05-30
+LABEL org.opencontainers.image.title="pgSCV"
+LABEL org.opencontainers.image.description="pgSCV is a PostgreSQL ecosystem metrics collector"
+LABEL org.opencontainers.image.vendor="pgSCV Team"
+LABEL org.opencontainers.image.source="https://github.com/cherts/pgscv"
+LABEL org.opencontainers.image.licenses="BSD-3-Clause"
 FROM alpine:3.22.0 AS dist
 COPY --from=build /app/bin/pgscv /bin/pgscv
 #COPY docker_entrypoint.sh /bin/
