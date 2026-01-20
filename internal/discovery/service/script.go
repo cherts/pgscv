@@ -87,8 +87,7 @@ func (s *ScriptDiscovery) Start(ctx context.Context, errCh chan<- error) error {
 			log.Debug("[Script SD] Context done.")
 
 			return nil
-		default:
-			time.Sleep(refreshInterval)
+		case <-time.After(refreshInterval):
 		}
 	}
 }
