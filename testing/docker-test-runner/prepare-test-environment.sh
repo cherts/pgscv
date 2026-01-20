@@ -1,6 +1,6 @@
 ﻿#!/usr/bin/bash
 
-PG_VER=17
+PG_VER=18
 MAIN_DATADIR=/var/lib/postgresql/data/main
 STDB1_DATADIR=/var/lib/postgresql/data/standby1
 STDB2_DATADIR=/var/lib/postgresql/data/standby2
@@ -13,7 +13,7 @@ _logging() {
 
 # init postgres
 _logging "Init main database..."
-su - postgres -c "/usr/lib/postgresql/${PG_VER}/bin/initdb -k -E UTF8 --locale=en_US.UTF-8 -D ${MAIN_DATADIR}"
+su - postgres -c "/usr/lib/postgresql/${PG_VER}/bin/initdb -E UTF8 --locale=en_US.UTF-8 -D ${MAIN_DATADIR}"
 
 # add extra config parameters
 _logging "Creating main postgresql.auto.conf..."
