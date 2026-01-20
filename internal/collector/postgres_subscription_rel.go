@@ -46,7 +46,7 @@ func NewPostgresSubscriptionRelCollector(constLabels labels, settings model.Coll
 // Update method collects statistics, parse it and produces metrics that are sent to Prometheus.
 func (c *postgresSubscriptionRelCollector) Update(config Config, ch chan<- prometheus.Metric) error {
 	if config.pgVersion.Numeric < PostgresV10 {
-		log.Debugln("[postgres stat_subscription collector]: pg_stat_subscription view are not available, required Postgres 10 or newer")
+		log.Debugln("[postgres subscription_rel collector]: pg_subscription_rel view are not available, required Postgres 10 or newer")
 		return nil
 	}
 
