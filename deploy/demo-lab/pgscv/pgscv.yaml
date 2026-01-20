@@ -21,8 +21,8 @@ cache:
       ttl: 10m
     postgres/tables:
       ttl: 10m
-    postgres/statements:
-      ttl: 5m
+#    postgres/statements:
+#      ttl: 5m
 discovery:
   postgres9:
     type: postgres
@@ -76,6 +76,12 @@ discovery:
     type: postgres
     config:
       conninfo: "postgres://pgscv:pgscv@postgres17:5432/postgres"
+      db: ".*"
+      exclude_db: "postgres"
+  postgres18:
+    type: postgres
+    config:
+      conninfo: "postgres://pgscv:pgscv@postgres18:5432/postgres"
       db: ".*"
       exclude_db: "postgres"
   postgres9replica1:
@@ -138,10 +144,16 @@ discovery:
       conninfo: "postgres://pgscv:pgscv@postgres17replica1:5432/postgres"
       db: ".*"
       exclude_db: "postgres"
-  postgres17replica2:
+  postgres18replica1:
     type: postgres
     config:
-      conninfo: "postgres://pgscv:pgscv@postgres17replica2:5432/postgres"
+      conninfo: "postgres://pgscv:pgscv@postgres18replica1:5432/postgres"
+      db: ".*"
+      exclude_db: "postgres"
+  postgres18replica2:
+    type: postgres
+    config:
+      conninfo: "postgres://pgscv:pgscv@postgres18replica2:5432/postgres"
       db: ".*"
       exclude_db: "postgres"
 services:
@@ -190,6 +202,9 @@ services:
   "pgbouncer17":
     service_type: "pgbouncer"
     conninfo: "postgres://pgscv:pgscv@pgbouncer17:5432/pgbouncer"
+  "pgbouncer18":
+    service_type: "pgbouncer"
+    conninfo: "postgres://pgscv:pgscv@pgbouncer18:5432/pgbouncer"
 disable_collectors:
   - system
 #  - postgres/pgscv
