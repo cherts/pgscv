@@ -3,8 +3,9 @@ package collector
 import (
 	"database/sql"
 	"fmt"
-	"github.com/jackc/pgx/v5/pgconn"
 	"testing"
+
+	"github.com/jackc/pgx/v5/pgconn"
 
 	"github.com/cherts/pgscv/internal/model"
 	"github.com/stretchr/testify/assert"
@@ -33,6 +34,7 @@ func TestPostgresStatementsCollector_Update(t *testing.T) {
 			"postgres_statements_wal_records_total",
 			"postgres_statements_wal_bytes_all_total",
 			"postgres_statements_wal_bytes_total",
+			"postgres_statements_wal_buffers_full",
 		},
 		collector: NewPostgresStatementsCollector,
 		service:   model.ServiceTypePostgresql,
