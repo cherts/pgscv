@@ -74,8 +74,7 @@ func (p *PostgresDiscovery) Start(ctx context.Context, errCh chan<- error) error
 			log.Debug(fmt.Sprintf("[Postgres:%s SD] Context done.", p.id))
 
 			return nil
-		default:
-			time.Sleep(refreshInterval)
+		case <-time.After(refreshInterval):
 		}
 	}
 }
