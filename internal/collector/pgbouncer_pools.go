@@ -78,7 +78,7 @@ func (c *pgbouncerPoolsCollector) Update(config Config, ch chan<- prometheus.Met
 	for _, stat := range poolsStats {
 		ch <- c.conns.newConstMetric(stat.clActive, stat.user, stat.database, stat.mode, "cl_active")
 		ch <- c.conns.newConstMetric(stat.clWaiting, stat.user, stat.database, stat.mode, "cl_waiting")
-		//ch <- c.conns.newConstMetric(stat.clCancelReq, stat.user, stat.database, stat.mode, "cl_cancel_req")
+		ch <- c.conns.newConstMetric(stat.clCancelReq, stat.user, stat.database, stat.mode, "cl_cancel_req")
 		ch <- c.conns.newConstMetric(stat.clActiveCancelReq, stat.user, stat.database, stat.mode, "cl_active_cancel_req")
 		ch <- c.conns.newConstMetric(stat.clWaitingCancelReq, stat.user, stat.database, stat.mode, "cl_waiting_cancel_req")
 		ch <- c.conns.newConstMetric(stat.svActive, stat.user, stat.database, stat.mode, "sv_active")
@@ -109,11 +109,11 @@ func (c *pgbouncerPoolsCollector) Update(config Config, ch chan<- prometheus.Met
 
 // pgbouncerPoolStat is a per-pool store for connections metrics.
 type pgbouncerPoolStat struct {
-	database string
-	user     string
-	mode     string
-	clActive float64
-	//clCancelReq        float64
+	database           string
+	user               string
+	mode               string
+	clActive           float64
+	clCancelReq        float64
 	clActiveCancelReq  float64
 	clWaitingCancelReq float64
 	clWaiting          float64
@@ -179,8 +179,8 @@ func parsePgbouncerPoolsStats(r *model.PGResult, labelNames []string) map[string
 				s.clActive = v
 			case "cl_waiting":
 				s.clWaiting = v
-			//case "cl_cancel_req": // since pgbouncer 1.16
-			//	s.clCancelReq = v
+			case "cl_cancel_req": // since pgbouncer 1.16
+				s.clCancelReq = v
 			case "cl_active_cancel_req": // since pgbouncer 1.18
 				s.clActiveCancelReq = v
 			case "cl_waiting_cancel_req": // since pgbouncer 1.18
