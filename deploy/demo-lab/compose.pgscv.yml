@@ -1,7 +1,7 @@
 services:
   pgscv:
     container_name: pgscv
-    image: cherts/pgscv:v1.0.0-beta1
+    image: ghcr.io/cherts/pgscv:v1.0-master-5309110-20260120-beta
     ports:
       - 9890:9890
     env_file:
@@ -49,6 +49,9 @@ services:
       postgres17:
         condition: service_healthy
         restart: true
+      postgres18:
+        condition: service_healthy
+        restart: true
       postgres9replica1:
         condition: service_healthy
         restart: true
@@ -77,6 +80,9 @@ services:
         condition: service_healthy
         restart: true
       postgres17replica1:
+        condition: service_healthy
+        restart: true
+      postgres18replica1:
         condition: service_healthy
         restart: true
 

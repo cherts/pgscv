@@ -32,7 +32,8 @@ PG_VERSIONS=(
 	"14,1.4.7"
 	"15,1.4.8"
 	"16,1.5.0"
-	"17,1.5.0"
+	"17,1.5.2"
+	"18,1.5.3"
 )
 
 echo "Stopping all container via docker-compose, please waiting..."

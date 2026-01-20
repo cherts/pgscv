@@ -24,6 +24,7 @@ PG_VERSIONS=(
 	"15,1.4.8"
 	"16,1.5.0"
 	"17,1.5.2"
+	"18,1.5.3"
 )
 
 # Don't edit this config

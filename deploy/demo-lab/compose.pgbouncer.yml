@@ -108,6 +108,18 @@ services:
     depends_on:
       postgres17:
         condition: service_healthy
+  pgbouncer18:
+    container_name: pgbouncer18
+    image: edoburu/pgbouncer:latest
+    hostname: pgbouncer18
+    volumes:
+      - ${PWD}/pgbouncer/conf18:/etc/pgbouncer
+    networks: [ monitoring ]
+    ports:
+      - "6438:5432"
+    depends_on:
+      postgres18:
+        condition: service_healthy
 
 networks:
   monitoring:
