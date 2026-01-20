@@ -74,7 +74,12 @@ func (c *pgbouncerPoolsCollector) Update(ctx context.Context, config Config, ch 
 	for _, stat := range poolsStats {
 		ch <- c.conns.newConstMetric(stat.clActive, stat.user, stat.database, stat.mode, "cl_active")
 		ch <- c.conns.newConstMetric(stat.clWaiting, stat.user, stat.database, stat.mode, "cl_waiting")
+		ch <- c.conns.newConstMetric(stat.clCancelReq, stat.user, stat.database, stat.mode, "cl_cancel_req")
+		ch <- c.conns.newConstMetric(stat.clActiveCancelReq, stat.user, stat.database, stat.mode, "cl_active_cancel_req")
+		ch <- c.conns.newConstMetric(stat.clWaitingCancelReq, stat.user, stat.database, stat.mode, "cl_waiting_cancel_req")
 		ch <- c.conns.newConstMetric(stat.svActive, stat.user, stat.database, stat.mode, "sv_active")
+		ch <- c.conns.newConstMetric(stat.svActiveCancel, stat.user, stat.database, stat.mode, "sv_active_cancel")
+		ch <- c.conns.newConstMetric(stat.svBeingCanceled, stat.user, stat.database, stat.mode, "sv_being_canceled")
 		ch <- c.conns.newConstMetric(stat.svIdle, stat.user, stat.database, stat.mode, "sv_idle")
 		ch <- c.conns.newConstMetric(stat.svUsed, stat.user, stat.database, stat.mode, "sv_used")
 		ch <- c.conns.newConstMetric(stat.svTested, stat.user, stat.database, stat.mode, "sv_tested")
@@ -100,17 +105,22 @@ func (c *pgbouncerPoolsCollector) Update(ctx context.Context, config Config, ch 
 
 // pgbouncerPoolStat is a per-pool store for connections metrics.
 type pgbouncerPoolStat struct {
-	database  string
-	user      string
-	mode      string
-	clActive  float64
-	clWaiting float64
-	svActive  float64
-	svIdle    float64
-	svUsed    float64
-	svTested  float64
-	svLogin   float64
-	maxWait   float64
+	database           string
+	user               string
+	mode               string
+	clActive           float64
+	clCancelReq        float64
+	clActiveCancelReq  float64
+	clWaitingCancelReq float64
+	clWaiting          float64
+	svActive           float64
+	svActiveCancel     float64
+	svBeingCanceled    float64
+	svIdle             float64
+	svUsed             float64
+	svTested           float64
+	svLogin            float64
+	maxWait            float64
 }
 
 func parsePgbouncerPoolsStats(r *model.PGResult, labelNames []string) map[string]pgbouncerPoolStat {
@@ -165,8 +175,18 @@ func parsePgbouncerPoolsStats(r *model.PGResult, labelNames []string) map[string
 				s.clActive = v
 			case "cl_waiting":
 				s.clWaiting = v
+			case "cl_cancel_req": // since pgbouncer 1.16, replaced by cl_active_cancel_req and cl_waiting_cancel_req in pgbouncer 1.18
+				s.clCancelReq = v
+			case "cl_active_cancel_req": // since pgbouncer 1.18
+				s.clActiveCancelReq = v
+			case "cl_waiting_cancel_req": // since pgbouncer 1.18
+				s.clWaitingCancelReq = v
 			case "sv_active":
 				s.svActive = v
+			case "sv_active_cancel": // since pgbouncer 1.18
+				s.svActiveCancel = v
+			case "sv_being_canceled": // since pgbouncer 1.18
+				s.svBeingCanceled = v
 			case "sv_idle":
 				s.svIdle = v
 			case "sv_used":
