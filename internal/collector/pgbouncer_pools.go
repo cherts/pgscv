@@ -179,7 +179,7 @@ func parsePgbouncerPoolsStats(r *model.PGResult, labelNames []string) map[string
 				s.clActive = v
 			case "cl_waiting":
 				s.clWaiting = v
-			case "cl_cancel_req": // since pgbouncer 1.16
+			case "cl_cancel_req": // since pgbouncer 1.16, replaced by cl_active_cancel_req and cl_waiting_cancel_req in pgbouncer 1.18
 				s.clCancelReq = v
 			case "cl_active_cancel_req": // since pgbouncer 1.18
 				s.clActiveCancelReq = v
