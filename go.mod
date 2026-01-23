@@ -18,8 +18,8 @@ require (
 
 require (
 	github.com/go-playground/validator/v10 v10.30.1
-	github.com/yandex-cloud/go-genproto v0.45.0
-	github.com/yandex-cloud/go-sdk v0.30.0
+	github.com/yandex-cloud/go-genproto v0.46.0
+	github.com/yandex-cloud/go-sdk v0.31.0
 	google.golang.org/protobuf v1.36.11
 )
 
