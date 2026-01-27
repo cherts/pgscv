@@ -173,6 +173,16 @@ services:
        - ${PWD}/postgres/init.sql:/docker-entrypoint-initdb.d/01-init.sql
     ports:
       - 5437:5432
+  postgres18:
+    <<: *postgres_base
+    container_name: postgres18
+    image: postgres:18-alpine
+    hostname: postgres18
+    volumes:
+       - pg18_data:/data/postgres
+       - ${PWD}/postgres/init.sql:/docker-entrypoint-initdb.d/01-init.sql
+    ports:
+      - 5438:5432
   postgres9replica1:
     <<: *postgres_old_base
     container_name: postgres9replica1
@@ -333,20 +343,36 @@ services:
       - 4437:5432
     depends_on:
       - postgres17
-  postgres17replica2:
+  postgres18replica1:
     <<: *postgres_base
-    container_name: postgres17replica2
-    image: postgres:17-alpine
-    hostname: postgres17replica2
+    container_name: postgres18replica1
+    image: postgres:18-alpine
+    hostname: postgres18replica1
     environment:
       <<: *postgres_base_env
-      PG_REPLICA_HOST: "postgres17replica1"
-      PG_REPL_SLOT: "replica_slot2"
+      PG_REPLICA_HOST: "postgres18"
+      PG_REPL_SLOT: "replica_slot1"
     volumes:
-       - pg17_replica2data:/data/postgres
+       - pg18_replica1data:/data/postgres
        - ${PWD}/postgres/init_basebackup.sh:/docker-entrypoint-initdb.d/01-basebackup.sh
     ports:
-      - 3437:5432
+      - 4438:5432
+    depends_on:
+      - postgres18
+  postgres18replica2:
+    <<: *postgres_base
+    container_name: postgres18replica2
+    image: postgres:18-alpine
+    hostname: postgres18replica2
+    environment:
+      <<: *postgres_base_env
+      PG_REPLICA_HOST: "postgres18replica1"
+      PG_REPL_SLOT: "replica_slot2"
+    volumes:
+       - pg18_replica2data:/data/postgres
+       - ${PWD}/postgres/init_basebackup.sh:/docker-entrypoint-initdb.d/01-basebackup.sh
+    ports:
+      - 3438:5432
     depends_on:
       - postgres17replica1
 
@@ -405,6 +431,12 @@ volumes:
       o: bind
       type: rw
       device: ${PWD}/postgres/pg17data
+  pg18_data:
+    driver: local
+    driver_opts:
+      o: bind
+      type: rw
+      device: ${PWD}/postgres/pg18data
   pg9_replica1data:
     driver: local
     driver_opts:
@@ -465,12 +497,18 @@ volumes:
       o: bind
       type: rw
       device: ${PWD}/postgres/pg17replica1data
-  pg17_replica2data:
+  pg18_replica1data:
     driver: local
     driver_opts:
       o: bind
       type: rw
-      device: ${PWD}/postgres/pg17replica2data
+      device: ${PWD}/postgres/pg18replica1data
+  pg18_replica2data:
+    driver: local
+    driver_opts:
+      o: bind
+      type: rw
+      device: ${PWD}/postgres/pg18replica2data
 
 networks:
   monitoring:

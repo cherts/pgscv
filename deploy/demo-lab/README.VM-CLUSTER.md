@@ -29,6 +29,7 @@
 - postgres15 (listen port: 5435)
 - postgres16 (listen port: 5436)
 - postgres17 (listen port: 5437)
+- postgres18 (listen port: 5438)
 - postgres9replica1 (listen port: 4429)
 - postgres9replica2 (cascade, listen port: 3429)
 - postgres10replica1 (listen port: 4430)
@@ -39,7 +40,8 @@
 - postgres15replica1 (listen port: 4435)
 - postgres16replica1 (listen port: 4436)
 - postgres17replica1 (listen port: 4437)
-- postgres17replica2 (cascade, listen port: 3437)
+- postgres18replica1 (listen port: 4438)
+- postgres18replica2 (cascade, listen port: 3438)
 - pgbouncer9 (listen port: 6429)
 - pgbouncer10 (listen port: 6430)
 - pgbouncer11 (listen port: 6431)
@@ -49,6 +51,7 @@
 - pgbouncer15 (listen port: 6435)
 - pgbouncer16 (listen port: 6436)
 - pgbouncer17 (listen port: 6437)
+- pgbouncer18 (listen port: 6438)
 - etcd1
 - etcd2
 - etcd3
@@ -65,6 +68,7 @@
 - pgbench_15
 - pgbench_16
 - pgbench_17
+- pgbench_18
 - pgbench_patroni
 - pgbench_patroni_s
 

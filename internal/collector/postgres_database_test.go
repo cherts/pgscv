@@ -2,8 +2,9 @@ package collector
 
 import (
 	"database/sql"
-	"github.com/jackc/pgx/v5/pgconn"
 	"testing"
+
+	"github.com/jackc/pgx/v5/pgconn"
 
 	"github.com/cherts/pgscv/internal/model"
 	"github.com/stretchr/testify/assert"
@@ -34,6 +35,9 @@ func TestPostgresDatabasesCollector_Update(t *testing.T) {
 			"postgres_database_session_time_seconds_total",
 			"postgres_database_sessions_all_total",
 			"postgres_database_sessions_total",
+		},
+		optional: []string{
+			"postgres_database_parallel_workers",
 		},
 		collector: NewPostgresDatabasesCollector,
 		service:   model.ServiceTypePostgresql,

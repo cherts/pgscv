@@ -207,8 +207,7 @@ func (yd *YandexDiscovery) Start(ctx context.Context, errCh chan<- error) error 
 		case <-ctx.Done():
 			log.Debug("[Yandex.Cloud SD] Context done.")
 			return nil
-		default:
-			time.Sleep(10 * time.Second)
+		case <-time.After(10 * time.Second):
 		}
 	}
 }

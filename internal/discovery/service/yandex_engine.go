@@ -46,8 +46,7 @@ func (ye *yandexEngine) Start(ctx context.Context) error {
 					log.Debug("[Yandex.Cloud SD] Context canceled, shutting down Yandex Discovery Engine.")
 					cancel()
 					return
-				default:
-					time.Sleep(interval)
+				case <-time.After(interval):
 					continue
 				}
 			}
@@ -89,8 +88,7 @@ func (ye *yandexEngine) Start(ctx context.Context) error {
 				log.Debug("[Yandex.Cloud SD] Context canceled, shutting down Yandex Discovery Engine.")
 				cancel()
 				return
-			default:
-				time.Sleep(interval)
+			case <-time.After(interval):
 			}
 		}
 	}()
