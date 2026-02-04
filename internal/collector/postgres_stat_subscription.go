@@ -43,7 +43,7 @@ const (
 		"FROM pg_stat_subscription s1 JOIN pg_stat_subscription_stats s2 ON s1.subid = s2.subid " +
 		"WHERE s1.relid ISNULL;"
 
-	postgresStatSubscriptionQueryLatest = "SELECT s1.subid, s1.subname, COALESCE(s1.pid, 0) AS pid, " +
+	postgresStatSubscriptionQuery18 = "SELECT s1.subid, s1.subname, COALESCE(s1.pid, 0) AS pid, " +
 		"COALESCE(s1.worker_type, 'unknown') AS worker_type, " +
 		"COALESCE(received_lsn - '0/0', 0) AS received_lsn, " +
 		"COALESCE(latest_end_lsn - '0/0', 0) AS reported_lsn, " +
@@ -55,6 +55,22 @@ const (
 		"s2.confl_update_exists, s2.confl_update_missing, " +
 		"s2.confl_delete_origin_differs, s2.confl_delete_missing, " +
 		"s2.confl_multiple_unique_conflicts " +
+		"FROM pg_stat_subscription s1 JOIN pg_stat_subscription_stats s2 ON s1.subid = s2.subid " +
+		"WHERE s1.relid ISNULL;"
+
+	postgresStatSubscriptionQueryLatest = "SELECT s1.subid, s1.subname, COALESCE(s1.pid, 0) AS pid, " +
+		"COALESCE(s1.worker_type, 'unknown') AS worker_type, " +
+		"COALESCE(received_lsn - '0/0', 0) AS received_lsn, " +
+		"COALESCE(latest_end_lsn - '0/0', 0) AS reported_lsn, " +
+		"COALESCE(EXTRACT(EPOCH FROM last_msg_send_time), 0) AS msg_send_time, " +
+		"COALESCE(EXTRACT(EPOCH FROM last_msg_receipt_time), 0) AS msg_recv_time, " +
+		"COALESCE(EXTRACT(EPOCH FROM latest_end_time), 0) AS reported_time, " +
+		"s2.apply_error_count, s2.sync_table_error_count, " +
+		"s2.confl_insert_exists, s2.confl_update_origin_differs, " +
+		"s2.confl_update_exists, s2.confl_update_missing, " +
+		"s2.confl_delete_origin_differs, s2.confl_delete_missing, " +
+		"s2.confl_multiple_unique_conflicts " +
+		"s2.sync_seq_error_count " +
 		"FROM pg_stat_subscription s1 JOIN pg_stat_subscription_stats s2 ON s1.subid = s2.subid " +
 		"WHERE s1.relid ISNULL;"
 )
@@ -168,7 +184,10 @@ func (c *postgresStatSubscriptionCollector) Update(ctx context.Context, config C
 		if value, ok := stat.values["apply_error_count"]; ok {
 			ch <- c.errorCount.newConstMetric(value, stat.SubID, stat.SubName, stat.WorkerType, "apply")
 		}
-		if value, ok := stat.values["sync_error_count"]; ok {
+		if value, ok := stat.values["sync_error_count"]; ok && config.pgVersion.Numeric < PostgresV19 {
+			ch <- c.errorCount.newConstMetric(value, stat.SubID, stat.SubName, stat.WorkerType, "sync")
+		}
+		if value, ok := stat.values["sync_table_error_count"]; ok && config.pgVersion.Numeric >= PostgresV19 {
 			ch <- c.errorCount.newConstMetric(value, stat.SubID, stat.SubName, stat.WorkerType, "sync")
 		}
 		if value, ok := stat.values["confl_insert_exists"]; ok {
@@ -191,6 +210,9 @@ func (c *postgresStatSubscriptionCollector) Update(ctx context.Context, config C
 		}
 		if value, ok := stat.values["confl_multiple_unique_conflicts"]; ok {
 			ch <- c.conflCount.newConstMetric(value, stat.SubID, stat.SubName, stat.WorkerType, "multiple_unique_conflicts")
+		}
+		if value, ok := stat.values["sync_seq_error_count"]; ok {
+			ch <- c.errorCount.newConstMetric(value, stat.SubID, stat.SubName, stat.WorkerType, "seq_error_count")
 		}
 	}
 
@@ -272,6 +294,14 @@ func parsePostgresSubscriptionStat(r *model.PGResult, labelNames []string) map[s
 				s.values["apply_error_count"] = v
 			case "sync_error_count":
 				s.values["sync_error_count"] = v
+			// PostgreSQL 18: following columns added
+			// confl_insert_exists - counts INSERT operations that violate unique constraints
+			// confl_update_origin_differs - identifies UPDATE conflicts where rows were modified by different origins
+			// confl_update_exists - tracks UPDATEs that violate unique constraints
+			// confl_update_missing - counts attempts to UPDATE rows that don't exist
+			// confl_delete_origin_differs - captures DELETE operations on rows modified by another origin
+			// confl_delete_missing - tracks DELETE attempts on non-existent rows
+			// confl_multiple_unique_conflicts - detects scenarios where multiple unique constraints are violated simultaneously
 			case "confl_insert_exists":
 				s.values["confl_insert_exists"] = v
 			case "confl_update_origin_differs":
@@ -286,6 +316,12 @@ func parsePostgresSubscriptionStat(r *model.PGResult, labelNames []string) map[s
 				s.values["confl_delete_missing"] = v
 			case "confl_multiple_unique_conflicts":
 				s.values["confl_multiple_unique_conflicts"] = v
+			// PostgreSQL 19: column sync_error_count renamed to sync_table_error_count
+			case "sync_table_error_count":
+				s.values["sync_table_error_count"] = v
+			// PostgreSQL 19: column sync_seq_error_count added
+			case "sync_seq_error_count":
+				s.values["sync_seq_error_count"] = v
 			default:
 				continue
 			}
@@ -306,6 +342,8 @@ func selectSubscriptionQuery(version int) string {
 		return postgresStatSubscriptionQuery16
 	case version < PostgresV18:
 		return postgresStatSubscriptionQuery17
+	case version < PostgresV19:
+		return postgresStatSubscriptionQuery18
 	default:
 		return postgresStatSubscriptionQueryLatest
 	}
