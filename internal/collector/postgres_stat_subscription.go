@@ -184,10 +184,7 @@ func (c *postgresStatSubscriptionCollector) Update(ctx context.Context, config C
 		if value, ok := stat.values["apply_error_count"]; ok {
 			ch <- c.errorCount.newConstMetric(value, stat.SubID, stat.SubName, stat.WorkerType, "apply")
 		}
-		if value, ok := stat.values["sync_error_count"]; ok && config.pgVersion.Numeric < PostgresV19 {
-			ch <- c.errorCount.newConstMetric(value, stat.SubID, stat.SubName, stat.WorkerType, "sync")
-		}
-		if value, ok := stat.values["sync_table_error_count"]; ok && config.pgVersion.Numeric >= PostgresV19 {
+		if value, ok := stat.values["sync_error_count"]; ok {
 			ch <- c.errorCount.newConstMetric(value, stat.SubID, stat.SubName, stat.WorkerType, "sync")
 		}
 		if value, ok := stat.values["confl_insert_exists"]; ok {
@@ -292,7 +289,8 @@ func parsePostgresSubscriptionStat(r *model.PGResult, labelNames []string) map[s
 				s.values["reported_time"] = v
 			case "apply_error_count":
 				s.values["apply_error_count"] = v
-			case "sync_error_count":
+			// PostgreSQL 19: column sync_error_count renamed to sync_table_error_count
+			case "sync_error_count", "sync_table_error_count":
 				s.values["sync_error_count"] = v
 			// PostgreSQL 18: following columns added
 			// confl_insert_exists - counts INSERT operations that violate unique constraints
@@ -316,9 +314,6 @@ func parsePostgresSubscriptionStat(r *model.PGResult, labelNames []string) map[s
 				s.values["confl_delete_missing"] = v
 			case "confl_multiple_unique_conflicts":
 				s.values["confl_multiple_unique_conflicts"] = v
-			// PostgreSQL 19: column sync_error_count renamed to sync_table_error_count
-			case "sync_table_error_count":
-				s.values["sync_table_error_count"] = v
 			// PostgreSQL 19: column sync_seq_error_count added
 			case "sync_seq_error_count":
 				s.values["sync_seq_error_count"] = v
