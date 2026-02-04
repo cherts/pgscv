@@ -4,9 +4,8 @@ import (
 	"database/sql"
 	"testing"
 
-	"github.com/jackc/pgx/v5/pgconn"
-
 	"github.com/cherts/pgscv/internal/model"
+	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/stretchr/testify/assert"
 )
 
