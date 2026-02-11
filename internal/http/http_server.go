@@ -58,6 +58,7 @@ type Server struct {
 func NewServer(cfg ServerConfig,
 	handlerMetrics func(http.ResponseWriter, *http.Request),
 	targetsMetrics func(http.ResponseWriter, *http.Request),
+	flushServiceConfig func(http.ResponseWriter, *http.Request),
 ) *Server {
 	mux := http.NewServeMux()
 
@@ -68,6 +69,7 @@ func NewServer(cfg ServerConfig,
 		mux.HandleFunc("/metrics", handlerMetrics)
 	}
 	mux.HandleFunc("/targets", targetsMetrics)
+	mux.HandleFunc("/flush-services-config", flushServiceConfig)
 
 	return &Server{
 		config: cfg,
@@ -100,6 +102,7 @@ func handleRoot() http.HandlerFunc {
 pgSCV / PostgreSQL metrics collector, for more info visit <a href="https://github.com/cherts/pgscv">Github</a> page.
 <p><a href="/metrics">Metrics</a> (add ?target=service_id, to get metrics for one service)</p>
 <p><a href="/targets">Targets</a></p>
+<p><a href="/flush-services-config">Reload service config</a></p>
 </body>
 </html>
 `
