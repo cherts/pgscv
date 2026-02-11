@@ -102,6 +102,7 @@ func handleRoot() http.HandlerFunc {
 pgSCV / PostgreSQL metrics collector, for more info visit <a href="https://github.com/cherts/pgscv">Github</a> page.
 <p><a href="/metrics">Metrics</a> (add ?target=service_id, to get metrics for one service)</p>
 <p><a href="/targets">Targets</a></p>
+<p><a href="/flush-services-config">Reload service config</a></p>
 </body>
 </html>
 `
