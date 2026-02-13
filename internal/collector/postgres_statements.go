@@ -4,12 +4,13 @@ package collector
 import (
 	"context"
 	"fmt"
-	"github.com/cherts/pgscv/internal/log"
-	"github.com/cherts/pgscv/internal/model"
-	"github.com/prometheus/client_golang/prometheus"
 	"strconv"
 	"strings"
 	"sync"
+
+	"github.com/cherts/pgscv/internal/log"
+	"github.com/cherts/pgscv/internal/model"
+	"github.com/prometheus/client_golang/prometheus"
 )
 
 const (
@@ -129,7 +130,7 @@ const (
 
 	// postgresStatementsQueryLatest defines query for querying statements metrics.
 	// 1. use nullif(value, 0) to nullify zero values, NULL are skipped by stats method and metrics wil not be generated.
-	postgresStatementsQueryLatest = "SELECT d.datname AS database, pg_get_userbyid(p.userid) AS \"user\", p.queryid, " +
+	postgresStatementsQuery18 = "SELECT d.datname AS database, pg_get_userbyid(p.userid) AS \"user\", p.queryid, " +
 		"COALESCE(%s, '') AS query, p.calls, p.rows, p.total_exec_time, p.total_plan_time, p.shared_blk_read_time AS blk_read_time, " +
 		"p.shared_blk_write_time AS blk_write_time, NULLIF(p.shared_blks_hit, 0) AS shared_blks_hit, NULLIF(p.shared_blks_read, 0) AS shared_blks_read, " +
 		"NULLIF(p.shared_blks_dirtied, 0) AS shared_blks_dirtied, NULLIF(p.shared_blks_written, 0) AS shared_blks_written, " +
@@ -140,7 +141,7 @@ const (
 		"NULLIF(p.wal_buffers_full, 0) AS wal_buffers_full " +
 		"FROM %s.pg_stat_statements p JOIN pg_database d ON d.oid=p.dbid"
 
-	postgresStatementsQueryLatestTopK = "WITH stat AS (SELECT d.datname AS DATABASE, pg_get_userbyid(p.userid) AS \"user\", p.queryid, " +
+	postgresStatementsQuery18TopK = "WITH stat AS (SELECT d.datname AS DATABASE, pg_get_userbyid(p.userid) AS \"user\", p.queryid, " +
 		"COALESCE(%s, '') AS query, p.calls, p.rows, p.total_exec_time, p.total_plan_time, p.shared_blk_read_time AS blk_read_time, " +
 		"p.shared_blk_write_time AS blk_write_time, NULLIF(p.shared_blks_hit, 0) AS shared_blks_hit, NULLIF(p.shared_blks_read, 0) AS shared_blks_read, " +
 		"NULLIF(p.shared_blks_dirtied, 0) AS shared_blks_dirtied, NULLIF(p.shared_blks_written, 0) AS shared_blks_written, " +
@@ -171,29 +172,79 @@ const (
 		"NULLIF(SUM(COALESCE(temp_blks_written, 0)), 0), NULLIF(SUM(COALESCE(wal_records, 0)), 0), NULLIF(SUM(COALESCE(wal_fpi, 0)), 0), " +
 		"NULLIF(SUM(COALESCE(wal_bytes, 0)), 0), NULLIF(SUM(COALESCE(wal_buffers_full, 0)), 0) FROM stat WHERE NOT visible " +
 		"GROUP BY DATABASE HAVING EXISTS (SELECT 1 FROM stat WHERE NOT visible)"
+
+	// postgresStatementsQueryLatest defines query for querying statements metrics.
+	// 1. use nullif(value, 0) to nullify zero values, NULL are skipped by stats method and metrics wil not be generated.
+	postgresStatementsQueryLatest = "SELECT d.datname AS database, pg_get_userbyid(p.userid) AS \"user\", p.queryid, " +
+		"COALESCE(%s, '') AS query, p.calls, p.rows, p.total_exec_time, p.total_plan_time, p.shared_blk_read_time AS blk_read_time, " +
+		"p.shared_blk_write_time AS blk_write_time, NULLIF(p.shared_blks_hit, 0) AS shared_blks_hit, NULLIF(p.shared_blks_read, 0) AS shared_blks_read, " +
+		"NULLIF(p.shared_blks_dirtied, 0) AS shared_blks_dirtied, NULLIF(p.shared_blks_written, 0) AS shared_blks_written, " +
+		"NULLIF(p.local_blks_hit, 0) AS local_blks_hit, NULLIF(p.local_blks_read, 0) AS local_blks_read, " +
+		"NULLIF(p.local_blks_dirtied, 0) AS local_blks_dirtied, NULLIF(p.local_blks_written, 0) AS local_blks_written, " +
+		"NULLIF(p.temp_blks_read, 0) AS temp_blks_read, NULLIF(p.temp_blks_written, 0) AS temp_blks_written, " +
+		"NULLIF(p.wal_records, 0) AS wal_records, NULLIF(p.wal_fpi, 0) AS wal_fpi, NULLIF(p.wal_bytes, 0) AS wal_bytes, " +
+		"NULLIF(p.wal_buffers_full, 0) AS wal_buffers_full, NULLIF(p.generic_plan_calls, 0) AS generic_plan_calls, " +
+		"NULLIF(p.custom_plan_calls, 0) AS custom_plan_calls, " +
+		"FROM %s.pg_stat_statements p JOIN pg_database d ON d.oid=p.dbid"
+
+	postgresStatementsQueryLatestTopK = "WITH stat AS (SELECT d.datname AS DATABASE, pg_get_userbyid(p.userid) AS \"user\", p.queryid, " +
+		"COALESCE(%s, '') AS query, p.calls, p.rows, p.total_exec_time, p.total_plan_time, p.shared_blk_read_time AS blk_read_time, " +
+		"p.shared_blk_write_time AS blk_write_time, NULLIF(p.shared_blks_hit, 0) AS shared_blks_hit, NULLIF(p.shared_blks_read, 0) AS shared_blks_read, " +
+		"NULLIF(p.shared_blks_dirtied, 0) AS shared_blks_dirtied, NULLIF(p.shared_blks_written, 0) AS shared_blks_written, " +
+		"NULLIF(p.local_blks_hit, 0) AS local_blks_hit, NULLIF(p.local_blks_read, 0) AS local_blks_read, " +
+		"NULLIF(p.local_blks_dirtied, 0) AS local_blks_dirtied, NULLIF(p.local_blks_written, 0) AS local_blks_written, " +
+		"NULLIF(p.temp_blks_read, 0) AS temp_blks_read, NULLIF(p.temp_blks_written, 0) AS temp_blks_written, " +
+		"NULLIF(p.wal_records, 0) AS wal_records, NULLIF(p.wal_fpi, 0) AS wal_fpi, NULLIF(p.wal_bytes, 0) AS wal_bytes, " +
+		"NULLIF(p.wal_buffers_full, 0) AS wal_buffers_full, " +
+		"(ROW_NUMBER() OVER ( ORDER BY p.calls DESC NULLS LAST) < $1) OR (ROW_NUMBER() OVER ( ORDER BY p.rows DESC NULLS LAST) < $1) OR " +
+		"(ROW_NUMBER() OVER ( ORDER BY p.total_exec_time DESC NULLS LAST) < $1) OR (ROW_NUMBER() OVER ( ORDER BY p.total_plan_time DESC NULLS LAST) < $1) OR " +
+		"(ROW_NUMBER() OVER ( ORDER BY p.shared_blk_read_time DESC NULLS LAST) < $1) OR (ROW_NUMBER() OVER ( ORDER BY p.shared_blk_write_time DESC NULLS LAST) < $1) OR " +
+		"(ROW_NUMBER() OVER ( ORDER BY p.shared_blks_hit DESC NULLS LAST) < $1) OR (ROW_NUMBER() OVER ( ORDER BY p.shared_blks_read DESC NULLS LAST) < $1) OR " +
+		"(ROW_NUMBER() OVER ( ORDER BY p.shared_blks_dirtied DESC NULLS LAST) < $1) OR (ROW_NUMBER() OVER ( ORDER BY p.shared_blks_written DESC NULLS LAST) < $1) OR " +
+		"(ROW_NUMBER() OVER ( ORDER BY p.local_blks_hit DESC NULLS LAST) < $1) OR (ROW_NUMBER() OVER ( ORDER BY p.local_blks_read DESC NULLS LAST) < $1) OR " +
+		"(ROW_NUMBER() OVER ( ORDER BY p.local_blks_dirtied DESC NULLS LAST) < $1) OR (ROW_NUMBER() OVER ( ORDER BY p.local_blks_written DESC NULLS LAST) < $1) OR " +
+		"(ROW_NUMBER() OVER ( ORDER BY p.temp_blks_read DESC NULLS LAST) < $1) OR (ROW_NUMBER() OVER ( ORDER BY p.temp_blks_written DESC NULLS LAST) < $1) OR " +
+		"(ROW_NUMBER() OVER ( ORDER BY p.wal_records DESC NULLS LAST) < $1) OR (ROW_NUMBER() OVER ( ORDER BY p.wal_fpi DESC NULLS LAST) < $1) OR " +
+		"(ROW_NUMBER() OVER ( ORDER BY p.wal_bytes DESC NULLS LAST) < $1) OR (ROW_NUMBER() OVER ( ORDER BY p.wal_buffers_full DESC NULLS LAST) < $1) OR " +
+		"(ROW_NUMBER() OVER ( ORDER BY p.generic_plan_calls DESC NULLS LAST) < $1) OR (ROW_NUMBER() OVER ( ORDER BY p.custom_plan_calls DESC NULLS LAST) < $1) AS visible " +
+		"FROM %s.pg_stat_statements p JOIN pg_database d ON d.oid = p.dbid) " +
+		"SELECT DATABASE, \"user\", queryid, query, calls, rows, total_exec_time, total_plan_time, blk_read_time, blk_write_time, shared_blks_hit, " +
+		"shared_blks_read, shared_blks_dirtied, shared_blks_written, local_blks_hit, local_blks_read, local_blks_dirtied, local_blks_written, " +
+		"temp_blks_read, temp_blks_written, wal_records, wal_fpi, wal_bytes, wal_buffers_full FROM stat WHERE visible UNION ALL SELECT DATABASE, 'all_users', NULL, " +
+		"'all_queries', NULLIF(SUM(COALESCE(calls, 0)), 0), NULLIF(SUM(COALESCE(ROWS, 0)), 0), NULLIF(SUM(COALESCE(total_exec_time, 0)), 0), " +
+		"NULLIF(SUM(COALESCE(total_plan_time, 0)), 0), NULLIF(SUM(COALESCE(blk_read_time, 0)), 0), NULLIF(SUM(COALESCE(blk_write_time, 0)), 0), " +
+		"NULLIF(SUM(COALESCE(shared_blks_hit, 0)), 0), NULLIF(SUM(COALESCE(shared_blks_read, 0)), 0), NULLIF(SUM(COALESCE(shared_blks_dirtied, 0)), 0), " +
+		"NULLIF(SUM(COALESCE(shared_blks_written, 0)), 0), NULLIF(SUM(COALESCE(local_blks_hit, 0)), 0), NULLIF(SUM(COALESCE(local_blks_read, 0)), 0), " +
+		"NULLIF(SUM(COALESCE(local_blks_dirtied, 0)), 0), NULLIF(SUM(COALESCE(local_blks_written, 0)), 0), NULLIF(SUM(COALESCE(temp_blks_read, 0)), 0), " +
+		"NULLIF(SUM(COALESCE(temp_blks_written, 0)), 0), NULLIF(SUM(COALESCE(wal_records, 0)), 0), NULLIF(SUM(COALESCE(wal_fpi, 0)), 0), " +
+		"NULLIF(SUM(COALESCE(wal_bytes, 0)), 0), NULLIF(SUM(COALESCE(wal_buffers_full, 0)), 0), " +
+		"NULLIF(SUM(COALESCE(generic_plan_calls, 0)), 0), NULLIF(SUM(COALESCE(custom_plan_calls, 0)), 0) FROM stat WHERE NOT visible " +
+		"GROUP BY DATABASE HAVING EXISTS (SELECT 1 FROM stat WHERE NOT visible)"
 )
 
 // postgresStatementsCollector ...
 type postgresStatementsCollector struct {
-	query         typedDesc
-	calls         typedDesc
-	rows          typedDesc
-	times         typedDesc
-	allTimes      typedDesc
-	sharedHit     typedDesc
-	sharedRead    typedDesc
-	sharedDirtied typedDesc
-	sharedWritten typedDesc
-	localHit      typedDesc
-	localRead     typedDesc
-	localDirtied  typedDesc
-	localWritten  typedDesc
-	tempRead      typedDesc
-	tempWritten   typedDesc
-	walRecords    typedDesc
-	walBuffers    typedDesc
-	walAllBytes   typedDesc
-	walBytes      typedDesc
+	query            typedDesc
+	calls            typedDesc
+	rows             typedDesc
+	times            typedDesc
+	allTimes         typedDesc
+	sharedHit        typedDesc
+	sharedRead       typedDesc
+	sharedDirtied    typedDesc
+	sharedWritten    typedDesc
+	localHit         typedDesc
+	localRead        typedDesc
+	localDirtied     typedDesc
+	localWritten     typedDesc
+	tempRead         typedDesc
+	tempWritten      typedDesc
+	walRecords       typedDesc
+	walBuffers       typedDesc
+	walAllBytes      typedDesc
+	walBytes         typedDesc
+	genericPlanCalls typedDesc
+	customPlanCalls  typedDesc
 }
 
 // NewPostgresStatementsCollector returns a new Collector exposing postgres statements stats.
@@ -312,6 +363,18 @@ func NewPostgresStatementsCollector(constLabels labels, settings model.Collector
 			descOpts{"postgres", "statements", "wal_bytes_total", "Total number of WAL bytes generated by the statement, by type.", 0},
 			prometheus.CounterValue,
 			[]string{"user", "database", "queryid", "wal"}, constLabels,
+			settings.Filters,
+		),
+		genericPlanCalls: newBuiltinTypedDesc(
+			descOpts{"postgres", "statements", "generic_plan_calls_total", "Total number of times prepared statement was executed using a generic plan.", 0},
+			prometheus.CounterValue,
+			[]string{"user", "database", "queryid"}, constLabels,
+			settings.Filters,
+		),
+		customPlanCalls: newBuiltinTypedDesc(
+			descOpts{"postgres", "statements", "custom_plan_calls_total", "Total number of times prepared statement was executed using a custom plan.", 0},
+			prometheus.CounterValue,
+			[]string{"user", "database", "queryid"}, constLabels,
 			settings.Filters,
 		),
 	}, nil
@@ -435,6 +498,12 @@ func (c *postgresStatementsCollector) Update(ctx context.Context, config Config,
 				ch <- c.walBuffers.newConstMetric(stat.walBuffers, stat.user, stat.database, stat.queryid)
 			}
 		}
+		if stat.genericPlanCalls > 0 {
+			ch <- c.genericPlanCalls.newConstMetric(stat.genericPlanCalls, stat.user, stat.database, stat.queryid)
+		}
+		if stat.customPlanCalls > 0 {
+			ch <- c.customPlanCalls.newConstMetric(stat.customPlanCalls, stat.user, stat.database, stat.queryid)
+		}
 	}
 
 	return nil
@@ -466,6 +535,8 @@ type postgresStatementStat struct {
 	walFPI            float64
 	walBytes          float64
 	walBuffers        float64
+	genericPlanCalls  float64
+	customPlanCalls   float64
 }
 
 // parsePostgresStatementsStats parses PGResult and return structs with stats values.
@@ -564,6 +635,10 @@ func parsePostgresStatementsStats(r *model.PGResult, labelNames []string) map[st
 				s.walBytes += v
 			case "wal_buffers_full":
 				s.walBuffers += v
+			case "generic_plan_calls":
+				s.genericPlanCalls += v
+			case "custom_plan_calls":
+				s.customPlanCalls += v
 			default:
 				continue
 			}
@@ -598,6 +673,11 @@ func selectStatementsQuery(version int, schema string, notrackmode bool, topK in
 			return fmt.Sprintf(postgresStatementsQuery17TopK, queryColumm, schema)
 		}
 		return fmt.Sprintf(postgresStatementsQuery17, queryColumm, schema)
+	} else if version > PostgresV17 && version < PostgresV19 {
+		if topK > 0 {
+			return fmt.Sprintf(postgresStatementsQuery18TopK, queryColumm, schema)
+		}
+		return fmt.Sprintf(postgresStatementsQuery18, queryColumm, schema)
 	}
 	if topK > 0 {
 		return fmt.Sprintf(postgresStatementsQueryLatestTopK, queryColumm, schema)
