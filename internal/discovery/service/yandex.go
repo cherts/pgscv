@@ -3,11 +3,12 @@ package service
 
 import (
 	"context"
-	"github.com/cherts/pgscv/discovery"
 	"maps"
 	"os"
 	"sync"
 	"time"
+
+	"github.com/cherts/pgscv/discovery"
 
 	"github.com/cherts/pgscv/discovery/log"
 	"github.com/cherts/pgscv/internal/discovery/cloud/yandex"
@@ -36,7 +37,7 @@ type YandexConfig struct {
 	AuthorizedKey   string    `json:"authorized_key" yaml:"authorized_key"`
 	FolderID        string    `json:"folder_id" yaml:"folder_id"`
 	User            string    `json:"user" yaml:"user"`
-	Password        string    `json:"password" yaml:"password"`
+	Password        string    `json:"password" yaml:"password"` // #nosec G117
 	PasswordFromEnv string    `json:"password_from_env" yaml:"password_from_env"`
 	RefreshInterval int       `json:"refresh_interval" yaml:"refresh_interval"`
 	Clusters        []Cluster `json:"clusters" yaml:"clusters"`

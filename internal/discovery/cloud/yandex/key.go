@@ -17,7 +17,7 @@ type authorizedKey struct {
 	CreatedAt        time.Time `json:"created_at" validate:"required"`
 	KeyAlgorithm     string    `json:"key_algorithm" validate:"required"`
 	PublicKey        string    `json:"public_key" validate:"required"`
-	PrivateKey       string    `json:"private_key" validate:"required"`
+	PrivateKey       string    `json:"private_key" validate:"required"` // #nosec G117
 }
 
 func (k *authorizedKey) validate() error {
