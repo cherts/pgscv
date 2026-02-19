@@ -24,6 +24,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v6
+      - name: Set Git config
+        run: git config --global --add safe.directory /__w/pgscv/pgscv
       - name: Prepare test environment
         run: prepare-test-environment.sh
       - name: Run test

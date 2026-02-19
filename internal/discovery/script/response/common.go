@@ -41,7 +41,7 @@ type ScriptResponse struct {
 	// UserFromEnv specifies an environment variable containing the database username
 	UserFromEnv string `pgscv:"user-from-env" json:"user_from_env" validate:"omitempty,env_name"`
 	// Password is the database password for connection
-	Password string `pgscv:"password" json:"password"`
+	Password string `pgscv:"password" json:"password"` // #nosec G117
 	// PasswordFromEnvVar specifies an environment variable containing the database password
 	PasswordFromEnvVar string `pgscv:"password-from-env" json:"password_from_env" validate:"omitempty,env_name"`
 }
