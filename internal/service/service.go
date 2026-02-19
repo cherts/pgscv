@@ -24,7 +24,7 @@ import (
 // PgSCVCollector compatible with prom collector
 type PgSCVCollector interface {
 	Collector
-	FlushServiceConfig()
+	FlushServiceConfig(context.Context) error
 }
 
 // Service struct describes service - the target from which should be collected metrics.
@@ -384,11 +384,14 @@ func (repo *Repository) setupServices(config Config) error {
 }
 
 // FlushServiceConfig postgresql services config
-func (repo *Repository) FlushServiceConfig() {
+func (repo *Repository) FlushServiceConfig(ctx context.Context) {
 	repo.RLock()
 	defer repo.RUnlock()
 	for _, s := range repo.Services {
-		s.Collector.FlushServiceConfig()
+		err := s.Collector.FlushServiceConfig(ctx)
+		if err != nil {
+			log.Errorf("flush service config failed: %s", err.Error())
+		}
 	}
 }
 

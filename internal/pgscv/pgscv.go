@@ -142,7 +142,7 @@ func Start(ctx context.Context, config *Config) error {
 				wg.Done()
 				return
 			case <-time.After(config.RefreshServiceConfigInterval):
-				serviceRepo.FlushServiceConfig()
+				serviceRepo.FlushServiceConfig(serviceFlusherCtx)
 			}
 		}()
 	}
@@ -246,9 +246,9 @@ func getMetricsHandler(repository *service.Repository) func(w net_http.ResponseW
 	}
 }
 
-func getFlushHandler(repository *service.Repository) func(w net_http.ResponseWriter, r *net_http.Request) {
+func getFlushHandler(ctx context.Context, repository *service.Repository) func(w net_http.ResponseWriter, r *net_http.Request) {
 	return func(w net_http.ResponseWriter, _ *net_http.Request) {
-		repository.FlushServiceConfig()
+		repository.FlushServiceConfig(ctx)
 
 		jsonData, err := json.Marshal(struct {
 			Status string
@@ -332,7 +332,7 @@ func runHTTPListener(ctx context.Context, config *Config, repository *service.Re
 	srv := http.NewServer(sCfg,
 		getMetricsHandler(repository),
 		getTargetsHandler(repository, config.URLPrefix, config.AuthConfig.EnableTLS),
-		getFlushHandler(repository),
+		getFlushHandler(ctx, repository),
 	)
 
 	errCh := make(chan error)

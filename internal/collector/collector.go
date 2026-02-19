@@ -246,8 +246,8 @@ func (n PgscvCollector) Describe(ch chan<- *prometheus.Desc) {
 }
 
 // FlushServiceConfig postgresql service config
-func (n PgscvCollector) FlushServiceConfig() {
-	n.Config.FlushServiceConfig()
+func (n PgscvCollector) FlushServiceConfig(ctx context.Context) error {
+	return n.Config.FlushServiceConfig(ctx)
 }
 
 // Collect implements the prometheus.Collector interface.
