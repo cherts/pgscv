@@ -1,6 +1,6 @@
 module github.com/cherts/pgscv
 
-go 1.25.6
+go 1.25.7
 
 require (
 	github.com/alecthomas/kingpin/v2 v2.4.0
