@@ -44,12 +44,10 @@ func TestServer_Serve_HTTP(t *testing.T) {
 	srv := NewServer(ServerConfig{Addr: addr}, getDummyHandler(), getDummyHandler())
 
 	var wg sync.WaitGroup
-	wg.Add(1)
-	go func() {
+	wg.Go(func() {
 		err := srv.Serve()
 		assert.NoError(t, err)
-		wg.Done()
-	}()
+	})
 
 	time.Sleep(100 * time.Millisecond)
 
@@ -77,12 +75,10 @@ func TestServer_Serve_HTTPS(t *testing.T) {
 	}}, getDummyHandler(), getDummyHandler())
 
 	var wg sync.WaitGroup
-	wg.Add(1)
-	go func() {
+	wg.Go(func() {
 		err := srv.Serve()
 		assert.NoError(t, err)
-		wg.Done()
-	}()
+	})
 
 	time.Sleep(100 * time.Millisecond)
 

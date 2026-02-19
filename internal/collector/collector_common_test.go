@@ -168,12 +168,10 @@ func Test_updateAllDescSets(t *testing.T) {
 	ch := make(chan prometheus.Metric)
 
 	var wg sync.WaitGroup
-	wg.Add(1)
-	go func() {
+	wg.Go(func() {
 		assert.NoError(t, updateAllDescSets(context.Background(), config, desksets, ch))
 		close(ch)
-		wg.Done()
-	}()
+	})
 
 	var counter = 0
 	for m := range ch {
@@ -216,12 +214,10 @@ func Test_updateFromSingleDatabase(t *testing.T) {
 	ch := make(chan prometheus.Metric)
 
 	var wg sync.WaitGroup
-	wg.Add(1)
-	go func() {
+	wg.Go(func() {
 		assert.NoError(t, updateFromSingleDatabase(context.Background(), config, desksets, ch))
 		close(ch)
-		wg.Done()
-	}()
+	})
 
 	var counter = 0
 	for m := range ch {
@@ -283,12 +279,10 @@ func Test_updateSingleDescSet(t *testing.T) {
 			ch := make(chan prometheus.Metric)
 
 			var wg sync.WaitGroup
-			wg.Add(1)
-			go func() {
+			wg.Go(func() {
 				assert.NoError(t, updateSingleDescSet(context.Background(), conn, set, ch, false))
 				close(ch)
-				wg.Done()
-			}()
+			})
 
 			for m := range ch {
 				//fmt.Println(m.Desc().String())
@@ -342,12 +336,10 @@ func Test_updateMetrics(t *testing.T) {
 	for _, tc := range testcases {
 		ch := make(chan prometheus.Metric)
 		var wg sync.WaitGroup
-		wg.Add(1)
-		go func() {
+		wg.Go(func() {
 			updateMetrics(row, tc.desc, colnames, ch, tc.dbLabelValue)
 			close(ch)
-			wg.Done()
-		}()
+		})
 
 		var counter int
 		for range ch {
@@ -423,12 +415,10 @@ func Test_updateMultipleMetrics(t *testing.T) {
 	for _, tc := range testcases {
 		ch := make(chan prometheus.Metric)
 		var wg sync.WaitGroup
-		wg.Add(1)
-		go func() {
+		wg.Go(func() {
 			updateMultipleMetrics(row, tc.desc, colnames, ch, tc.dbLabelValue)
 			close(ch)
-			wg.Done()
-		}()
+		})
 
 		var counter int
 		for range ch {
@@ -505,12 +495,10 @@ func Test_updateSingleMetric(t *testing.T) {
 	for _, tc := range testcases {
 		ch := make(chan prometheus.Metric)
 		var wg sync.WaitGroup
-		wg.Add(1)
-		go func() {
+		wg.Go(func() {
 			updateSingleMetric(row, tc.desc, colnames, ch, tc.dbLabelValue)
 			close(ch)
-			wg.Done()
-		}()
+		})
 
 		var counter int
 		for range ch {

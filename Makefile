@@ -29,7 +29,7 @@ VERSION_BETA=1.0-$(BRANCH)-$(COMMIT)-$(DATE)-beta
 LDFLAGS = -a -installsuffix cgo -ldflags "-X main.appName=${APPNAME} -X main.gitTag=${VERSION} -X main.gitCommit=${COMMIT} -X main.gitBranch=${BRANCH}"
 LDFLAGS_BETA = -a -installsuffix cgo -ldflags "-X main.appName=${APPNAME} -X main.gitTag=${VERSION_BETA} -X main.gitCommit=${COMMIT} -X main.gitBranch=${BRANCH}"
 
-MODERNIZE_CMD = go run golang.org/x/tools/gopls/internal/analysis/modernize/cmd/modernize@v0.18.1
+MODERNIZE_CMD = go run golang.org/x/tools/gopls/internal/analysis/modernize/cmd/modernize@v0.21.1
 
 .PHONY: help \
 		clean lint test race \
