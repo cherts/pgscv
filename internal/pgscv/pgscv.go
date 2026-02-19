@@ -9,6 +9,7 @@ import (
 	net_http "net/http"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
@@ -122,11 +123,25 @@ func Start(ctx context.Context, config *Config) error {
 
 	// Start HTTP metrics listener.
 	wg.Go(func() {
-		if err := runMetricsListener(ctx, config, serviceRepo); err != nil {
+		if err := runHTTPListener(ctx, config, serviceRepo); err != nil {
 			errCh <- err
 		}
 	})
 
+	// Start Service config flusher
+	if config.RefreshServiceConfigInterval > 0 {
+		wg.Add(1)
+		serviceFlusherCtx := context.WithoutCancel(ctx)
+		go func() {
+			select {
+			case <-serviceFlusherCtx.Done():
+				wg.Done()
+				return
+			case <-time.After(config.RefreshServiceConfigInterval):
+				serviceRepo.FlushServiceConfig(serviceFlusherCtx)
+			}
+		}()
+	}
 	// Waiting for errors or context cancelling.
 	for {
 		select {
@@ -227,6 +242,27 @@ func getMetricsHandler(repository *service.Repository) func(w net_http.ResponseW
 	}
 }
 
+func getFlushHandler(ctx context.Context, repository *service.Repository) func(w net_http.ResponseWriter, r *net_http.Request) {
+	return func(w net_http.ResponseWriter, _ *net_http.Request) {
+		repository.FlushServiceConfig(ctx)
+
+		jsonData, err := json.Marshal(struct {
+			Status string
+		}{Status: "OK"},
+		)
+		if err != nil {
+			log.Error(err.Error())
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+
+		_, err = w.Write(jsonData)
+		if err != nil {
+			log.Error(err.Error())
+		}
+	}
+}
+
 // getTargetsHandler return http handler function to /targets endpoint
 func getTargetsHandler(repository *service.Repository, urlPrefix string, enableTLS bool) func(w net_http.ResponseWriter, r *net_http.Request) {
 	return func(w net_http.ResponseWriter, r *net_http.Request) {
@@ -283,13 +319,17 @@ func getTargetsHandler(repository *service.Repository, urlPrefix string, enableT
 	}
 }
 
-// runMetricsListener start HTTP listener accordingly to passed configuration.
-func runMetricsListener(ctx context.Context, config *Config, repository *service.Repository) error {
+// runHTTPListener start HTTP listener accordingly to passed configuration.
+func runHTTPListener(ctx context.Context, config *Config, repository *service.Repository) error {
 	sCfg := http.ServerConfig{
 		Addr:       config.ListenAddress,
 		AuthConfig: config.AuthConfig,
 	}
-	srv := http.NewServer(sCfg, getMetricsHandler(repository), getTargetsHandler(repository, config.URLPrefix, config.AuthConfig.EnableTLS))
+	srv := http.NewServer(sCfg,
+		getMetricsHandler(repository),
+		getTargetsHandler(repository, config.URLPrefix, config.AuthConfig.EnableTLS),
+		getFlushHandler(ctx, repository),
+	)
 
 	errCh := make(chan error)
 	defer close(errCh)

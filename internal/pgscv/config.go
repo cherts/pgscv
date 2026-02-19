@@ -19,6 +19,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"time"
 )
 
 const (
@@ -31,24 +32,25 @@ const (
 
 // Config defines application's configuration.
 type Config struct {
-	NoTrackMode           bool                     `yaml:"no_track_mode"`        // controls tracking sensitive information (query texts, etc)
-	ListenAddress         string                   `yaml:"listen_address"`       // Network address and port where the application should listen on
-	ServicesConnsSettings service.ConnsSettings    `yaml:"services"`             // All connections settings for exact services
-	Defaults              map[string]string        `yaml:"defaults"`             // Defaults
-	DisableCollectors     []string                 `yaml:"disable_collectors"`   // List of collectors which should be disabled. DEPRECATED in favor collectors settings
-	CollectorsSettings    model.CollectorsSettings `yaml:"collectors"`           // Collectors settings propagated from main YAML configuration
-	AuthConfig            http.AuthConfig          `yaml:"authentication"`       // TLS and Basic auth configuration
-	CollectTopTable       int                      `yaml:"collect_top_table"`    // Limit elements on Table collector
-	CollectTopIndex       int                      `yaml:"collect_top_index"`    // Limit elements on Indexes collector
-	CollectTopQuery       int                      `yaml:"collect_top_query"`    // Limit elements on Statements collector
-	SkipConnErrorMode     bool                     `yaml:"skip_conn_error_mode"` // Skipping connection errors and creating a Service instance.
-	DiscoveryConfig       *any                     `yaml:"discovery"`
-	DiscoveryServices     *map[string]sd.Discovery
-	ConnTimeout           int           `yaml:"conn_timeout"`
-	URLPrefix             string        `yaml:"url_prefix"` // Url prefix
-	ConcurrencyLimit      *int          `yaml:"concurrency_limit"`
-	CacheConfig           *cache.Config `yaml:"cache" validate:"omitempty"`
-	PoolerConfig          *PoolConfig   `yaml:"pooler" validate:"omitempty,pool_config"`
+	NoTrackMode                  bool                     `yaml:"no_track_mode"`        // controls tracking sensitive information (query texts, etc)
+	ListenAddress                string                   `yaml:"listen_address"`       // Network address and port where the application should listen on
+	ServicesConnsSettings        service.ConnsSettings    `yaml:"services"`             // All connections settings for exact services
+	Defaults                     map[string]string        `yaml:"defaults"`             // Defaults
+	DisableCollectors            []string                 `yaml:"disable_collectors"`   // List of collectors which should be disabled. DEPRECATED in favor collectors settings
+	CollectorsSettings           model.CollectorsSettings `yaml:"collectors"`           // Collectors settings propagated from main YAML configuration
+	AuthConfig                   http.AuthConfig          `yaml:"authentication"`       // TLS and Basic auth configuration
+	CollectTopTable              int                      `yaml:"collect_top_table"`    // Limit elements on Table collector
+	CollectTopIndex              int                      `yaml:"collect_top_index"`    // Limit elements on Indexes collector
+	CollectTopQuery              int                      `yaml:"collect_top_query"`    // Limit elements on Statements collector
+	SkipConnErrorMode            bool                     `yaml:"skip_conn_error_mode"` // Skipping connection errors and creating a Service instance.
+	DiscoveryConfig              *any                     `yaml:"discovery"`
+	DiscoveryServices            *map[string]sd.Discovery
+	ConnTimeout                  int           `yaml:"conn_timeout"`
+	URLPrefix                    string        `yaml:"url_prefix"` // Url prefix
+	ConcurrencyLimit             *int          `yaml:"concurrency_limit"`
+	CacheConfig                  *cache.Config `yaml:"cache" validate:"omitempty"`
+	PoolerConfig                 *PoolConfig   `yaml:"pooler" validate:"omitempty,pool_config"`
+	RefreshServiceConfigInterval time.Duration `yaml:"refresh_service_config_interval"`
 }
 
 // PoolConfig defines pgxPool configuration.
@@ -126,6 +128,10 @@ func NewConfig(configFilePath string) (*Config, error) {
 		if configFromEnv.ConcurrencyLimit != nil {
 			configFromFile.ConcurrencyLimit = configFromEnv.ConcurrencyLimit
 		}
+		if configFromEnv.RefreshServiceConfigInterval > 0 {
+			configFromFile.RefreshServiceConfigInterval = configFromEnv.RefreshServiceConfigInterval
+		}
+
 		return configFromFile, nil
 	}
 
@@ -274,6 +280,9 @@ func (c *Config) Validate() error {
 	}
 	if c.ConnTimeout > 0 {
 		log.Infof("option conn_timeout is enabled (set %d seconds timeout)", c.ConnTimeout)
+	}
+	if c.RefreshServiceConfigInterval > 0 {
+		log.Infof("option refresh_service_config_interval is enabled (set %s interval)", c.RefreshServiceConfigInterval.String())
 	}
 
 	validate := validator.New()
@@ -481,6 +490,12 @@ func newConfigFromEnv() (*Config, error) {
 			}
 			minIdleConns32 := int32(minIdleConns)
 			config.PoolerConfig.MinIdleConns = &minIdleConns32
+		case "PGSCV_REFRESH_SERVICE_CONFIG_INTERVAL":
+			duration, err := time.ParseDuration(value)
+			if err != nil {
+				return nil, fmt.Errorf("invalid setting PGSCV_REFRESH_SERVICE_CONFIG_INTERVAL, value '%s', error: %w", value, err)
+			}
+			config.RefreshServiceConfigInterval = duration
 		}
 
 	}
