@@ -69,7 +69,11 @@ func NewServer(cfg ServerConfig,
 		mux.HandleFunc("/metrics", handlerMetrics)
 	}
 	mux.HandleFunc("/targets", targetsMetrics)
-	mux.HandleFunc("/flush-services-config", flushServiceConfig)
+	if cfg.EnableAuth {
+		mux.HandleFunc("/flush-services-config", basicAuth(cfg.AuthConfig, flushServiceConfig))
+	} else {
+		mux.HandleFunc("/flush-services-config", flushServiceConfig)
+	}
 
 	return &Server{
 		config: cfg,
