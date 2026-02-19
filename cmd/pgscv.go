@@ -4,18 +4,20 @@ package main
 import (
 	"context"
 	"fmt"
-	"github.com/alecthomas/kingpin/v2"
-	"github.com/cherts/pgscv/discovery/factory"
-	sdlog "github.com/cherts/pgscv/discovery/log"
-	"github.com/cherts/pgscv/internal/cache"
-
 	"os"
 	"os/signal"
 	"syscall"
 
+	// #nosec
+	//"net/http"
+	//_ "net/http/pprof"
+
+	"github.com/alecthomas/kingpin/v2"
+	"github.com/cherts/pgscv/discovery/factory"
+	sdlog "github.com/cherts/pgscv/discovery/log"
+	"github.com/cherts/pgscv/internal/cache"
 	"github.com/cherts/pgscv/internal/log"
 	"github.com/cherts/pgscv/internal/pgscv"
-	//_ "net/http/pprof"
 )
 
 var (
@@ -42,6 +44,7 @@ func main() {
 
 	log.Infoln("starting ", appName, " ", gitTag, " ", gitCommit, "-", gitBranch)
 
+	// #nosec
 	//go func() {
 	//	log.Infoln(http.ListenAndServe(":6060", nil))
 	//}()

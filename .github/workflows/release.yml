@@ -5,12 +5,12 @@ on:
   workflow_dispatch:
   push:
     tags:
-      - "v*"
+      - "v1.*"
 
 jobs:
   test:
     runs-on: ubuntu-22.04
-    container: cherts/pgscv-test-runner:2.0.12
+    container: cherts/pgscv-test-runner:2.0.13
     steps:
       - name: Checkout code
         uses: actions/checkout@v6

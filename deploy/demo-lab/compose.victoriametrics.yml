@@ -1,7 +1,7 @@
 services:
   victoriametrics:
     container_name: victoriametrics
-    image: victoriametrics/victoria-metrics:stable
+    image: victoriametrics/victoria-metrics:v1.134.0
     volumes:
       - vmsingle_data:/data
     command:
@@ -12,7 +12,7 @@ services:
     networks: [ monitoring ]
   vmagent:
     container_name: vmagent
-    image: victoriametrics/vmagent:stable
+    image: victoriametrics/vmagent:v1.134.0
     volumes:
       - vmagent_data:/vmagentdata
       - ${PWD}/vmagent/vmagent.yaml:/etc/vmagent.yaml
@@ -29,7 +29,7 @@ services:
     networks: [ monitoring ]
   grafana:
     container_name: grafana
-    image: grafana/grafana:main
+    image: grafana/grafana:12.2.0
     volumes:
       - grafana_data:/var/lib/grafana
       - ${PWD}/grafana/provisioning/datasources/single.yml:/etc/grafana/provisioning/datasources/single.yml

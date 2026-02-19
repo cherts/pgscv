@@ -2,10 +2,11 @@ package collector
 
 import (
 	"database/sql"
+	"testing"
+
 	"github.com/cherts/pgscv/internal/model"
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/stretchr/testify/assert"
-	"testing"
 )
 
 func TestPgbouncerPoolsCollector_Update(t *testing.T) {
@@ -32,34 +33,40 @@ func Test_parsePgbouncerPoolsStats(t *testing.T) {
 			name: "normal output",
 			res: &model.PGResult{
 				Nrows: 2,
-				Ncols: 11,
+				Ncols: 15,
 				Colnames: []pgconn.FieldDescription{
-					{Name: "database"}, {Name: "user"},
-					{Name: "cl_active"}, {Name: "cl_waiting"}, {Name: "sv_active"}, {Name: "sv_idle"},
+					{Name: "database"}, {Name: "user"}, {Name: "pool_mode"},
+					{Name: "cl_active"}, {Name: "cl_waiting"}, {Name: "cl_active_cancel_req"}, {Name: "cl_waiting_cancel_req"},
+					{Name: "sv_active"}, {Name: "sv_active_cancel"}, {Name: "sv_being_canceled"}, {Name: "sv_idle"},
 					{Name: "sv_used"}, {Name: "sv_tested"}, {Name: "sv_login"}, {Name: "maxwait"},
-					{Name: "pool_mode"},
 				},
 				Rows: [][]sql.NullString{
 					{
-						{String: "testdb1", Valid: true}, {String: "testuser1", Valid: true},
-						{String: "15", Valid: true}, {String: "5", Valid: true}, {String: "10", Valid: true}, {String: "1", Valid: true},
+						{String: "testdb1", Valid: true}, {String: "testuser1", Valid: true}, {String: "transaction", Valid: true},
+						{String: "15", Valid: true}, {String: "5", Valid: true}, {String: "0", Valid: true}, {String: "0", Valid: true},
+						{String: "10", Valid: true}, {String: "0", Valid: true}, {String: "0", Valid: true}, {String: "1", Valid: true},
 						{String: "1", Valid: true}, {String: "1", Valid: true}, {String: "1", Valid: true}, {String: "1", Valid: true},
-						{String: "transaction", Valid: true},
 					},
 					{
-						{String: "testdb2", Valid: true}, {String: "testuser2", Valid: true},
-						{String: "25", Valid: true}, {String: "10", Valid: true}, {String: "25", Valid: true}, {String: "2", Valid: true},
+						{String: "testdb2", Valid: true}, {String: "testuser2", Valid: true}, {String: "statement", Valid: true},
+						{String: "25", Valid: true}, {String: "10", Valid: true}, {String: "0", Valid: true}, {String: "5", Valid: true},
+						{String: "25", Valid: true}, {String: "2", Valid: true}, {String: "0", Valid: true}, {String: "1", Valid: true},
 						{String: "2", Valid: true}, {String: "2", Valid: true}, {String: "2", Valid: true}, {String: "2", Valid: true},
-						{String: "statement", Valid: true},
 					},
 				},
 			},
 			want: map[string]pgbouncerPoolStat{
 				"testuser1/testdb1/transaction": {
-					database: "testdb1", user: "testuser1", clActive: 15, clWaiting: 5, svActive: 10, svIdle: 1, svUsed: 1, svTested: 1, svLogin: 1, maxWait: 1, mode: "transaction",
+					database: "testdb1", user: "testuser1", mode: "transaction",
+					clActive: 15, clWaiting: 5, clActiveCancelReq: 0, clWaitingCancelReq: 0,
+					svActive: 10, svActiveCancel: 0, svBeingCanceled: 0, svIdle: 1,
+					svUsed: 1, svTested: 1, svLogin: 1, maxWait: 1,
 				},
 				"testuser2/testdb2/statement": {
-					database: "testdb2", user: "testuser2", clActive: 25, clWaiting: 10, svActive: 25, svIdle: 2, svUsed: 2, svTested: 2, svLogin: 2, maxWait: 2, mode: "statement",
+					database: "testdb2", user: "testuser2", mode: "statement",
+					clActive: 25, clWaiting: 10, clActiveCancelReq: 0, clWaitingCancelReq: 5,
+					svActive: 25, svActiveCancel: 2, svBeingCanceled: 0, svIdle: 1,
+					svUsed: 2, svTested: 2, svLogin: 2, maxWait: 2,
 				},
 			},
 		},

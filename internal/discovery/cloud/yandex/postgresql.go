@@ -2,9 +2,8 @@ package yandex
 
 import (
 	"context"
-	"github.com/cherts/pgscv/internal/discovery/filter"
-
 	"github.com/cherts/pgscv/discovery/log"
+	"github.com/cherts/pgscv/internal/discovery/filter"
 	"github.com/yandex-cloud/go-genproto/yandex/cloud/mdb/postgresql/v1"
 )
 
@@ -39,17 +38,21 @@ type Cluster struct {
 // GetPostgreSQLClusters get a filtered list of clusters and their databases from Yandex cloud API
 func (sdk *SDK) GetPostgreSQLClusters(ctx context.Context, folderID string, filter []filter.Filter) ([]Cluster, error) {
 	log.Debug("[Yandex.Cloud SD] Init SDK...")
+
 	yandexSdk, err := sdk.Build(ctx)
 	if err != nil {
 		log.Errorf("[Yandex.Cloud SD] Failed to init SDK, error: %v", err)
 		return nil, err
 	}
 
+	ctxOp, cancel := context.WithCancel(ctx)
+	defer cancel()
+
 	var clusters []Cluster
 	var req postgresql.ListClustersRequest
 	req.FolderId = folderID
 	for {
-		resp, err := yandexSdk.MDB().PostgreSQL().Cluster().List(ctx, &req)
+		resp, err := yandexSdk.MDB().PostgreSQL().Cluster().List(ctxOp, &req)
 		if err != nil {
 			log.Errorf("[Yandex.Cloud SD] Failed to get cluster list, error: %v", err)
 			return nil, err
@@ -74,7 +77,7 @@ func (sdk *SDK) GetPostgreSQLClusters(ctx context.Context, folderID string, filt
 			}
 			var hosts []Host
 			var databases []Database
-			hostsIterator := yandexSdk.MDB().PostgreSQL().Cluster().ClusterHostsIterator(ctx,
+			hostsIterator := yandexSdk.MDB().PostgreSQL().Cluster().ClusterHostsIterator(ctxOp,
 				&postgresql.ListClusterHostsRequest{ClusterId: cluster.Id})
 			for hostsIterator.Next() {
 				host := hostsIterator.Value()
@@ -92,7 +95,7 @@ func (sdk *SDK) GetPostgreSQLClusters(ctx context.Context, folderID string, filt
 			var dbReq postgresql.ListDatabasesRequest
 			dbReq.ClusterId = cluster.Id
 			for {
-				dbResp, err := yandexSdk.MDB().PostgreSQL().Database().List(ctx,
+				dbResp, err := yandexSdk.MDB().PostgreSQL().Database().List(ctxOp,
 					&dbReq)
 				if err != nil {
 					return nil, err

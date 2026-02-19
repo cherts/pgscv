@@ -86,7 +86,7 @@ type PostgresVersion struct {
 	IsPGPRO     bool // Postgres Professional
 }
 
-func newPostgresServiceConfig(connStr string, connTimeout int) (postgresServiceConfig, error) {
+func newPostgresServiceConfig(ctx context.Context, connStr string, connTimeout int) (postgresServiceConfig, error) {
 	var config = postgresServiceConfig{}
 
 	// Return empty config if empty connection string.
@@ -114,7 +114,7 @@ func newPostgresServiceConfig(connStr string, connTimeout int) (postgresServiceC
 	var setting string
 
 	// Get role connection limit.
-	err = conn.Conn().QueryRow(context.Background(), "SELECT rolconnlimit FROM pg_roles WHERE rolname = USER").Scan(&setting)
+	err = conn.Conn().QueryRow(ctx, "SELECT rolconnlimit FROM pg_roles WHERE rolname = USER").Scan(&setting)
 	if err != nil {
 		return config, fmt.Errorf("failed to get rolconnlimit setting from pg_roles, %s, please check user grants", err)
 	}
@@ -125,7 +125,7 @@ func newPostgresServiceConfig(connStr string, connTimeout int) (postgresServiceC
 	config.rolConnLimit = int(rolConnLimit)
 
 	// Get Postgres block size.
-	err = conn.Conn().QueryRow(context.Background(), "SELECT setting FROM pg_catalog.pg_settings WHERE name = 'block_size'").Scan(&setting)
+	err = conn.Conn().QueryRow(ctx, "SELECT setting FROM pg_catalog.pg_settings WHERE name = 'block_size'").Scan(&setting)
 	if err != nil {
 		return config, fmt.Errorf("failed to get block_size setting from pg_catalog.pg_settings, %s, please check user grants", err)
 	}
@@ -137,7 +137,7 @@ func newPostgresServiceConfig(connStr string, connTimeout int) (postgresServiceC
 	config.blockSize = bsize
 
 	// Get Postgres WAL segment size.
-	err = conn.Conn().QueryRow(context.Background(), "SELECT setting FROM pg_catalog.pg_settings WHERE name = 'wal_segment_size'").Scan(&setting)
+	err = conn.Conn().QueryRow(ctx, "SELECT setting FROM pg_catalog.pg_settings WHERE name = 'wal_segment_size'").Scan(&setting)
 	if err != nil {
 		return config, fmt.Errorf("failed to get wal_segment_size setting from pg_catalog.pg_settings, %s, please check user grants", err)
 	}
@@ -149,7 +149,7 @@ func newPostgresServiceConfig(connStr string, connTimeout int) (postgresServiceC
 	config.walSegmentSize = walSegSize
 
 	// Get Postgres server version
-	err = conn.Conn().QueryRow(context.Background(), "SELECT setting FROM pg_catalog.pg_settings WHERE name = 'server_version_num'").Scan(&setting)
+	err = conn.Conn().QueryRow(ctx, "SELECT setting FROM pg_catalog.pg_settings WHERE name = 'server_version_num'").Scan(&setting)
 	if err != nil {
 		return config, fmt.Errorf("failed to get server_version_num setting from pg_catalog.pg_settings, %s, please check user grants", err)
 	}
@@ -164,33 +164,33 @@ func newPostgresServiceConfig(connStr string, connTimeout int) (postgresServiceC
 
 	config.pgVersion.Numeric = version
 
-	err = conn.Conn().QueryRow(context.Background(), "SELECT setting FROM pg_catalog.pg_settings WHERE name = 'server_version'").Scan(&setting)
+	err = conn.Conn().QueryRow(ctx, "SELECT setting FROM pg_catalog.pg_settings WHERE name = 'server_version'").Scan(&setting)
 	if err != nil {
 		return config, fmt.Errorf("failed to get server_version setting from pg_catalog.pg_settings, %s, please check user grants", err)
 	}
 	config.pgVersion.Short = setting
 
-	err = conn.Conn().QueryRow(context.Background(), "SELECT pg_catalog.version()").Scan(&config.pgVersion.Full)
+	err = conn.Conn().QueryRow(ctx, "SELECT pg_catalog.version()").Scan(&config.pgVersion.Full)
 	if err != nil {
 		return config, fmt.Errorf("failed to get pg_catalog.version(), %s, please check user grants", err)
 	}
 	config.pgVersion.IsEPAS = strings.Contains(config.pgVersion.Full, "EnterpriseDB Advanced Server")
 	config.pgVersion.IsYandex = strings.Contains(config.pgVersion.Full, "yandex")
 
-	isAwsAurora, err := GetIsAwsAurora(conn)
+	isAwsAurora, err := GetIsAwsAurora(ctx, conn)
 	if err != nil {
 		return config, fmt.Errorf("failed to get AWS Aurora version, %s, please check user grants", err)
 	}
 	config.pgVersion.IsAwsAurora = isAwsAurora
 
-	isCitus, err := GetIsCitus(conn)
+	isCitus, err := GetIsCitus(ctx, conn)
 	if err != nil {
 		return config, fmt.Errorf("failed to get Citus extension, %s, please check user grants", err)
 	}
 	config.pgVersion.IsCitus = isCitus
 
 	// Get Postgres data directory
-	err = conn.Conn().QueryRow(context.Background(), "SELECT setting FROM pg_catalog.pg_settings WHERE name = 'data_directory'").Scan(&setting)
+	err = conn.Conn().QueryRow(ctx, "SELECT setting FROM pg_catalog.pg_settings WHERE name = 'data_directory'").Scan(&setting)
 	if err != nil {
 		return config, fmt.Errorf("failed to get data_directory setting from pg_settings, %s, please check user grants", err)
 	}
@@ -198,7 +198,7 @@ func newPostgresServiceConfig(connStr string, connTimeout int) (postgresServiceC
 	config.dataDirectory = setting
 
 	// Get setting of 'logging_collector' GUC.
-	err = conn.Conn().QueryRow(context.Background(), "SELECT setting FROM pg_catalog.pg_settings WHERE name = 'logging_collector'").Scan(&setting)
+	err = conn.Conn().QueryRow(ctx, "SELECT setting FROM pg_catalog.pg_settings WHERE name = 'logging_collector'").Scan(&setting)
 	if err != nil {
 		return config, fmt.Errorf("failed to get logging_collector setting from pg_settings, %s, please check user grants", err)
 	}
@@ -208,7 +208,7 @@ func newPostgresServiceConfig(connStr string, connTimeout int) (postgresServiceC
 	}
 
 	// Get setting of 'log_destination' GUC.
-	err = conn.Conn().QueryRow(context.Background(), "SELECT setting FROM pg_catalog.pg_settings WHERE name = 'log_destination'").Scan(&setting)
+	err = conn.Conn().QueryRow(ctx, "SELECT setting FROM pg_catalog.pg_settings WHERE name = 'log_destination'").Scan(&setting)
 	if err != nil {
 		return config, fmt.Errorf("failed to get log_destination setting from pg_settings, %s, please check user grants", err)
 	}
@@ -216,7 +216,7 @@ func newPostgresServiceConfig(connStr string, connTimeout int) (postgresServiceC
 	config.logDestination = setting
 
 	// Discover pg_stat_statements
-	exists, schema, err := discoverPgStatStatements(conn)
+	exists, schema, err := discoverPgStatStatements(ctx, conn)
 	if err != nil {
 		return config, err
 	}
@@ -228,7 +228,7 @@ func newPostgresServiceConfig(connStr string, connTimeout int) (postgresServiceC
 	config.pgStatStatements = exists
 	config.pgStatStatementsSchema = schema
 
-	schema = extensionInstalledSchema(conn, "pgstattuple")
+	schema = extensionInstalledSchema(ctx, conn, "pgstattuple")
 	config.pgStatTuple = schema != ""
 	config.pgStatTupleSchema = schema
 
@@ -236,9 +236,9 @@ func newPostgresServiceConfig(connStr string, connTimeout int) (postgresServiceC
 }
 
 // FillPostgresServiceConfig defines new config for Postgres-based collectors.
-func (cfg *Config) FillPostgresServiceConfig(connTimeout int) error {
+func (cfg *Config) FillPostgresServiceConfig(ctx context.Context, connTimeout int) error {
 	var err error
-	cfg.postgresServiceConfig, err = newPostgresServiceConfig(cfg.ConnString, connTimeout)
+	cfg.postgresServiceConfig, err = newPostgresServiceConfig(ctx, cfg.ConnString, connTimeout)
 	return err
 }
 
@@ -278,9 +278,9 @@ func isAddressLocal(addr string) bool {
 }
 
 // discoverPgStatStatements discovers pg_stat_statements, what schema it is installed.
-func discoverPgStatStatements(conn *store.DB) (bool, string, error) {
+func discoverPgStatStatements(ctx context.Context, conn *store.DB) (bool, string, error) {
 	var setting string
-	err := conn.Conn().QueryRow(context.Background(), "SELECT setting FROM pg_settings WHERE name = 'shared_preload_libraries'").Scan(&setting)
+	err := conn.Conn().QueryRow(ctx, "SELECT setting FROM pg_settings WHERE name = 'shared_preload_libraries'").Scan(&setting)
 	if err != nil {
 		return false, "", err
 	}
@@ -291,19 +291,19 @@ func discoverPgStatStatements(conn *store.DB) (bool, string, error) {
 	}
 
 	// Check for pg_stat_statements in default database specified in connection string.
-	if schema := extensionInstalledSchema(conn, "pg_stat_statements"); schema != "" {
+	if schema := extensionInstalledSchema(ctx, conn, "pg_stat_statements"); schema != "" {
 		return true, schema, nil
 	}
 	return false, "", nil
 }
 
 // extensionInstalledSchema returns schema name where extension is installed, or empty if not installed.
-func extensionInstalledSchema(db *store.DB, name string) string {
+func extensionInstalledSchema(ctx context.Context, db *store.DB, name string) string {
 	log.Debugf("check %s extension availability", name)
 
 	var schema string
 	err := db.Conn().
-		QueryRow(context.Background(), "SELECT extnamespace::regnamespace FROM pg_extension WHERE extname = $1", name).
+		QueryRow(ctx, "SELECT extnamespace::regnamespace FROM pg_extension WHERE extname = $1", name).
 		Scan(&schema)
 	if err != nil && !errors.Is(err, pgx.ErrNoRows) {
 		log.Errorf("failed to check extensions '%s' in pg_extension: %s", name, err)
@@ -314,19 +314,19 @@ func extensionInstalledSchema(db *store.DB, name string) string {
 }
 
 // GetIsAwsAurora returns true if connected to Amazon Aurora, and false otherwise.
-func GetIsAwsAurora(db *store.DB) (bool, error) {
+func GetIsAwsAurora(ctx context.Context, db *store.DB) (bool, error) {
 	var isAurora bool
 	err := db.Conn().
-		QueryRow(context.Background(), "SELECT pg_catalog.count(1) = 1 FROM pg_catalog.pg_settings WHERE name = 'rds.extensions' AND setting LIKE '%aurora_stat_utils%'").
+		QueryRow(ctx, "SELECT pg_catalog.count(1) = 1 FROM pg_catalog.pg_settings WHERE name = 'rds.extensions' AND setting LIKE '%aurora_stat_utils%'").
 		Scan(&isAurora)
 	return isAurora, err
 }
 
 // GetIsCitus returns true if connected to Citus, and false otherwise.
-func GetIsCitus(db *store.DB) (bool, error) {
+func GetIsCitus(ctx context.Context, db *store.DB) (bool, error) {
 	var isCitus bool
 	err := db.Conn().
-		QueryRow(context.Background(), "SELECT pg_catalog.count(1) = 1 FROM pg_catalog.pg_extension WHERE extname = 'citus'").
+		QueryRow(ctx, "SELECT pg_catalog.count(1) = 1 FROM pg_catalog.pg_extension WHERE extname = 'citus'").
 		Scan(&isCitus)
 	return isCitus, err
 }

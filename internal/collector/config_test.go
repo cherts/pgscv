@@ -1,6 +1,7 @@
 package collector
 
 import (
+	"context"
 	"github.com/cherts/pgscv/internal/store"
 	"github.com/stretchr/testify/assert"
 	"testing"
@@ -18,7 +19,7 @@ func Test_newPostgresServiceConfig(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			_, err := newPostgresServiceConfig(tc.connStr, 0)
+			_, err := newPostgresServiceConfig(context.Background(), tc.connStr, 0)
 			if tc.valid {
 				assert.NoError(t, err)
 			} else {
@@ -52,7 +53,7 @@ func Test_isAddressLocal(t *testing.T) {
 func Test_extensionInstalledSchema(t *testing.T) {
 	conn := store.NewTest(t)
 
-	assert.Equal(t, extensionInstalledSchema(conn, "plpgsql"), "pg_catalog")
-	assert.Equal(t, extensionInstalledSchema(conn, "invalid"), "")
+	assert.Equal(t, extensionInstalledSchema(context.Background(), conn, "plpgsql"), "pg_catalog")
+	assert.Equal(t, extensionInstalledSchema(context.Background(), conn, "invalid"), "")
 	conn.Close()
 }

@@ -341,7 +341,12 @@ func (repo *Repository) setupServices(config Config) error {
 					factories.RegisterSystemCollectors(config.DisabledCollectors)
 				case model.ServiceTypePostgresql:
 					factories.RegisterPostgresCollectors(config.DisabledCollectors)
-					err := collectorConfig.FillPostgresServiceConfig(config.ConnTimeout)
+
+					ctxFillServiceConfig, cancelCtxFillServiceConfig := context.WithTimeout(context.Background(), 30*time.Second)
+					defer cancelCtxFillServiceConfig()
+
+					err := collectorConfig.FillPostgresServiceConfig(ctxFillServiceConfig, config.ConnTimeout)
+
 					if err != nil {
 						log.Errorf("update service config failed: %s", err.Error())
 					}
