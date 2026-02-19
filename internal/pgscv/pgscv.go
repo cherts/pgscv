@@ -89,14 +89,12 @@ func Start(ctx context.Context, config *Config) error {
 	defer close(errCh)
 	if config.DiscoveryServices != nil {
 		for _, ds := range *config.DiscoveryServices {
-			wg.Add(1)
-			go func() {
+			wg.Go(func() {
 				err := ds.Start(ctx, errCh)
 				if err != nil {
 					errCh <- err
 				}
-				wg.Done()
-			}()
+			})
 			switch dt := ds.(type) {
 			case *sd.YandexDiscovery:
 				err := subscribe(&ds, config, serviceRepo)
@@ -124,13 +122,11 @@ func Start(ctx context.Context, config *Config) error {
 	}
 
 	// Start HTTP metrics listener.
-	wg.Add(1)
-	go func() {
-		if err := runHTTPListener(ctx, config, serviceRepo); err != nil {
+	wg.Go(func() {
+		if err := runMetricsListener(ctx, config, serviceRepo); err != nil {
 			errCh <- err
 		}
-		wg.Done()
-	}()
+	})
 
 	// Start Service config flusher
 	if config.RefreshServiceConfigInterval > 0 {

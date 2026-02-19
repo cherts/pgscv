@@ -13,7 +13,7 @@ import (
 type AuthConfig struct {
 	EnableAuth bool   // flag tells about authentication should be enabled
 	Username   string `yaml:"username"` // username used for basic authentication
-	Password   string `yaml:"password"` // password used for basic authentication
+	Password   string `yaml:"password"` // #nosec G117 password used for basic authentication
 	EnableTLS  bool   // flag tells about TLS should be enabled
 	Keyfile    string `yaml:"keyfile"`  // path to key file
 	Certfile   string `yaml:"certfile"` // path to certificate file

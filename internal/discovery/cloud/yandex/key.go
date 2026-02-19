@@ -3,11 +3,12 @@ package yandex
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/cherts/pgscv/discovery/log"
-	"github.com/go-playground/validator/v10"
 	"os"
 	"path/filepath"
 	"time"
+
+	"github.com/cherts/pgscv/discovery/log"
+	"github.com/go-playground/validator/v10"
 )
 
 type authorizedKey struct {
@@ -16,7 +17,7 @@ type authorizedKey struct {
 	CreatedAt        time.Time `json:"created_at" validate:"required"`
 	KeyAlgorithm     string    `json:"key_algorithm" validate:"required"`
 	PublicKey        string    `json:"public_key" validate:"required"`
-	PrivateKey       string    `json:"private_key" validate:"required"`
+	PrivateKey       string    `json:"private_key" validate:"required"` // #nosec G117
 }
 
 func (k *authorizedKey) validate() error {

@@ -36,15 +36,13 @@ func Test_runMetricsListener(t *testing.T) {
 	wg := sync.WaitGroup{}
 
 	// Running listener function with short-live context in concurrent goroutine.
-	wg.Add(1)
-	go func() {
+	wg.Go(func() {
 		ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
 		defer cancel()
 
 		err := runHTTPListener(ctx, config, nil)
 		assert.NoError(t, err)
-		wg.Done()
-	}()
+	})
 
 	// Sleep a little hoping it will be enough for running listener goroutine.
 	time.Sleep(500 * time.Millisecond)
