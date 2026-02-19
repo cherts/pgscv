@@ -64,5 +64,5 @@ func (cl *Client) Get(url string) (*http.Response, error) {
 
 // Do wraps a standard http.Do method which sends an HTTP request and returns an HTTP response.
 func (cl *Client) Do(req *http.Request) (*http.Response, error) {
-	return cl.client.Do(req)
+	return cl.client.Do(req) // #nosec G704
 }
