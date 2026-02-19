@@ -123,7 +123,7 @@ func Start(ctx context.Context, config *Config) error {
 
 	// Start HTTP metrics listener.
 	wg.Go(func() {
-		if err := runMetricsListener(ctx, config, serviceRepo); err != nil {
+		if err := runHTTPListener(ctx, config, serviceRepo); err != nil {
 			errCh <- err
 		}
 	})
