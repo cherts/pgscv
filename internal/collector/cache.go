@@ -33,9 +33,7 @@ func saveToCache(collector string, wg *sync.WaitGroup, cacheConfig *cache.Config
 	if cacheConfig == nil || cacheKey == "" || cacheConfig.Cache == nil {
 		return
 	}
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
+	wg.Go(func() {
 		ttl, err := cacheConfig.GetCollectorTTL(collector)
 		if err != nil {
 			ttl = 60
@@ -44,5 +42,5 @@ func saveToCache(collector string, wg *sync.WaitGroup, cacheConfig *cache.Config
 		if err != nil {
 			return
 		}
-	}()
+	})
 }
