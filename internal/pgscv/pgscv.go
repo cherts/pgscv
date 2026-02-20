@@ -11,6 +11,8 @@ import (
 	"sync"
 	"time"
 
+	"golang.org/x/time/rate"
+
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 
@@ -23,6 +25,8 @@ import (
 )
 
 const pgSCVSubscriber = "pgscv_subscriber"
+
+const tooManyRequests = 429
 
 type target struct {
 	Targets []string          `json:"targets"`
@@ -220,9 +224,23 @@ func subscribe(ds *discovery.Discovery, config *Config, serviceRepo *service.Rep
 }
 
 // getMetricsHandler return http handler function to /metrics endpoint
-func getMetricsHandler(repository *service.Repository) func(w net_http.ResponseWriter, r *net_http.Request) {
+func getMetricsHandler(repository *service.Repository, newLimiterFunc func() *rate.Limiter) func(w net_http.ResponseWriter, r *net_http.Request) {
+	limiters := make(map[string]*rate.Limiter)
+
 	return func(w net_http.ResponseWriter, r *net_http.Request) {
 		target := r.URL.Query().Get("target")
+		if newLimiterFunc != nil {
+			if limiter, ok := limiters[target]; ok {
+				if !limiter.Allow() {
+					net_http.Error(w, fmt.Sprintf("Too many requests %s", target), tooManyRequests)
+					return
+				}
+			} else {
+				limiters[target] = newLimiterFunc()
+				limiter.Allow()
+			}
+		}
+
 		if target == "" {
 			h := promhttp.InstrumentMetricHandler(
 				prometheus.DefaultRegisterer, promhttp.HandlerFor(prometheus.DefaultGatherer, promhttp.HandlerOpts{}),
@@ -242,8 +260,15 @@ func getMetricsHandler(repository *service.Repository) func(w net_http.ResponseW
 	}
 }
 
-func getFlushHandler(ctx context.Context, repository *service.Repository) func(w net_http.ResponseWriter, r *net_http.Request) {
+func getFlushHandler(ctx context.Context, repository *service.Repository, limiter *rate.Limiter) func(w net_http.ResponseWriter, r *net_http.Request) {
 	return func(w net_http.ResponseWriter, _ *net_http.Request) {
+		if limiter != nil {
+			if !limiter.Allow() {
+				net_http.Error(w, "Too many requests /flush-services-config", tooManyRequests)
+				return
+			}
+		}
+
 		repository.FlushServiceConfig(ctx)
 
 		jsonData, err := json.Marshal(struct {
@@ -319,6 +344,13 @@ func getTargetsHandler(repository *service.Repository, urlPrefix string, enableT
 	}
 }
 
+const (
+	metricsRPS   = 5
+	metricsBurst = 20
+	flushRPS     = 1
+	flushBurst   = 1
+)
+
 // runHTTPListener start HTTP listener accordingly to passed configuration.
 func runHTTPListener(ctx context.Context, config *Config, repository *service.Repository) error {
 	sCfg := http.ServerConfig{
@@ -326,9 +358,11 @@ func runHTTPListener(ctx context.Context, config *Config, repository *service.Re
 		AuthConfig: config.AuthConfig,
 	}
 	srv := http.NewServer(sCfg,
-		getMetricsHandler(repository),
+		getMetricsHandler(repository, func() *rate.Limiter {
+			return rate.NewLimiter(rate.Every(time.Duration(metricsRPS)*time.Second), metricsBurst)
+		}),
 		getTargetsHandler(repository, config.URLPrefix, config.AuthConfig.EnableTLS),
-		getFlushHandler(ctx, repository),
+		getFlushHandler(ctx, repository, rate.NewLimiter(rate.Every(time.Duration(flushRPS)*time.Second), flushBurst)),
 	)
 
 	errCh := make(chan error)
