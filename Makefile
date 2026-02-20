@@ -1,7 +1,14 @@
 DOCKER_ACCOUNT = cherts
 APPNAME = pgscv
-APPOS = linux
-#APPOS = ${GOOS}
+APPOS=${GOOS}
+
+OS_NAME := $(shell uname -s | tr A-Z a-z)
+
+ifneq (,$(findstring msys,$(OS_NAME)))
+APPEXT=.exe
+else
+APPEXT=
+endif
 
 TAG_COMMIT := $(shell git rev-list --abbrev-commit --tags --max-count=1)
 TAG := $(shell git describe --abbrev=0 --tags ${TAG_COMMIT} 2>/dev/null || true)
@@ -43,7 +50,7 @@ help: ## Display this help screen
 	@grep -h -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  * \033[36m%-25s\033[0m %s\n", $$1, $$2}'
 
 clean: ## Clean
-	rm -f ./bin/${APPNAME} ./bin/${APPNAME}.tar.gz ./bin/${APPNAME}.version ./bin/${APPNAME}.sha256
+	rm -f ./bin/${APPNAME}${APPEXT} ./bin/${APPNAME}.tar.gz ./bin/${APPNAME}.version ./bin/${APPNAME}.sha256
 	rm -rf ./bin
 
 go-update: ## Update go mod
@@ -71,7 +78,7 @@ race: dep ## Run data race detector
 
 build: dep ## Build
 	mkdir -p ./bin
-	CGO_ENABLED=0 GOOS=${APPOS} GOARCH=${GOARCH} go build ${LDFLAGS} -o bin/${APPNAME} ./cmd
+	CGO_ENABLED=0 GOOS=${APPOS} GOARCH=${GOARCH} go build ${LDFLAGS} -o bin/${APPNAME}${APPEXT} ./cmd
 
 build-beta: dep ## Build beta
 	mkdir -p ./bin
