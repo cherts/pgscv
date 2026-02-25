@@ -431,6 +431,12 @@ volumes:
       o: bind
       type: rw
       device: ${PWD}/postgres/pg17data
+  pg18_data:
+    driver: local
+    driver_opts:
+      o: bind
+      type: rw
+      device: ${PWD}/postgres/pg18data
   pg9_replica1data:
     driver: local
     driver_opts:
