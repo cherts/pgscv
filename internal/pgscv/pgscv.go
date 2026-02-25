@@ -260,6 +260,7 @@ func getMetricsHandler(repository *service.Repository, newLimiterFunc func() *ra
 	}
 }
 
+// getFlushHandler return http handler function to /flush-services-config endpoint
 func getFlushHandler(ctx context.Context, repository *service.Repository, limiter *rate.Limiter) func(w net_http.ResponseWriter, r *net_http.Request) {
 	return func(w net_http.ResponseWriter, _ *net_http.Request) {
 		if limiter != nil {
