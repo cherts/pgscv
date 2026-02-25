@@ -234,6 +234,11 @@ func (cfg *Config) FillPostgresServiceConfig(connTimeout int) error {
 	return err
 }
 
+// FlushServiceConfig postgresql service config
+func (cfg *Config) FlushServiceConfig() {
+	cfg.postgresServiceConfig, _ = newPostgresServiceConfig(cfg.ConnString, cfg.ConnTimeout)
+}
+
 // isAddressLocal return true if passed address is local, and return false otherwise.
 func isAddressLocal(addr string) bool {
 	if addr == "" {

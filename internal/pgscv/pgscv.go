@@ -11,6 +11,7 @@ import (
 	"sync"
 	"time"
 
+	"golang.org/x/time/rate"
 	"github.com/cherts/pgscv/discovery"
 	sd "github.com/cherts/pgscv/internal/discovery/service"
 	"github.com/cherts/pgscv/internal/http"
@@ -22,6 +23,8 @@ import (
 )
 
 const pgSCVSubscriber = "pgscv_subscriber"
+
+const tooManyRequests = 429
 
 type target struct {
 	Targets []string          `json:"targets"`
@@ -95,11 +98,26 @@ func Start(ctx context.Context, config *Config) error {
 	// Start HTTP metrics listener.
 	wg.Add(1)
 	go func() {
-		if err := runMetricsListener(ctx, config, serviceRepo); err != nil {
+		if err := runHTTPListener(ctx, config, serviceRepo); err != nil {
 			errCh <- err
 		}
 		wg.Done()
 	}()
+
+	// Start Service config flusher
+	if config.RefreshServiceConfigInterval > 0 {
+		wg.Add(1)
+		serviceFlusherCtx := context.WithoutCancel(ctx)
+		go func() {
+			select {
+			case <-serviceFlusherCtx.Done():
+				wg.Done()
+				return
+			case <-time.After(config.RefreshServiceConfigInterval):
+				serviceRepo.FlushServiceConfig()
+			}
+		}()
+	}
 
 	// Waiting for errors or context cancelling.
 	for {
@@ -167,7 +185,9 @@ func subscribeYandex(ds *discovery.Discovery, config *Config, serviceRepo *servi
 }
 
 // getMetricsHandler return http handler function to /metrics endpoint
-func getMetricsHandler(repository *service.Repository, throttlingInterval *int) func(w net_http.ResponseWriter, r *net_http.Request) {
+func getMetricsHandler(repository *service.Repository, throttlingInterval *int, newLimiterFunc func() *rate.Limiter) func(w net_http.ResponseWriter, r *net_http.Request) {
+	limiters := make(map[string]*rate.Limiter)
+
 	throttle := struct {
 		sync.RWMutex
 		lastScrapeTime map[string]time.Time
@@ -177,6 +197,17 @@ func getMetricsHandler(repository *service.Repository, throttlingInterval *int) 
 
 	return func(w net_http.ResponseWriter, r *net_http.Request) {
 		target := r.URL.Query().Get("target")
+		if newLimiterFunc != nil {
+			if limiter, ok := limiters[target]; ok {
+				if !limiter.Allow() {
+					net_http.Error(w, fmt.Sprintf("Too many requests %s", target), tooManyRequests)
+					return
+				}
+			} else {
+				limiters[target] = newLimiterFunc()
+				limiter.Allow()
+			}
+		}
 		if throttlingInterval != nil && *throttlingInterval > 0 {
 			throttle.RLock()
 			t, ok := throttle.lastScrapeTime[target]
@@ -207,6 +238,35 @@ func getMetricsHandler(repository *service.Repository, throttlingInterval *int) 
 				registry, promhttp.HandlerFor(registry, promhttp.HandlerOpts{}),
 			)
 			h.ServeHTTP(w, r)
+		}
+	}
+}
+
+// getFlushHandler return http handler function to /flush-services-config endpoint
+func getFlushHandler(repository *service.Repository, limiter *rate.Limiter) func(w net_http.ResponseWriter, r *net_http.Request) {
+	return func(w net_http.ResponseWriter, _ *net_http.Request) {
+		if limiter != nil {
+			if !limiter.Allow() {
+				net_http.Error(w, "Too many requests /flush-services-config", tooManyRequests)
+				return
+			}
+		}
+
+		repository.FlushServiceConfig()
+
+		jsonData, err := json.Marshal(struct {
+			Status string
+		}{Status: "OK"},
+		)
+		if err != nil {
+			log.Error(err.Error())
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+
+		_, err = w.Write(jsonData)
+		if err != nil {
+			log.Error(err.Error())
 		}
 	}
 }
@@ -267,13 +327,26 @@ func getTargetsHandler(repository *service.Repository, urlPrefix string, enableT
 	}
 }
 
-// runMetricsListener start HTTP listener accordingly to passed configuration.
-func runMetricsListener(ctx context.Context, config *Config, repository *service.Repository) error {
+const (
+	metricsRPS   = 5
+	metricsBurst = 20
+	flushRPS     = 1
+	flushBurst   = 1
+)
+
+// runHTTPListener start HTTP listener accordingly to passed configuration.
+func runHTTPListener(ctx context.Context, config *Config, repository *service.Repository) error {
 	sCfg := http.ServerConfig{
 		Addr:       config.ListenAddress,
 		AuthConfig: config.AuthConfig,
 	}
-	srv := http.NewServer(sCfg, getMetricsHandler(repository, config.ThrottlingInterval), getTargetsHandler(repository, config.URLPrefix, config.AuthConfig.EnableTLS))
+	srv := http.NewServer(sCfg,
+		getMetricsHandler(repository, config.ThrottlingInterval, func() *rate.Limiter {
+			return rate.NewLimiter(rate.Every(time.Duration(metricsRPS)*time.Second), metricsBurst)
+		}),
+		getTargetsHandler(repository, config.URLPrefix, config.AuthConfig.EnableTLS),
+		getFlushHandler(repository, rate.NewLimiter(rate.Every(time.Duration(flushRPS)*time.Second), flushBurst)),
+	)
 
 	errCh := make(chan error)
 	defer close(errCh)
