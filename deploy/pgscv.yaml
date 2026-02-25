@@ -9,6 +9,7 @@
 #collect_top_table: 10
 #collect_top_index: 10
 #concurrency_limit: 5
+#refresh_service_config_interval: 2h
 #skip_conn_error_mode: false
 #url_prefix: "example.com"
 #conn_timeout: 3
