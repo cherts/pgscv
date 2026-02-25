@@ -41,6 +41,9 @@ services:
   "postgres17":
     service_type: "postgres"
     conninfo: "postgres://pgscv:pgscv@postgres17:5432/postgres"
+  "postgres18":
+    service_type: "postgres"
+    conninfo: "postgres://pgscv:pgscv@postgres18:5432/postgres"
   "postgres9replica1":
     service_type: "postgres"
     conninfo: "postgres://pgscv:pgscv@postgres9replica1:5432/postgres"
@@ -71,9 +74,12 @@ services:
   "postgres17replica1":
     service_type: "postgres"
     conninfo: "postgres://pgscv:pgscv@postgres17replica1:5432/postgres"
-  "postgres17replica2":
+  "postgres18replica1":
     service_type: "postgres"
-    conninfo: "postgres://pgscv:pgscv@postgres17replica2:5432/postgres"
+    conninfo: "postgres://pgscv:pgscv@postgres18replica1:5432/postgres"
+  "postgres18replica2":
+    service_type: "postgres"
+    conninfo: "postgres://pgscv:pgscv@postgres18replica2:5432/postgres"
   "patroni_pg_1":
     service_type: "postgres"
     conninfo: "postgres://postgres:postgres@patroni1:5432/postgres"
@@ -119,6 +125,9 @@ services:
   "pgbouncer17":
     service_type: "pgbouncer"
     conninfo: "postgres://pgscv:pgscv@pgbouncer17:5432/pgbouncer"
+  "pgbouncer18":
+    service_type: "pgbouncer"
+    conninfo: "postgres://pgscv:pgscv@pgbouncer18:5432/pgbouncer"
 databases: "pgbench"
 disable_collectors:
   - system

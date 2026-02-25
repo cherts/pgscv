@@ -49,6 +49,9 @@ services:
       postgres17:
         condition: service_healthy
         restart: true
+      postgres18:
+        condition: service_healthy
+        restart: true
       postgres9replica1:
         condition: service_healthy
         restart: true
@@ -77,6 +80,12 @@ services:
         condition: service_healthy
         restart: true
       postgres17replica1:
+        condition: service_healthy
+        restart: true
+      postgres18replica1:
+        condition: service_healthy
+        restart: true
+      postgres18replica2:
         condition: service_healthy
         restart: true
 

@@ -1,7 +1,7 @@
 services:
   vmagent-1:
     container_name: vmagent-1
-    image: victoriametrics/vmagent:v1.111.0
+    image: victoriametrics/vmagent:v1.134.0
     volumes:
       - vmagent1_data:/vmagentdata
       - ${PWD}/vmagent/vmagent-cluster.yaml:/etc/vmagent.yaml
@@ -21,7 +21,7 @@ services:
     networks: [ monitoring ]
   vmagent-2:
     container_name: vmagent-2
-    image: victoriametrics/vmagent:v1.111.0
+    image: victoriametrics/vmagent:v1.134.0
     volumes:
       - vmagent2_data:/vmagentdata
       - ${PWD}/vmagent/vmagent-cluster.yaml:/etc/vmagent.yaml
@@ -41,7 +41,7 @@ services:
     networks: [ monitoring ]
   vmstorage-1:
     container_name: vmstorage-1
-    image: victoriametrics/vmstorage:v1.111.0-cluster
+    image: victoriametrics/vmstorage:v1.134.0-cluster
     ports:
       - 8482
       - 8400
@@ -55,7 +55,7 @@ services:
     networks: [ monitoring ]
   vmstorage-2:
     container_name: vmstorage-2
-    image: victoriametrics/vmstorage:v1.111.0-cluster
+    image: victoriametrics/vmstorage:v1.134.0-cluster
     ports:
       - 8482
       - 8400
@@ -69,7 +69,7 @@ services:
     networks: [ monitoring ]
   vminsert-1:
     container_name: vminsert-1
-    image: victoriametrics/vminsert:v1.111.0-cluster
+    image: victoriametrics/vminsert:v1.134.0-cluster
     depends_on:
       - "vmstorage-1"
       - "vmstorage-2"
@@ -82,7 +82,7 @@ services:
     networks: [ monitoring ]
   vminsert-2:
     container_name: vminsert-2
-    image: victoriametrics/vminsert:v1.111.0-cluster
+    image: victoriametrics/vminsert:v1.134.0-cluster
     depends_on:
       - "vmstorage-1"
       - "vmstorage-2"
@@ -95,7 +95,7 @@ services:
     networks: [ monitoring ]
   vmselect-1:
     container_name: vmselect-1
-    image: victoriametrics/vmselect:v1.111.0-cluster
+    image: victoriametrics/vmselect:v1.134.0-cluster
     depends_on:
       - "vmstorage-1"
       - "vmstorage-2"
@@ -109,7 +109,7 @@ services:
     networks: [ monitoring ]
   vmselect-2:
     container_name: vmselect-2
-    image: victoriametrics/vmselect:v1.111.0-cluster
+    image: victoriametrics/vmselect:v1.134.0-cluster
     depends_on:
       - "vmstorage-1"
       - "vmstorage-2"
@@ -123,7 +123,7 @@ services:
     networks: [ monitoring ]
   vmauth:
     container_name: vmauth
-    image: victoriametrics/vmauth:v1.111.0
+    image: victoriametrics/vmauth:v1.134.0
     depends_on:
       - "vmselect-1"
       - "vmselect-2"
@@ -137,7 +137,7 @@ services:
     networks: [ monitoring ]
   vmalert:
     container_name: vmalert
-    image: victoriametrics/vmalert:v1.111.0
+    image: victoriametrics/vmalert:v1.134.0
     depends_on:
       - "vmauth"
     ports:
@@ -161,7 +161,7 @@ services:
     networks: [ monitoring ]
   alertmanager:
     container_name: alertmanager
-    image: prom/alertmanager:v0.28.0
+    image: prom/alertmanager:v0.28.1
     volumes:
       - ${PWD}/victoriametrics/alertmanager.yml:/config/alertmanager.yml
     command:
@@ -172,7 +172,7 @@ services:
     networks: [ monitoring ]
   grafana:
     container_name: grafana
-    image: grafana/grafana:main
+    image: grafana/grafana:12.2.0
     volumes:
       - grafana_cluster_data:/var/lib/grafana
       - ${PWD}/grafana/provisioning/datasources/cluster.yml:/etc/grafana/provisioning/datasources/cluster.yml
