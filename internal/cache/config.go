@@ -110,15 +110,16 @@ func (c *Config) GetCollectorTTL(collector string) (int32, error) {
 }
 
 func (c *Config) String() string {
-	ttl := fmt.Sprintf("default ttl %v", c.TTL)
+	var ttl strings.Builder
+	ttl.WriteString(fmt.Sprintf("default ttl %v", c.TTL))
 	if c.Collectors != nil {
 		for k, v := range c.Collectors {
-			ttl += fmt.Sprintf(", %s:%s", k, v.TTL)
+			ttl.WriteString(fmt.Sprintf(", %s:%s", k, v.TTL))
 		}
 	}
 	ret := fmt.Sprintf("type: %s", c.Type)
 	if c.Server != "" {
 		ret += fmt.Sprintf(", server: %s", c.Server)
 	}
-	return ret + " " + ttl
+	return ret + " " + ttl.String()
 }

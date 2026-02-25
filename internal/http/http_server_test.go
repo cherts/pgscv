@@ -41,15 +41,13 @@ func TestAuthConfig_Validate(t *testing.T) {
 
 func TestServer_Serve_HTTP(t *testing.T) {
 	addr := "127.0.0.1:17890"
-	srv := NewServer(ServerConfig{Addr: addr}, getDummyHandler(), getDummyHandler())
+	srv := NewServer(ServerConfig{Addr: addr}, getDummyHandler(), getDummyHandler(), getDummyHandler())
 
 	var wg sync.WaitGroup
-	wg.Add(1)
-	go func() {
+	wg.Go(func() {
 		err := srv.Serve()
 		assert.NoError(t, err)
-		wg.Done()
-	}()
+	})
 
 	time.Sleep(100 * time.Millisecond)
 
@@ -74,15 +72,13 @@ func TestServer_Serve_HTTPS(t *testing.T) {
 		EnableTLS: true,
 		Keyfile:   "./testdata/example.key",
 		Certfile:  "./testdata/example.crt",
-	}}, getDummyHandler(), getDummyHandler())
+	}}, getDummyHandler(), getDummyHandler(), getDummyHandler())
 
 	var wg sync.WaitGroup
-	wg.Add(1)
-	go func() {
+	wg.Go(func() {
 		err := srv.Serve()
 		assert.NoError(t, err)
-		wg.Done()
-	}()
+	})
 
 	time.Sleep(100 * time.Millisecond)
 
