@@ -105,7 +105,7 @@ func TestMeminfoCollector_Update(t *testing.T) {
 			"node_vmstat_ksm_swpin_copy", "node_vmstat_zswpout", "node_vmstat_nr_unaccepted",
 			"node_vmstat_zswpwb", "node_vmstat_swpin_zero", "node_vmstat_nr_memmap_boot_pages",
 			"node_vmstat_zone_reclaim_success", "node_vmstat_thp_underused_split_page", "node_vmstat_nr_hugetlb",
-			"node_vmstat_swpout_zero", "node_vmstat_nr_memmap_pages",
+			"node_vmstat_swpout_zero", "node_vmstat_nr_memmap_pages", "node_vmstat_nr_iommu_pages",
 		},
 		collector: NewMeminfoCollector,
 	}
