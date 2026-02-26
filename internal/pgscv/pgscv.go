@@ -11,7 +11,6 @@ import (
 	"sync"
 	"time"
 
-	"golang.org/x/time/rate"
 	"github.com/cherts/pgscv/discovery"
 	sd "github.com/cherts/pgscv/internal/discovery/service"
 	"github.com/cherts/pgscv/internal/http"
@@ -20,6 +19,7 @@ import (
 	"github.com/cherts/pgscv/internal/service"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
+	"golang.org/x/time/rate"
 )
 
 const pgSCVSubscriber = "pgscv_subscriber"
@@ -205,7 +205,7 @@ func getMetricsHandler(repository *service.Repository, throttlingInterval *int, 
 				}
 			} else {
 				limiters[target] = newLimiterFunc()
-				limiter.Allow()
+				limiters[target].Allow()
 			}
 		}
 		if throttlingInterval != nil && *throttlingInterval > 0 {
