@@ -96,13 +96,13 @@ func (ye *yandexEngine) Start(ctx context.Context) error {
 }
 
 func makeValidMetricName(s string) string {
-	var ret = ""
+	var ret strings.Builder
 	for i, b := range strings.Replace(s, ".mdb.yandexcloud.net", "", 1) {
 		if (b >= 'a' && b <= 'z') || (b >= 'A' && b <= 'Z') || b == '_' || b == ':' || (b >= '0' && b <= '9' && i > 0) {
-			ret += string(b)
+			ret.WriteString(string(b))
 		} else {
-			ret += "_"
+			ret.WriteString("_")
 		}
 	}
-	return ret
+	return ret.String()
 }

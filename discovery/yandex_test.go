@@ -1,10 +1,11 @@
 package discovery_test
 
 import (
+	"testing"
+
 	"github.com/cherts/pgscv/discovery"
 	"github.com/cherts/pgscv/discovery/factory"
 	"github.com/cherts/pgscv/internal/discovery/service"
-	"testing"
 )
 
 func TestInstantiate(t *testing.T) {
@@ -27,8 +28,8 @@ func TestInstantiate(t *testing.T) {
 							Password:      "132",
 							Clusters: []service.Cluster{
 								{
-									Db:        stringPtr(".*"),
-									ExcludeDb: stringPtr("(postgres|template)"),
+									Db:        new(".*"),
+									ExcludeDb: new("(postgres|template)"),
 								},
 							},
 						},
@@ -78,8 +79,4 @@ func TestInstantiate(t *testing.T) {
 
 	}
 
-}
-
-func stringPtr(s string) *string {
-	return &s
 }

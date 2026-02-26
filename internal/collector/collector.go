@@ -245,6 +245,11 @@ func (n PgscvCollector) Describe(ch chan<- *prometheus.Desc) {
 	ch <- n.anchorDesc.desc
 }
 
+// FlushServiceConfig postgresql service config
+func (n PgscvCollector) FlushServiceConfig(ctx context.Context) error {
+	return n.Config.FlushServiceConfig(ctx)
+}
+
 // Collect implements the prometheus.Collector interface.
 func (n PgscvCollector) Collect(out chan<- prometheus.Metric) {
 	// Update settings of Postgres collectors if service was unavailabled when register
@@ -327,12 +332,10 @@ func (n PgscvCollector) Collect(out chan<- prometheus.Metric) {
 	}
 
 	// Run sender.
-	wgSender.Add(1)
 
-	go func() {
+	wgSender.Go(func() {
 		send(pipelineIn, out)
-		wgSender.Done()
-	}()
+	})
 
 	// Wait until all collectors have been finished. Close the channel and allow to sender to send metrics.
 	wgCollector.Wait()

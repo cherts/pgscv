@@ -4,12 +4,8 @@ import (
 	"testing"
 )
 
-func stringPtr(s string) *string {
-	return &s
-}
-
 func TestMatchName(t *testing.T) {
-	filter := New(".*test.*", nil, stringPtr("exclude"), nil)
+	filter := New(".*test.*", nil, new("exclude"), nil)
 
 	testCases := []struct {
 		name    string
@@ -31,7 +27,7 @@ func TestMatchName(t *testing.T) {
 }
 
 func TestMatchDb(t *testing.T) {
-	filter := New(".*", stringPtr(".*db.*"), nil, stringPtr("exclude"))
+	filter := New(".*", new(".*db.*"), nil, new("exclude"))
 
 	testCases := []struct {
 		name    string

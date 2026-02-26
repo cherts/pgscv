@@ -36,9 +36,9 @@ func TestPoolConfigValidation(t *testing.T) {
 			name: "valid positive values",
 			config: &Config{
 				PoolerConfig: &PoolConfig{
-					MaxConns:     int32Ptr(10),
-					MinConns:     int32Ptr(5),
-					MinIdleConns: int32Ptr(3),
+					MaxConns:     new(int32(10)),
+					MinConns:     new(int32(5)),
+					MinIdleConns: new(int32(3)),
 				},
 			},
 			expected: true,
@@ -47,7 +47,7 @@ func TestPoolConfigValidation(t *testing.T) {
 			name: "max conns zero should be invalid",
 			config: &Config{
 				PoolerConfig: &PoolConfig{
-					MaxConns: int32Ptr(0),
+					MaxConns: new(int32(0)),
 				},
 			},
 			expected: false,
@@ -56,7 +56,7 @@ func TestPoolConfigValidation(t *testing.T) {
 			name: "max conns negative should be invalid",
 			config: &Config{
 				PoolerConfig: &PoolConfig{
-					MaxConns: int32Ptr(-5),
+					MaxConns: new(int32(-5)),
 				},
 			},
 			expected: false,
@@ -65,8 +65,8 @@ func TestPoolConfigValidation(t *testing.T) {
 			name: "min conns greater than max conns should be invalid",
 			config: &Config{
 				PoolerConfig: &PoolConfig{
-					MaxConns: int32Ptr(5),
-					MinConns: int32Ptr(10),
+					MaxConns: new(int32(5)),
+					MinConns: new(int32(10)),
 				},
 			},
 			expected: false,
@@ -75,8 +75,8 @@ func TestPoolConfigValidation(t *testing.T) {
 			name: "min idle conns greater than max conns should be invalid",
 			config: &Config{
 				PoolerConfig: &PoolConfig{
-					MaxConns:     int32Ptr(5),
-					MinIdleConns: int32Ptr(10),
+					MaxConns:     new(int32(5)),
+					MinIdleConns: new(int32(10)),
 				},
 			},
 			expected: false,
@@ -85,8 +85,8 @@ func TestPoolConfigValidation(t *testing.T) {
 			name: "min idle conns greater than min conns should be invalid",
 			config: &Config{
 				PoolerConfig: &PoolConfig{
-					MinConns:     int32Ptr(5),
-					MinIdleConns: int32Ptr(10),
+					MinConns:     new(int32(5)),
+					MinIdleConns: new(int32(10)),
 				},
 			},
 			expected: false,
@@ -95,9 +95,9 @@ func TestPoolConfigValidation(t *testing.T) {
 			name: "all valid relationships",
 			config: &Config{
 				PoolerConfig: &PoolConfig{
-					MaxConns:     int32Ptr(20),
-					MinConns:     int32Ptr(10),
-					MinIdleConns: int32Ptr(5),
+					MaxConns:     new(int32(20)),
+					MinConns:     new(int32(10)),
+					MinIdleConns: new(int32(5)),
 				},
 			},
 			expected: true,
@@ -148,23 +148,23 @@ func TestPoolConfigFieldLevelValidation(t *testing.T) {
 		{
 			name: "valid individual field validation",
 			poolCfg: &PoolConfig{
-				MaxConns:     int32Ptr(10),
-				MinConns:     int32Ptr(5),
-				MinIdleConns: int32Ptr(2),
+				MaxConns:     new(int32(10)),
+				MinConns:     new(int32(5)),
+				MinIdleConns: new(int32(2)),
 			},
 			expected: true,
 		},
 		{
 			name: "invalid max conns",
 			poolCfg: &PoolConfig{
-				MaxConns: int32Ptr(-1),
+				MaxConns: new(int32(-1)),
 			},
 			expected: false,
 		},
 		{
 			name: "invalid min idle conns",
 			poolCfg: &PoolConfig{
-				MinIdleConns: int32Ptr(-5),
+				MinIdleConns: new(int32(-5)),
 			},
 			expected: false,
 		},
@@ -182,8 +182,4 @@ func TestPoolConfigFieldLevelValidation(t *testing.T) {
 			}
 		})
 	}
-}
-
-func int32Ptr(i int32) *int32 {
-	return &i
 }

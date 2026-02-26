@@ -17,23 +17,23 @@ func TestFullJoin(t *testing.T) {
 			left:  map[string]int{"a": 1, "b": 2},
 			right: map[string]int{"b": 3, "c": 4},
 			want: []struct{ Left, Right *string }{
-				{Left: stringPtr("a"), Right: nil},
-				{Left: stringPtr("b"), Right: stringPtr("b")},
-				{Left: nil, Right: stringPtr("c")},
+				{Left: new("a"), Right: nil},
+				{Left: new("b"), Right: new("b")},
+				{Left: nil, Right: new("c")},
 			},
 		},
 		{
 			left:  map[string]int{},
 			right: map[string]int{"c": 4},
 			want: []struct{ Left, Right *string }{
-				{Left: nil, Right: stringPtr("c")},
+				{Left: nil, Right: new("c")},
 			},
 		},
 		{
 			left:  map[string]int{"a": 1},
 			right: map[string]int{},
 			want: []struct{ Left, Right *string }{
-				{Left: stringPtr("a"), Right: nil},
+				{Left: new("a"), Right: nil},
 			},
 		},
 		{
@@ -82,8 +82,4 @@ func equalJoinResults(a, b []struct{ Left, Right *string }) bool {
 	}
 
 	return reflect.DeepEqual(aMap, bMap)
-}
-
-func stringPtr(s string) *string {
-	return &s
 }

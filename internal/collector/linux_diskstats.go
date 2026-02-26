@@ -137,7 +137,7 @@ func NewDiskstatsCollector(constLabels labels, settings model.CollectorSettings)
 		storageSize: newBuiltinTypedDesc(
 			descOpts{"node", "system", "storage_size_bytes", "Total size of storage device in bytes.", diskSectorSize},
 			prometheus.GaugeValue,
-			[]string{"device", "rotational", "scheduler", "virtual", "model"}, constLabels,
+			[]string{"device", "rotational", "scheduler", "virtual", "model", "ro"}, constLabels,
 			settings.Filters,
 		),
 	}, nil
@@ -205,7 +205,7 @@ func (c *diskstatsCollector) Update(_ context.Context, _ Config, ch chan<- prome
 	} else {
 		for _, s := range storages {
 			ch <- c.storageInfo.newConstMetric(1, s.device, s.rotational, s.scheduler)
-			ch <- c.storageSize.newConstMetric(float64(s.size), s.device, s.rotational, s.scheduler, s.virtual, s.model)
+			ch <- c.storageSize.newConstMetric(float64(s.size), s.device, s.rotational, s.scheduler, s.virtual, s.model, s.ro)
 		}
 	}
 
@@ -266,6 +266,7 @@ type storageDeviceProperties struct {
 	virtual    string
 	model      string
 	size       int64
+	ro         string
 }
 
 // getStorageProperties reads storages properties.
@@ -312,13 +313,21 @@ func getStorageProperties(path string) ([]storageDeviceProperties, error) {
 			deviceModel, err = getDeviceModel(devpath)
 			if err != nil {
 				log.Warnf("get model for %s failed: %s; skip", device, err)
-				continue
+				deviceModel = "unknown"
 			}
 		}
 
+		// Read 'size' property.
 		size, err := getDeviceSize(devpath)
 		if err != nil {
 			log.Warnf("get size for %s failed: %s; skip", device, err)
+			continue
+		}
+
+		// Read 'ro' property.
+		ro, err := getDeviceRo(devpath)
+		if err != nil {
+			log.Warnf("get 'ro' for %s failed: %s; skip", device, err)
 			continue
 		}
 
@@ -329,6 +338,7 @@ func getStorageProperties(path string) ([]storageDeviceProperties, error) {
 			virtual:    strconv.FormatBool(virtual),
 			model:      deviceModel,
 			size:       size,
+			ro:         ro,
 		})
 	}
 	return storages, nil
@@ -409,4 +419,26 @@ func getDeviceModel(devpath string) (string, error) {
 	}
 
 	return strings.TrimSpace(string(m)), nil
+}
+
+// getDeviceRo returns device's 'ro' property.
+func getDeviceRo(devpath string) (string, error) {
+	roFile := devpath + "/ro"
+
+	content, err := os.ReadFile(filepath.Clean(roFile))
+	if err != nil {
+		return "", err
+	}
+	reader := bufio.NewReader(bytes.NewBuffer(content))
+	line, _, err := reader.ReadLine()
+	if err != nil {
+		return "", err
+	}
+
+	switch string(line) {
+	case "0", "1":
+		return string(line), nil
+	default:
+		return "", fmt.Errorf("unknown ro %s", string(line))
+	}
 }

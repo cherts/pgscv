@@ -31,20 +31,18 @@ func TestStart(t *testing.T) {
 	assert.NoError(t, Start(ctx, config))
 }
 
-func Test_runMetricsListener(t *testing.T) {
+func Test_runHTTPListener(t *testing.T) {
 	config := &Config{ListenAddress: "127.0.0.1:5003"}
 	wg := sync.WaitGroup{}
 
 	// Running listener function with short-live context in concurrent goroutine.
-	wg.Add(1)
-	go func() {
+	wg.Go(func() {
 		ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
 		defer cancel()
 
-		err := runMetricsListener(ctx, config, nil)
+		err := runHTTPListener(ctx, config, nil)
 		assert.NoError(t, err)
-		wg.Done()
-	}()
+	})
 
 	// Sleep a little hoping it will be enough for running listener goroutine.
 	time.Sleep(500 * time.Millisecond)
