@@ -1,6 +1,6 @@
 module github.com/cherts/pgscv
 
-go 1.25.7
+go 1.26.0
 
 require (
 	github.com/alecthomas/kingpin/v2 v2.4.0
@@ -11,14 +11,14 @@ require (
 	github.com/rs/zerolog v1.34.0
 	github.com/stretchr/testify v1.11.1
 	golang.org/x/crypto v0.48.0 // indirect
-	golang.org/x/net v0.50.0
+	golang.org/x/net v0.51.0
 	golang.org/x/sys v0.41.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0
 )
 
 require (
 	github.com/go-playground/validator/v10 v10.30.1
-	github.com/yandex-cloud/go-genproto v0.56.0
+	github.com/yandex-cloud/go-genproto v0.57.0
 	github.com/yandex-cloud/go-sdk v0.31.0
 	golang.org/x/time v0.14.0
 	google.golang.org/protobuf v1.36.11
@@ -50,7 +50,7 @@ require (
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/prometheus/client_model v0.6.2 // indirect
 	github.com/prometheus/common v0.67.5 // indirect
-	github.com/prometheus/procfs v0.19.2 // indirect
+	github.com/prometheus/procfs v0.20.0 // indirect
 	github.com/xhit/go-str2duration/v2 v2.1.0 // indirect
 	go.yaml.in/yaml/v2 v2.4.3 // indirect
 	golang.org/x/text v0.34.0 // indirect
