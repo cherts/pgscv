@@ -237,7 +237,7 @@ func getMetricsHandler(repository *service.Repository, newLimiterFunc func() *ra
 				}
 			} else {
 				limiters[target] = newLimiterFunc()
-				limiter.Allow()
+				limiters[target].Allow()
 			}
 		}
 
