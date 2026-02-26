@@ -1,10 +1,11 @@
 package discovery_test
 
 import (
+	"testing"
+
 	"github.com/cherts/pgscv/discovery"
 	"github.com/cherts/pgscv/discovery/factory"
 	"github.com/cherts/pgscv/internal/discovery/service"
-	"testing"
 )
 
 func TestInstantiate(t *testing.T) {
@@ -78,9 +79,4 @@ func TestInstantiate(t *testing.T) {
 
 	}
 
-}
-
-//go:fix inline
-func stringPtr(s string) *string {
-	return new(s)
 }

@@ -83,8 +83,3 @@ func equalJoinResults(a, b []struct{ Left, Right *string }) bool {
 
 	return reflect.DeepEqual(aMap, bMap)
 }
-
-//go:fix inline
-func stringPtr(s string) *string {
-	return new(s)
-}
