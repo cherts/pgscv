@@ -1,7 +1,7 @@
 DOCKER_ACCOUNT = cherts
 APPNAME = pgscv
 APPOS = linux
-#APPOS = ${GOOS}
+APPOS = ${GOOS}
 
 TAG_COMMIT := $(shell git rev-list --abbrev-commit --tags --max-count=1)
 TAG := $(shell git describe --abbrev=0 --tags ${TAG_COMMIT} 2>/dev/null || true)
@@ -29,7 +29,7 @@ VERSION_BETA=0.15-$(BRANCH)-$(COMMIT)-$(DATE)-beta
 LDFLAGS = -a -installsuffix cgo -ldflags "-X main.appName=${APPNAME} -X main.gitTag=${VERSION} -X main.gitCommit=${COMMIT} -X main.gitBranch=${BRANCH}"
 LDFLAGS_BETA = -a -installsuffix cgo -ldflags "-X main.appName=${APPNAME} -X main.gitTag=${VERSION_BETA} -X main.gitCommit=${COMMIT} -X main.gitBranch=${BRANCH}"
 
-MODERNIZE_CMD = go run golang.org/x/tools/gopls/internal/analysis/modernize/cmd/modernize@v0.18.1
+MODERNIZE_CMD = go run golang.org/x/tools/go/analysis/passes/modernize/cmd/modernize@latest
 
 .PHONY: help \
 		clean lint test race \
@@ -47,7 +47,7 @@ clean: ## Clean
 	rm -rf ./bin
 
 go-update: ## Update go mod
-	go mod tidy -compat=1.24
+	go mod tidy -compat=1.25
 	go get -u ./cmd
 	go mod download
 	go get -u ./cmd
@@ -58,6 +58,7 @@ dep: ## Get the dependencies
 
 lint: ## Lint the source files
 	go env -w GOFLAGS="-buildvcs=false"
+	go vet ./...
 	REVIVE_FORCE_COLOR=1 revive -formatter friendly ./...
 	gosec -quiet ./...
 

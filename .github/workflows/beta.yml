@@ -19,8 +19,8 @@ on:
 
 jobs:
   test:
-    runs-on: ubuntu-22.04
-    container: cherts/pgscv-test-runner:1.0.14
+    runs-on: ubuntu-24.04
+    container: cherts/pgscv-test-runner:1.0.15
     steps:
       - name: Checkout code
         uses: actions/checkout@v6
@@ -32,7 +32,7 @@ jobs:
         run: make test
 
   build:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     needs: test
     permissions:
       contents: read
@@ -97,7 +97,7 @@ jobs:
 #          delete-only-untagged-versions: 'true'
 
   goreleaser:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     needs: build
     steps:
       - name: Run checkout

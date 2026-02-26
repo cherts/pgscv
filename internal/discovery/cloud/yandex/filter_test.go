@@ -4,12 +4,13 @@ import (
 	"testing"
 )
 
+//go:fix inline
 func stringPtr(s string) *string {
-	return &s
+	return new(s)
 }
 
 func TestMatchName(t *testing.T) {
-	filter := NewFilter(".*test.*", nil, stringPtr("exclude"), nil)
+	filter := NewFilter(".*test.*", nil, new("exclude"), nil)
 
 	testCases := []struct {
 		name    string
@@ -31,7 +32,7 @@ func TestMatchName(t *testing.T) {
 }
 
 func TestMatchDb(t *testing.T) {
-	filter := NewFilter(".*", stringPtr(".*db.*"), nil, stringPtr("exclude"))
+	filter := NewFilter(".*", new(".*db.*"), nil, new("exclude"))
 
 	testCases := []struct {
 		name    string
