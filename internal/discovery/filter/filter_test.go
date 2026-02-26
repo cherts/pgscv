@@ -4,11 +4,6 @@ import (
 	"testing"
 )
 
-//go:fix inline
-func stringPtr(s string) *string {
-	return new(s)
-}
-
 func TestMatchName(t *testing.T) {
 	filter := New(".*test.*", nil, new("exclude"), nil)
 
