@@ -41,6 +41,8 @@ bin/*
 *.pem
 *.key
 *.crt
+# goenv
+.go-version
 # Test
 .test_coverage.*
 # Exclude demo-stack data
