@@ -27,8 +27,8 @@ func TestInstantiate(t *testing.T) {
 							Password:      "132",
 							Clusters: []service.Cluster{
 								{
-									Db:        stringPtr(".*"),
-									ExcludeDb: stringPtr("(postgres|template)"),
+									Db:        new(".*"),
+									ExcludeDb: new("(postgres|template)"),
 								},
 							},
 						},
@@ -80,6 +80,7 @@ func TestInstantiate(t *testing.T) {
 
 }
 
+//go:fix inline
 func stringPtr(s string) *string {
-	return &s
+	return new(s)
 }
