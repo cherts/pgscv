@@ -31,7 +31,7 @@ func TestStart(t *testing.T) {
 	assert.NoError(t, Start(ctx, config))
 }
 
-func Test_runMetricsListener(t *testing.T) {
+func Test_runHTTPListener(t *testing.T) {
 	config := &Config{ListenAddress: "127.0.0.1:5003"}
 	wg := sync.WaitGroup{}
 
@@ -40,7 +40,7 @@ func Test_runMetricsListener(t *testing.T) {
 		ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
 		defer cancel()
 
-		err := runMetricsListener(ctx, config, nil)
+		err := runHTTPListener(ctx, config, nil)
 		assert.NoError(t, err)
 	})
 
