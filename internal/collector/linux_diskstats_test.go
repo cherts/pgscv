@@ -1,12 +1,13 @@
 package collector
 
 import (
-	"github.com/cherts/pgscv/internal/filter"
-	"github.com/cherts/pgscv/internal/model"
-	"github.com/stretchr/testify/assert"
 	"os"
 	"path/filepath"
 	"testing"
+
+	"github.com/cherts/pgscv/internal/filter"
+	"github.com/cherts/pgscv/internal/model"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestDiskstatsCollector_Update(t *testing.T) {
@@ -51,8 +52,8 @@ func Test_parseDiskstats(t *testing.T) {
 
 func Test_getStorageProperties(t *testing.T) {
 	want := []storageDeviceProperties{
-		{device: "sda", rotational: "0", scheduler: "mq-deadline", size: 234441648, virtual: "true"},
-		{device: "sdb", rotational: "1", scheduler: "deadline", size: 3907029168, virtual: "false", model: "TEST HARDDISK WITH LONG LONG LON"},
+		{device: "sda", rotational: "0", scheduler: "mq-deadline", size: 234441648, virtual: "true", ro: "0"},
+		{device: "sdb", rotational: "1", scheduler: "deadline", size: 3907029168, virtual: "false", model: "TEST HARDDISK WITH LONG LONG LON", ro: "0"},
 	}
 
 	storages, err := getStorageProperties("testdata/sys/block/*")
@@ -122,4 +123,20 @@ func Test_getDeviceModel(t *testing.T) {
 	m, err = getDeviceModel("testdata/proc/meminfo.golden")
 	assert.Error(t, err)
 	assert.Equal(t, "", m)
+}
+
+func Test_getDeviceRo(t *testing.T) {
+	r, err := getDeviceRo("testdata/sys/block/sda")
+	assert.NoError(t, err)
+	assert.Equal(t, "0", r)
+
+	// Read file with bad content
+	r, err = getDeviceRotational("testdata/sys/block/sdy")
+	assert.Error(t, err)
+	assert.Equal(t, "", r)
+
+	// Read unknown file
+	r, err = getDeviceRotational("testdata/proc/meminfo.golden")
+	assert.Error(t, err)
+	assert.Equal(t, "", r)
 }
