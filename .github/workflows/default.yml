@@ -20,21 +20,16 @@ on:
       - "go.mod"
       - "go.sum"
 
-env:
-  UBUNTU_VER: "24.04"
-  TEST_RUNNER_PG17_VER: "1.0.16"
-  TEST_RUNNER_PG18_VER: "2.0.16"
-
 jobs:
   test:
-    runs-on: ubuntu-${{ env.UBUNTU_VER }}
+    runs-on: ubuntu-24.04
     strategy:
       fail-fast: false
       max-parallel: 5
       matrix:
         include:
-          - container: cherts/pgscv-test-runner:${{ env.TEST_RUNNER_PG17_VER }}
-          - container: cherts/pgscv-test-runner:${{ env.TEST_RUNNER_PG18_VER }}
+          - container: cherts/pgscv-test-runner:1.0.16
+          - container: cherts/pgscv-test-runner:2.0.16
     container: ${{ matrix.container }}
 
     steps:
