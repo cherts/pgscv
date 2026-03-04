@@ -94,7 +94,7 @@ _logging "Wait 5 second..."
 sleep 5
 su - postgres -c "echo > ${LGDB1_DATADIR}/.pgpass"
 chmod 600 ${LGDB1_DATADIR}/.pgpass
-if [[ "${PG_VER}" -ge 17 ]]; then
+if [ ${PG_VER} -ge 17 ]; then
     _logging "Stop physical standby PostgreSQL v${PG_VER} via pg_ctl..."
     su - postgres -c "/usr/lib/postgresql/${PG_VER}/bin/pg_ctl -D ${LGDB1_DATADIR} stop"
     # convert physical standby to logical
