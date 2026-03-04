@@ -72,8 +72,8 @@ chown -R postgres:postgres /opt/testing
 chmod 750 /opt/testing
 su - postgres -c "psql -f /opt/testing/fixtures.sql"
 _logging "Run pg_bench..."
-su - postgres -c "pgbench -i -s 5 pgscv_fixtures"
-su - postgres -c "pgbench -T 5 pgscv_fixtures"
+su - postgres -c "pgbench -i -s 5 -U pgscv pgscv_fixtures"
+su - postgres -c "pgbench -T 5 -U pgscv pgscv_fixtures"
 
 # run logical standby postgres
 _logging "Run pg_basebackup (physical standby to logical)..."
