@@ -104,8 +104,6 @@ jobs:
             revive: 1.14.0
             gosec: 2.23.0
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v6
       - name: Set up pgbouncer ${{ matrix.pgbouncer.pgbouncer }}
         if: matrix.os.matrix == 'linux'
         run: |
@@ -145,7 +143,7 @@ jobs:
           mkdir /opt/testing
           chmod 755 /opt/testing
           rm -rf /var/lib/apt/lists/*
-      - name: Version
+      - name: Show versions
         run: |
           go version
           pgbouncer --version
@@ -155,9 +153,11 @@ jobs:
         run: |
           cp testing/prepare-test-environment.sh /opt/testing/
           cp testing/fixtures.sql /opt/testing/
-      - name: Run tests with PostgreSQL ${{ matrix.postgres.postgres }} and PgBouncer ${{ matrix.pgbouncer.pgbouncer }}
+      - name: Prepare PostgreSQL ${{ matrix.postgres.postgres }} and PgBouncer ${{ matrix.pgbouncer.pgbouncer }}
         run: |
           /opt/testing/prepare-test-environment.sh ${{ matrix.postgres.postgres }}
+      - name: Checkout code
+        uses: actions/checkout@v6
       - name: Set Git config
         run: git config --global --add safe.directory /__w/pgscv/pgscv
       - name: Check code modernization
