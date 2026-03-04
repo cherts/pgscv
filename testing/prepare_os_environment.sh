@@ -53,6 +53,7 @@ if ! _command_exists pgbouncer; then
         chown -R postgres:postgres /etc/pgbouncer /var/log/pgbouncer /var/run/pgbouncer
         cp pgbouncer /usr/sbin
         cp etc/pgbouncer.ini /etc/pgbouncer
+        cp etc/pgbouncer.ini /etc/pgbouncer/pgbouncer.orig.ini
         cd -
         rm -f /tmp/pgbouncer-${PGB_VERSION}.tar.gz
         rm -rf /tmp/pgbouncer-${PGB_VERSION}

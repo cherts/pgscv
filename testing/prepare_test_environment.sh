@@ -115,6 +115,11 @@ else
     su - postgres -c "psql -p 5435 -c \"SELECT pg_promote();\""
     _logging "Show current status..."
     su - postgres -c "psql -p 5435 -c \"SELECT pg_is_in_recovery();\""
+    REDO_DONE=$(cat /var/log/postgresql/postgresql-logical.log 2>/dev/null | grep "redo done at" | tail -n 1 | sed -n 's/.*redo done at \([^ ]*\).*/\1/p')
+    if [ -n "${REDO_DONE}" ]; then
+        _logging "Advance the logical replication slot..."
+        su - postgres -c "psql -c \"SELECT pg_replication_slot_advance('pgscv_db_slot', '${REDO_DONE}');\""
+    fi
     _logging "Create a subscription..."
     su - postgres -c "psql -p 5435 -d pgscv_fixtures -c \"CREATE SUBSCRIPTION pgscv_db_subscription CONNECTION 'user=postgres passfile=${LGDB1_DATADIR}/.pgpass host=127.0.0.1 port=5432 sslmode=disable' PUBLICATION pgscv_db_publication WITH (copy_data=false, slot_name='pgscv_db_slot', create_slot=false);\""
     _logging "Remove a physical replication slot..."

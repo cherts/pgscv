@@ -120,6 +120,7 @@ jobs:
           chown -R postgres:postgres /etc/pgbouncer /var/log/pgbouncer /var/run/pgbouncer
           cp pgbouncer /usr/sbin
           cp etc/pgbouncer.ini /etc/pgbouncer
+          cp etc/pgbouncer.ini /etc/pgbouncer/pgbouncer.orig.ini
           export PATH=$PATH:/usr/local/bin:/usr/local/go/bin
           cd ..
           rm -f pgbouncer-${{ matrix.pgbouncer.pgbouncer }}.tar.gz
