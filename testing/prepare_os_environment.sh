@@ -30,7 +30,8 @@ _logging "Use PostgreSQL v${PG_VER}"
 _logging "Use PgBouncer v${PGB_VERSION}"
 
 if [ ! -f "/usr/lib/postgresql/${PG_VER}/bin/initdb" ]; then
-    _logging "PostgreSQL v${PG_VER} is not installed. Please install it first."
+    _logging "PostgreSQL v${PG_VER} is not installed. Please install it first OR run this script with correct PostgreSQL version as argument."
+    _logging "Example: ./${SCRIPT_NAME} <postgres_version> <pgbouncer_version>"
     exit 1
 fi
 
