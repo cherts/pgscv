@@ -54,11 +54,13 @@ _logging "Remove primary data directory..."
 shopt -s dotglob && rm -rf ${MAIN_DATADIR}/*
 
 _logging "Remove log file..."
-rm -f /var/log/postgresql/*.log
+shopt -s dotglob && rm -f /var/log/postgresql/*
 
-_logging "Stop PgBouncer..."
-su - postgres -c "kill -9 $(cat /var/run/pgbouncer/pgbouncer.pid)"
-rm -f /var/run/pgbouncer/pgbouncer.pid
-rm -f /var/log/pgbouncer/pgbouncer.log
-rm -f /etc/pgbouncer/pgbouncer.ini
-cp /etc/pgbouncer/pgbouncer.orig.ini /etc/pgbouncer/pgbouncer.ini
+if [ -f "/var/run/pgbouncer/pgbouncer.pid" ]; then
+    _logging "Stop PgBouncer..."
+    su - postgres -c "kill -9 $(cat /var/run/pgbouncer/pgbouncer.pid)"
+    rm -f /var/run/pgbouncer/pgbouncer.pid
+    rm -f /var/log/pgbouncer/pgbouncer.log
+fi
+rm -f /etc/pgbouncer/pgbouncer.ini >/dev/null 2>&1
+cp /etc/pgbouncer/pgbouncer.orig.ini /etc/pgbouncer/pgbouncer.ini >/dev/null 2>&1
