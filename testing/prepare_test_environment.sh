@@ -105,13 +105,13 @@ if [ ${PG_VER} -ge 17 ]; then
     _logging "Run logical standby PostgreSQL v${PG_VER} via pg_ctl..."
     su - postgres -c "/usr/lib/postgresql/${PG_VER}/bin/pg_ctl -w -t 30 -l /var/log/postgresql/startup-logical.log -D ${LGDB1_DATADIR} start"
 else
-    _logging "Create a logical slot..."
+    _logging "Create a logical slot on primary..."
     su - postgres -c "psql -c \"SELECT pg_create_logical_replication_slot('pgscv_db_slot', 'pgoutput');\""
-    _logging "Create a publication..."
+    _logging "Create a publication on primary..."
     su - postgres -c "psql -d pgscv_fixtures -c \"CREATE PUBLICATION pgscv_db_publication FOR ALL TABLES;\""
-    _logging "Show current status..."
+    _logging "Show current status of physical standby..."
     su - postgres -c "psql -p 5435 -c \"SELECT pg_is_in_recovery();\""
-    _logging "Promote standby..."
+    _logging "Promote physical standby..."
     su - postgres -c "psql -p 5435 -c \"SELECT pg_promote();\""
     _logging "Show current status..."
     su - postgres -c "psql -p 5435 -c \"SELECT pg_is_in_recovery();\""
@@ -122,7 +122,13 @@ else
     fi
     _logging "Create a subscription..."
     su - postgres -c "psql -p 5435 -d pgscv_fixtures -c \"CREATE SUBSCRIPTION pgscv_db_subscription CONNECTION 'user=postgres passfile=${LGDB1_DATADIR}/.pgpass host=127.0.0.1 port=5432 sslmode=disable' PUBLICATION pgscv_db_publication WITH (copy_data=false, slot_name='pgscv_db_slot', create_slot=false);\""
-    _logging "Remove a physical replication slot..."
+    _logging "Stop logical standby PostgreSQL v${PG_VER} via pg_ctl..."
+    su - postgres -c "/usr/lib/postgresql/${PG_VER}/bin/pg_ctl -D ${LGDB1_DATADIR} stop"
+    _logging "Reset WAL on logical standby..."
+    su - postgres -c "/usr/lib/postgresql/${PG_VER}/bin/pg_resetwal -D ${LGDB1_DATADIR}"
+    _logging "Run logical standby PostgreSQL v${PG_VER} via pg_ctl..."
+    su - postgres -c "/usr/lib/postgresql/${PG_VER}/bin/pg_ctl -w -t 30 -l /var/log/postgresql/startup-logical.log -D ${LGDB1_DATADIR} start"
+    _logging "Remove a physical replication slot on primary..."
     su - postgres -c "psql -c \"SELECT pg_drop_replication_slot('standby_test_slot_physical')\""
 fi
 
