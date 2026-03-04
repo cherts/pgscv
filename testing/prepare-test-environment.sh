@@ -1,6 +1,11 @@
 ﻿#!/usr/bin/bash
 
-PG_VER=17
+if [[ "$#" -eq 0 ]]; then
+    echo "Usage: $0 <postgres_version>"
+    exit 1
+fi
+
+PG_VER=$1
 MAIN_DATADIR=/var/lib/postgresql/data/main
 STDB1_DATADIR=/var/lib/postgresql/data/standby1
 STDB2_DATADIR=/var/lib/postgresql/data/standby2
@@ -10,6 +15,8 @@ _logging() {
     local MSG=${1}
     printf "%s: %s\n" "$(date "+%d.%m.%Y %H:%M:%S")" "${MSG}" 2>/dev/null
 }
+
+_logging "Use PostgreSQL v${PG_VER}"
 
 # init postgres
 _logging "Init main database..."
@@ -80,21 +87,39 @@ _logging "Run physical standby PostgreSQL v${PG_VER} via pg_ctl..."
 su - postgres -c "/usr/lib/postgresql/${PG_VER}/bin/pg_ctl -w -t 30 -l /var/log/postgresql/startup-logical.log -D ${LGDB1_DATADIR} start"
 _logging "Wait 5 second..."
 sleep 5
-_logging "Stop physical standby PostgreSQL v${PG_VER} via pg_ctl..."
-su - postgres -c "/usr/lib/postgresql/${PG_VER}/bin/pg_ctl -D ${LGDB1_DATADIR} stop"
 su - postgres -c "echo > ${LGDB1_DATADIR}/.pgpass"
 chmod 600 ${LGDB1_DATADIR}/.pgpass
-_logging "Run pg_createsubscriber..."
-su - postgres -c "/usr/lib/postgresql/${PG_VER}/bin/pg_createsubscriber -D ${LGDB1_DATADIR} \
---publisher-server='user=postgres passfile=${LGDB1_DATADIR}/.pgpass channel_binding=disable dbname=pgscv_fixtures host=127.0.0.1 port=5432 fallback_application_name=walreceiver sslmode=disable sslnegotiation=postgres sslcompression=0 sslcertmode=disable sslsni=1 ssl_min_protocol_version=TLSv1.2 gssencmode=disable krbsrvname=postgres gssdelegation=0 target_session_attrs=any load_balance_hosts=disable' \
---database pgscv_fixtures \
---subscriber-username=postgres \
---replication-slot=pgscv_db_slot \
---publication=pgscv_db_publication \
---subscription=pgscv_db_subscription \
---verbose"
-_logging "Run logical standby PostgreSQL v${PG_VER} via pg_ctl..."
-su - postgres -c "/usr/lib/postgresql/${PG_VER}/bin/pg_ctl -w -t 30 -l /var/log/postgresql/startup-logical.log -D ${LGDB1_DATADIR} start"
+if [[ "${PG_VER}" -ge 17 ]]; then
+    _logging "Stop physical standby PostgreSQL v${PG_VER} via pg_ctl..."
+    su - postgres -c "/usr/lib/postgresql/${PG_VER}/bin/pg_ctl -D ${LGDB1_DATADIR} stop"
+    # convert physical standby to logical
+    _logging "Run pg_createsubscriber..."
+    su - postgres -c "/usr/lib/postgresql/${PG_VER}/bin/pg_createsubscriber -D ${LGDB1_DATADIR} \
+    --publisher-server='user=postgres passfile=${LGDB1_DATADIR}/.pgpass channel_binding=disable dbname=pgscv_fixtures host=127.0.0.1 port=5432 fallback_application_name=walreceiver sslmode=disable sslnegotiation=postgres sslcompression=0 sslcertmode=disable sslsni=1 ssl_min_protocol_version=TLSv1.2 gssencmode=disable krbsrvname=postgres gssdelegation=0 target_session_attrs=any load_balance_hosts=disable' \
+    --database pgscv_fixtures \
+    --subscriber-username=postgres \
+    --replication-slot=pgscv_db_slot \
+    --publication=pgscv_db_publication \
+    --subscription=pgscv_db_subscription \
+    --verbose"
+    _logging "Run logical standby PostgreSQL v${PG_VER} via pg_ctl..."
+    su - postgres -c "/usr/lib/postgresql/${PG_VER}/bin/pg_ctl -w -t 30 -l /var/log/postgresql/startup-logical.log -D ${LGDB1_DATADIR} start"
+else
+    _logging "Create a logical slot..."
+    su - postgres -c "psql -c \"SELECT pg_create_logical_replication_slot('pgscv_db_slot', 'pgoutput');\""
+    _logging "Create a publication..."
+    su - postgres -c "psql -d pgscv_fixtures -c \"CREATE PUBLICATION pgscv_db_publication FOR ALL TABLES;\""
+    _logging "Show current status..."
+    su - postgres -c "psql -p 5435 -c \"SELECT pg_is_in_recovery();\""
+    _logging "Promote standby..."
+    su - postgres -c "psql -p 5435 -c \"SELECT pg_promote();\""
+    _logging "Show current status..."
+    su - postgres -c "psql -p 5435 -c \"SELECT pg_is_in_recovery();\""
+    _logging "Create a subscription..."
+    su - postgres -c "psql -p 5435 -d pgscv_fixtures -c \"CREATE SUBSCRIPTION pgscv_db_subscription CONNECTION 'user=postgres passfile=${LGDB1_DATADIR}/.pgpass host=127.0.0.1 port=5432 sslmode=disable' PUBLICATION pgscv_db_publication WITH (copy_data=false, slot_name='pgscv_db_slot', create_slot=false);\""
+    _logging "Remove a physical replication slot..."
+    su - postgres -c "psql -c \"SELECT pg_drop_replication_slot('standby_test_slot_physical')\""
+fi
 
 _logging "Run pg_bench..."
 su - postgres -c "pgbench -T 5 pgscv_fixtures"

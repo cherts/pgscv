@@ -35,6 +35,9 @@ func TestPostgresDatabasesCollector_Update(t *testing.T) {
 			"postgres_database_sessions_all_total",
 			"postgres_database_sessions_total",
 		},
+		optional: []string{
+			"postgres_database_parallel_workers",
+		},
 		collector: NewPostgresDatabasesCollector,
 		service:   model.ServiceTypePostgresql,
 	}
