@@ -1,10 +1,5 @@
 #!/usr/bin/env bash
 
-if [[ "$#" -eq 0 ]]; then
-    echo "Usage: $0 <postgres_version> <pgbouncer_version>"
-    exit 1
-fi
-
 PG_VER=${1:-"18"}
 PGB_VERSION=${2:-"1.25.1"}
 GO_VERSION="1.26.0"
@@ -43,17 +38,22 @@ apt-get -y install build-essential wget vim make gcc git curl libevent-dev libss
 if ! _command_exists pgbouncer; then
     _logging "Set up PgBouncer ${PGB_VERSION}"
     wget https://www.pgbouncer.org/downloads/files/${PGB_VERSION}/pgbouncer-${PGB_VERSION}.tar.gz -O /tmp/pgbouncer-${PGB_VERSION}.tar.gz
-    tar -xzf /tmp/pgbouncer-${PGB_VERSION}.tar.gz -C /tmp
-    cd /tmp/pgbouncer-${PGB_VERSION}
-    ./configure --prefix=/usr/local
-    make
-    mkdir /etc/pgbouncer /var/log/pgbouncer /var/run/pgbouncer
-    chown -R postgres:postgres /etc/pgbouncer /var/log/pgbouncer /var/run/pgbouncer
-    cp pgbouncer /usr/sbin
-    cp etc/pgbouncer.ini /etc/pgbouncer
-    cd -
-    rm -f /tmp/pgbouncer-${PGB_VERSION}.tar.gz
-    rm -rf /tmp/pgbouncer-${PGB_VERSION}
+    if [ -f "/tmp/pgbouncer-${PGB_VERSION}.tar.gz" ]; then
+        tar -xzf /tmp/pgbouncer-${PGB_VERSION}.tar.gz -C /tmp
+        cd /tmp/pgbouncer-${PGB_VERSION}
+        ./configure --prefix=/usr/local
+        make
+        mkdir /etc/pgbouncer /var/log/pgbouncer /var/run/pgbouncer
+        chown -R postgres:postgres /etc/pgbouncer /var/log/pgbouncer /var/run/pgbouncer
+        cp pgbouncer /usr/sbin
+        cp etc/pgbouncer.ini /etc/pgbouncer
+        cd -
+        rm -f /tmp/pgbouncer-${PGB_VERSION}.tar.gz
+        rm -rf /tmp/pgbouncer-${PGB_VERSION}
+    else
+        _logging "ERROR: Failed to download PgBouncer v${PGB_VERSION}"
+         exit 1
+    fi
 fi
 
 if ! _command_exists go; then
@@ -98,4 +98,5 @@ _logging "Done."
 
 _logging "Ready to prepare PostgreSQL and PgBouncer, please run manual command:"
 echo "/opt/testing/prepare_test_environment.sh ${PG_VER}"
+echo "export PATH=\$PATH:/usr/local/bin:/usr/local/go/bin"
 echo "make test"
