@@ -153,11 +153,11 @@ jobs:
       - name: Copy test environment script
         if: matrix.os.matrix == 'linux'
         run: |
-          cp testing/prepare-test-environment.sh /opt/testing/
+          cp testing/prepare_test_environment.sh /opt/testing/
           cp testing/fixtures.sql /opt/testing/
       - name: Prepare PostgreSQL ${{ matrix.postgres.postgres }} and PgBouncer ${{ matrix.pgbouncer.pgbouncer }}
         run: |
-          /opt/testing/prepare-test-environment.sh ${{ matrix.postgres.postgres }}
+          /opt/testing/prepare_test_environment.sh ${{ matrix.postgres.postgres }}
       - name: Set Git config
         run: git config --global --add safe.directory /__w/pgscv/pgscv
       - name: Check code modernization

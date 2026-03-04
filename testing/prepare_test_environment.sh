@@ -1,4 +1,4 @@
-﻿#!/usr/bin/bash
+﻿#!/usr/bin/env bash
 
 if [[ "$#" -eq 0 ]]; then
     echo "Usage: $0 <postgres_version>"
@@ -17,6 +17,11 @@ _logging() {
 }
 
 _logging "Use PostgreSQL v${PG_VER}"
+
+if [ ! -f "/usr/lib/postgresql/${PG_VER}/bin/initdb" ]; then
+    _logging "PostgreSQL v${PG_VER} is not installed. Please install it first."
+    exit 1
+fi
 
 # init postgres
 _logging "Init main database..."
