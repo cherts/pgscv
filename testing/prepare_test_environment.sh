@@ -1,11 +1,6 @@
-﻿#!/usr/bin/env bash
+﻿#!/usr/bin/bash
 
-if [[ "$#" -eq 0 ]]; then
-    echo "Usage: $0 <postgres_version>"
-    exit 1
-fi
-
-PG_VER=$1
+PG_VER=${1:-"18"}
 MAIN_DATADIR=/var/lib/postgresql/data/main
 STDB1_DATADIR=/var/lib/postgresql/data/standby1
 STDB2_DATADIR=/var/lib/postgresql/data/standby2
