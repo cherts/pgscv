@@ -29,6 +29,11 @@ _logging() {
 _logging "Use PostgreSQL v${PG_VER}"
 _logging "Use PgBouncer v${PGB_VERSION}"
 
+if [ ! -f "/usr/lib/postgresql/${PG_VER}/bin/initdb" ]; then
+    _logging "PostgreSQL v${PG_VER} is not installed. Please install it first."
+    exit 1
+fi
+
 _logging "Prepare OS dependencies..."
 export PATH=$PATH:/usr/local/bin:/usr/local/go/bin
 apt-get update
