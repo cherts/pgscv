@@ -123,7 +123,6 @@ ssl_cert_file = '/etc/ssl/certs/ssl-cert-snakeoil.pem'
 ssl_key_file = '/etc/ssl/private/ssl-cert-snakeoil.key'
 logging_collector = on
 log_directory = '/var/log/postgresql'
-log_filename = 'postgresql-main.log'
 track_io_timing = on
 track_functions = all
 shared_preload_libraries = 'pg_stat_statements'
