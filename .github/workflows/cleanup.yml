@@ -1,0 +1,35 @@
+name: Cleanup old workflow runs
+
+on:
+  schedule:
+    - cron: '0 0 * * *' # Runs daily at midnight UTC
+  workflow_dispatch:    # Allows manual triggering from GitHub UI
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      actions: write
+    steps:
+      - name: Checkout the repository
+        uses: actions/checkout@v6
+
+      - name: Install jq
+        run: sudo apt-get install jq
+        
+      - name: List and delete old (>14 days) workflow runs
+        run: |
+          gh run list --limit 200 --json databaseId,createdAt |
+          jq -r '[.[] | select((now - (.createdAt | fromdateiso8601)) > (14 * 24 * 60 * 60))] | .[].databaseId' |
+          xargs -I ID gh run delete ID
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: List and delete all failed workflow runs
+        run: |
+          gh run list --limit 200 --json databaseId,status,conclusion |
+          jq -r '[.[] | select(.status == "completed" and .conclusion == "failure")] | .[].databaseId' |
+          xargs -I ID gh run delete ID
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
