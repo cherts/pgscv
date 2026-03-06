@@ -77,10 +77,10 @@ su - postgres -c "pgbench -T 5 -U pgscv pgscv_fixtures"
 
 # run logical standby postgres
 _logging "Create data directory..."
-su - postgres -c "mkdir -p ${LGDB1_DATADIR} 2>/dev/null"
-su - postgres -c "chmod 700 ${LGDB1_DATADIR} 2>/dev/null"
+su - postgres -c "mkdir -p ${LGDB1_DATADIR} >/dev/null 2>&1"
+su - postgres -c "chmod 700 ${LGDB1_DATADIR} >/dev/null 2>&1"
 _logging "Drop a physical replication slot on primary..."
-su - postgres -c "psql -t -X -c \"SELECT pg_catalog.pg_drop_replication_slot('standby_test_slot_physical');\" 2>/dev/null"
+su - postgres -c "psql -t -X -c \"SELECT pg_catalog.pg_drop_replication_slot('standby_test_slot_physical');\" >/dev/null 2>&1"
 _logging "Run pg_basebackup (physical standby to logical)..."
 su - postgres -c "pg_basebackup -P -R -X stream -C -S standby_test_slot_physical -c fast -h 127.0.0.1 -p 5432 -U postgres -D ${LGDB1_DATADIR}"
 _logging "Creating physical standby postgresql.auto.conf..."
@@ -96,10 +96,10 @@ _logging "Stop physical standby PostgreSQL v${PG_VER} via pg_ctl..."
 su - postgres -c "/usr/lib/postgresql/${PG_VER}/bin/pg_ctl -D ${LGDB1_DATADIR} stop"
 su - postgres -c "echo > ${LGDB1_DATADIR}/.pgpass"
 chmod 600 ${LGDB1_DATADIR}/.pgpass
-PRIMARY_SYSID=$(su - postgres -c "psql -t -X -c \"SELECT system_identifier FROM pg_catalog.pg_control_system();\" 2>/dev/null")
+PRIMARY_SYSID=$(su - postgres -c "psql -t -X -c \"SELECT system_identifier FROM pg_catalog.pg_control_system();\" 2>/dev/null | xargs")
 _logging "Primary host Sysid: ${PRIMARY_SYSID}"
+# convert physical standby to logical
 if [ ${PG_VER} -ge 17 ]; then
-	# convert physical standby to logical
 	_logging "Run pg_createsubscriber..."
 	su - postgres -c "/usr/lib/postgresql/${PG_VER}/bin/pg_createsubscriber -D ${LGDB1_DATADIR} \
     --publisher-server='user=postgres passfile=${LGDB1_DATADIR}/.pgpass channel_binding=disable dbname=pgscv_fixtures host=127.0.0.1 port=5432 fallback_application_name=walreceiver sslmode=disable sslnegotiation=postgres sslcompression=0 sslcertmode=disable sslsni=1 ssl_min_protocol_version=TLSv1.2 gssencmode=disable krbsrvname=postgres gssdelegation=0 target_session_attrs=any load_balance_hosts=disable' \
@@ -113,11 +113,11 @@ if [ ${PG_VER} -ge 17 ]; then
 	su - postgres -c "/usr/lib/postgresql/${PG_VER}/bin/pg_ctl -w -t 30 -l /var/log/postgresql/startup-logical.log -D ${LGDB1_DATADIR} start"
 else
 	_logging "Drop a publication on primary..."
-	su - postgres -c "psql -d pgscv_fixtures -X -t -c \"DROP PUBLICATION IF EXISTS pgscv_db_publication;\" 2>/dev/null"
+	su - postgres -c "psql -d pgscv_fixtures -X -t -c \"DROP PUBLICATION IF EXISTS pgscv_db_publication;\" >/dev/null 2>&1"
 	_logging "Create a publication on primary..."
 	su - postgres -c "psql -d pgscv_fixtures -X -t -c \"CREATE PUBLICATION pgscv_db_publication FOR ALL TABLES;\""
 	_logging "Drop logical slot on primary..."
-	su - postgres -c "psql -d pgscv_fixtures -X -t -c \"SELECT pg_catalog.pg_drop_replication_slot('pgscv_db_slot');\""
+	su - postgres -c "psql -d pgscv_fixtures -X -t -c \"SELECT pg_catalog.pg_drop_replication_slot('pgscv_db_slot');\" >/dev/null 2>&1"
 	_logging "Create a logical slot on primary..."
 	PRIMARY_LSN=$(su - postgres -c "psql -d pgscv_fixtures -X -t -c \"SELECT lsn FROM pg_catalog.pg_create_logical_replication_slot('pgscv_db_slot', 'pgoutput');\" 2>/dev/null | xargs")
 	if [ -z "${PRIMARY_LSN}" ]; then
@@ -130,11 +130,11 @@ else
 	_logging "Wait 10 second..."
 	sleep 10
 	_logging "Show current status pg_is_in_recovery()..."
-	su - postgres -c "psql -p 5435 -X -t -c \"SELECT pg_is_in_recovery();\""
+	su - postgres -c "psql -p 5435 -X -t -c \"SELECT pg_is_in_recovery();\" 2>/dev/null | xargs"
 	_logging "Promote physical standby..."
 	su - postgres -c "psql -p 5435 -X -t -c \"SELECT pg_promote();\""
 	_logging "Show current status pg_is_in_recovery()..."
-	su - postgres -c "psql -p 5435 -X -t -c \"SELECT pg_is_in_recovery();\""
+	su - postgres -c "psql -p 5435 -X -t -c \"SELECT pg_is_in_recovery();\" 2>/dev/null | xargs"
 	_logging "Create a subscription..."
 	su - postgres -c "psql -p 5435 -d pgscv_fixtures -c \"CREATE SUBSCRIPTION pgscv_db_subscription CONNECTION 'user=postgres passfile=${LGDB1_DATADIR}/.pgpass host=127.0.0.1 port=5432 dbname=pgscv_fixtures sslmode=disable' PUBLICATION pgscv_db_publication WITH (copy_data=false, slot_name='pgscv_db_slot', create_slot=false, enabled = false);\""
 	SUB_OID=$(su - postgres -c "psql -p 5435 -X -t -c \"SELECT s.oid FROM pg_catalog.pg_subscription s INNER JOIN pg_catalog.pg_database d ON (s.subdbid = d.oid) WHERE s.subname = 'pgscv_db_subscription' AND d.datname = 'pgscv_fixtures';\" 2>/dev/null | xargs")
@@ -143,12 +143,12 @@ else
 		exit 1
 	fi
 	_logging "Show subscription OID: ${SUB_OID}"
-	_logging "Origin advance the subscription..."
-	su - postgres -c "psql -p 5435 -d pgscv_fixtures -X -t -c \"SELECT pg_catalog.pg_replication_origin_advance('pg_${SUB_OID}', '${PRIMARY_LSN}');\""
+	_logging "Origin advance the subscription 'pg_${SUB_OID}' -> '${PRIMARY_LSN}'..."
+	su - postgres -c "psql -p 5435 -d pgscv_fixtures -X -t -c \"SELECT pg_catalog.pg_replication_origin_advance('pg_${SUB_OID}', '${PRIMARY_LSN}');\" >/dev/null 2>&1"
 	_logging "Enable the subscription..."
 	su - postgres -c "psql -p 5435 -d pgscv_fixtures -X -t -c \"ALTER SUBSCRIPTION pgscv_db_subscription ENABLE;\""
 	_logging "Drop a physical replication slot on primary..."
-	su - postgres -c "psql -X -t -c \"SELECT pg_catalog.pg_drop_replication_slot('standby_test_slot_physical');\""
+	su - postgres -c "psql -X -t -c \"SELECT pg_catalog.pg_drop_replication_slot('standby_test_slot_physical');\" >/dev/null 2>&1"
 	_logging "Stop logical standby PostgreSQL v${PG_VER} via pg_ctl..."
 	su - postgres -c "/usr/lib/postgresql/${PG_VER}/bin/pg_ctl -D ${LGDB1_DATADIR} stop"
 	_logging "Reset WAL on logical standby..."
@@ -156,7 +156,7 @@ else
 	_logging "Run logical standby PostgreSQL v${PG_VER} via pg_ctl..."
 	su - postgres -c "/usr/lib/postgresql/${PG_VER}/bin/pg_ctl -w -t 30 -l /var/log/postgresql/startup-logical.log -D ${LGDB1_DATADIR} start"
 fi
-LOGICAL_STB_SYSID=$(su - postgres -c "psql -p 5435 -t -X -c \"SELECT system_identifier FROM pg_catalog.pg_control_system()\" 2>/dev/null")
+LOGICAL_STB_SYSID=$(su - postgres -c "psql -p 5435 -t -X -c \"SELECT system_identifier FROM pg_catalog.pg_control_system()\" 2>/dev/null | xargs")
 _logging "Logical standby Sysid: ${LOGICAL_STB_SYSID}"
 
 _logging "Run pg_bench..."
