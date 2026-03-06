@@ -11,7 +11,8 @@ import (
 
 func TestPostgresStatIOCollector_Update(t *testing.T) {
 	var input = pipelineInput{
-		required: []string{
+		required: []string{},
+		optional: []string{
 			"postgres_stat_io_reads",
 			"postgres_stat_io_read_time",
 			"postgres_stat_io_writes",
