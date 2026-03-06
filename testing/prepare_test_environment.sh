@@ -79,8 +79,8 @@ su - postgres -c "pgbench -T 5 -U pgscv pgscv_fixtures"
 _logging "Create data directory..."
 su - postgres -c "mkdir -p ${LGDB1_DATADIR} 2>/dev/null"
 su - postgres -c "chmod 700 ${LGDB1_DATADIR} 2>/dev/null"
-_logging "Remove a physical replication slot on primary..."
-su - postgres -c "psql -c \"SELECT pg_catalog.pg_drop_replication_slot('standby_test_slot_physical');\" 2>/dev/null"
+_logging "Drop a physical replication slot on primary..."
+su - postgres -c "psql -t -X -c \"SELECT pg_catalog.pg_drop_replication_slot('standby_test_slot_physical');\" 2>/dev/null"
 _logging "Run pg_basebackup (physical standby to logical)..."
 su - postgres -c "pg_basebackup -P -R -X stream -C -S standby_test_slot_physical -c fast -h 127.0.0.1 -p 5432 -U postgres -D ${LGDB1_DATADIR}"
 _logging "Creating physical standby postgresql.auto.conf..."
@@ -124,26 +124,16 @@ else
 		_logging "Failed to create logical replication slot. Please check the logs for details."
 		exit 1
 	fi
-	#_logging "Show current primary LSN: ${PRIMARY_LSN}"
-	#_logging "Create postgresql.auto.conf..."
-	#cat >> ${LGDB1_DATADIR}/postgresql.auto.conf <<EOF
-	#recovery_target = ''
-	#recovery_target_timeline = 'latest'
-	#recovery_target_inclusive = false
-	#recovery_target_action = promote
-	#recovery_target_name = ''
-	#recovery_target_time = ''
-	#recovery_target_xid = '${PRIMARY_LSN}'
-	#EOF
+	_logging "Show current primary LSN: ${PRIMARY_LSN}"
 	_logging "Run physical standby in protected mode PostgreSQL v${PG_VER} via pg_ctl..."
 	su - postgres -c "/usr/lib/postgresql/${PG_VER}/bin/pg_ctl -w -t 30 -l /var/log/postgresql/startup-logical.log -D ${LGDB1_DATADIR} -o \"-c max_logical_replication_workers=0\" start"
 	_logging "Wait 10 second..."
 	sleep 10
-	_logging "Show current status of physical standby..."
+	_logging "Show current status pg_is_in_recovery()..."
 	su - postgres -c "psql -p 5435 -X -t -c \"SELECT pg_is_in_recovery();\""
 	_logging "Promote physical standby..."
 	su - postgres -c "psql -p 5435 -X -t -c \"SELECT pg_promote();\""
-	_logging "Show current status..."
+	_logging "Show current status pg_is_in_recovery()..."
 	su - postgres -c "psql -p 5435 -X -t -c \"SELECT pg_is_in_recovery();\""
 	_logging "Create a subscription..."
 	su - postgres -c "psql -p 5435 -d pgscv_fixtures -c \"CREATE SUBSCRIPTION pgscv_db_subscription CONNECTION 'user=postgres passfile=${LGDB1_DATADIR}/.pgpass host=127.0.0.1 port=5432 dbname=pgscv_fixtures sslmode=disable' PUBLICATION pgscv_db_publication WITH (copy_data=false, slot_name='pgscv_db_slot', create_slot=false, enabled = false);\""
@@ -154,11 +144,11 @@ else
 	fi
 	_logging "Show subscription OID: ${SUB_OID}"
 	_logging "Origin advance the subscription..."
-	su - postgres -c "psql -p 5435 -d pgscv_fixtures -c \"SELECT pg_catalog.pg_replication_origin_advance('pg_${SUB_OID}', '${PRIMARY_LSN}');\""
-	_logging "Enable subscription..."
-	su - postgres -c "psql -p 5435 -d pgscv_fixtures -c \"ALTER SUBSCRIPTION pgscv_db_subscription ENABLE;\""
-	_logging "Remove a physical replication slot on primary..."
-	su - postgres -c "psql -c \"SELECT pg_catalog.pg_drop_replication_slot('standby_test_slot_physical');\""
+	su - postgres -c "psql -p 5435 -d pgscv_fixtures -X -t -c \"SELECT pg_catalog.pg_replication_origin_advance('pg_${SUB_OID}', '${PRIMARY_LSN}');\""
+	_logging "Enable the subscription..."
+	su - postgres -c "psql -p 5435 -d pgscv_fixtures -X -t -c \"ALTER SUBSCRIPTION pgscv_db_subscription ENABLE;\""
+	_logging "Drop a physical replication slot on primary..."
+	su - postgres -c "psql -X -t -c \"SELECT pg_catalog.pg_drop_replication_slot('standby_test_slot_physical');\""
 	_logging "Stop logical standby PostgreSQL v${PG_VER} via pg_ctl..."
 	su - postgres -c "/usr/lib/postgresql/${PG_VER}/bin/pg_ctl -D ${LGDB1_DATADIR} stop"
 	_logging "Reset WAL on logical standby..."
