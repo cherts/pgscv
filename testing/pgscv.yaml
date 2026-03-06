@@ -1,0 +1,74 @@
+﻿listen_address: 0.0.0.0:9890
+#authentication:
+#  username: monitoring
+#  password: supersecretpassword
+#  keyfile: /etc/ssl/private/ssl-cert-snakeoil.key
+#  certfile: /etc/ssl/certs/ssl-cert-snakeoil.pem
+#no_track_mode: false
+#collect_top_query: 10
+#collect_top_table: 10
+#collect_top_index: 10
+#concurrency_limit: 5
+#refresh_service_config_interval: 2h
+skip_conn_error_mode: true
+#url_prefix: "example.com"
+conn_timeout: 3
+#throttling_interval: 25
+services:
+  "postgres_5432":
+    service_type: "postgres"
+    conninfo: "postgres://pgscv:pgscv@127.0.0.1:5432/pgscv_fixtures"
+  "postgres_5433":
+    service_type: "postgres"
+    conninfo: "postgres://pgscv:pgscv@127.0.0.1:5433/pgscv_fixtures"
+  "postgres_5434":
+    service_type: "postgres"
+    conninfo: "postgres://pgscv:pgscv@127.0.0.1:5434/pgscv_fixtures"
+  "postgres_5435":
+    service_type: "postgres"
+    conninfo: "postgres://pgscv:pgscv@127.0.0.1:5435/pgscv_fixtures"
+  "pgbouncer_6432": 
+    service_type: "pgbouncer"
+    conninfo: "postgres://pgscv:pgscv@127.0.0.1:6432/pgbouncer"
+#disable_collectors:
+#  - system
+#  - system/pgscv
+#  - system/loadaverage
+#  - system/cpu
+#  - system/diskstats
+#  - system/filesystems
+#  - system/netdev
+#  - system/network
+#  - system/memory
+#  - system/sysconfig
+#  - system/sysinfo
+#  - postgres/pgscv
+#  - postgres/activity
+#  - postgres/archiver
+#  - postgres/bgwriter
+#  - postgres/conflicts
+#  - postgres/databases
+#  - postgres/indexes
+#  - postgres/functions
+#  - postgres/locks
+#  - postgres/logs
+#  - postgres/replication
+#  - postgres/replication_slots
+#  - postgres/statements
+#  - postgres/schemas
+#  - postgres/settings
+#  - postgres/storage
+#  - postgres/stat_io
+#  - postgres/stat_slru
+#  - postgres/stat_subscription
+#  - postgres/subscription_rel
+#  - postgres/stat_ssl
+#  - postgres/tables
+#  - postgres/wal
+#  - postgres/custom
+#  - pgbouncer/pgscv
+#  - pgbouncer/pools
+#  - pgbouncer/stats
+#  - pgbouncer/settings
+#  - patroni/pgscv
+#  - patroni/common
