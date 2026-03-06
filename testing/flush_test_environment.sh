@@ -17,16 +17,16 @@ SCRIPT_DIR="$(cd -P "$(dirname "$SOURCE")" && pwd)"
 SCRIPT_NAME=$(basename "$0")
 
 _logging() {
-    local MSG=${1}
-    printf "%s: %s\n" "$(date "+%d.%m.%Y %H:%M:%S")" "${MSG}" 2>/dev/null
+	local MSG=${1}
+	printf "%s: %s\n" "$(date "+%d.%m.%Y %H:%M:%S")" "${MSG}" 2>/dev/null
 }
 
 _logging "Use PostgreSQL v${PG_VER}"
 
 if [ ! -f "/usr/lib/postgresql/${PG_VER}/bin/initdb" ]; then
-    _logging "PostgreSQL v${PG_VER} is not installed. Please install it first OR run this script with correct PostgreSQL version as argument."
-    _logging "Example: ./${SCRIPT_NAME} <postgres_version>"
-    exit 1
+	_logging "PostgreSQL v${PG_VER} is not installed. Please install it first OR run this script with correct PostgreSQL version as argument."
+	_logging "Example: ./${SCRIPT_NAME} <postgres_version>"
+	exit 1
 fi
 
 _logging "Stop logical standby PostgreSQL v${PG_VER} via pg_ctl..."
@@ -57,10 +57,10 @@ _logging "Remove log file..."
 shopt -s dotglob && rm -f /var/log/postgresql/*
 
 if [ -f "/var/run/pgbouncer/pgbouncer.pid" ]; then
-    _logging "Stop PgBouncer..."
-    su - postgres -c "kill -9 $(cat /var/run/pgbouncer/pgbouncer.pid)"
-    rm -f /var/run/pgbouncer/pgbouncer.pid
-    rm -f /var/log/pgbouncer/pgbouncer.log
+	_logging "Stop PgBouncer..."
+	su - postgres -c "kill -9 $(cat /var/run/pgbouncer/pgbouncer.pid)"
+	rm -f /var/run/pgbouncer/pgbouncer.pid
+	rm -f /var/log/pgbouncer/pgbouncer.log
 fi
 rm -f /etc/pgbouncer/pgbouncer.ini >/dev/null 2>&1
 cp /etc/pgbouncer/pgbouncer.orig.ini /etc/pgbouncer/pgbouncer.ini >/dev/null 2>&1
