@@ -37,7 +37,7 @@ jobs:
 #              13: docker://postgres:13
 #              14: docker://postgres:14
 #              15: docker://postgres:15
-#              16: docker://postgres:16
+              16: docker://postgres:16
               17: docker://postgres:17
               18: docker://postgres:18
 #          - name: Windows
@@ -88,11 +88,11 @@ jobs:
 #            golang: 1.26.0
 #            revive: 1.14.0
 #            gosec: 2.23.0
-#          - name: PostgreSQL v16
-#            postgres: 16
-#            golang: 1.26.0
-#            revive: 1.14.0
-#            gosec: 2.23.0
+          - name: PostgreSQL v16
+            postgres: 16
+            golang: 1.26.0
+            revive: 1.14.0
+            gosec: 2.23.0
           - name: PostgreSQL v17
             postgres: 17
             golang: 1.26.0
