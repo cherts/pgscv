@@ -99,16 +99,6 @@ docker-build-beta: ## Build docker image (beta)
 docker-push-beta: ## Push docker image (beta)
 	docker push ${DOCKER_ACCOUNT}/${APPNAME}:v${VERSION_BETA}
 
-docker-build-test-runner: ## Build docker image with testing environment for CI
-	$(eval VERSION := $(shell grep -E 'LABEL version' testing/docker-test-runner/Dockerfile |cut -d = -f2 |tr -d \"))
-	cd ./testing/docker-test-runner; \
-		docker build -t ${DOCKER_ACCOUNT}/pgscv-test-runner:${VERSION} .
-
-docker-push-test-runner: ## Push testing docker image to registry
-	$(eval VERSION := $(shell grep -E 'LABEL version' testing/docker-test-runner/Dockerfile |cut -d = -f2 |tr -d \"))
-	cd ./testing/docker-test-runner; \
-		docker push ${DOCKER_ACCOUNT}/pgscv-test-runner:${VERSION}
-
 modernize: modernize-fix ## Run gopls modernize check and fix
 
 modernize-fix: ## Run gopls modernize fix
