@@ -9,16 +9,124 @@ on:
 
 jobs:
   test:
-    runs-on: ubuntu-24.04
-    container: cherts/pgscv-test-runner:1.0.16
+    name: ${{ matrix.task.name }} ${{ matrix.os.name }} ${{ matrix.postgres.name }} ${{ matrix.pgbouncer.name }}
+    runs-on: ${{ matrix.os.runs-on }}
+    container: ${{ matrix.os.container[matrix.postgres.postgres] }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - name: Linux
+            runs-on: ubuntu-latest
+            matrix: linux
+            container:
+              14: docker://postgres:14
+              15: docker://postgres:15
+              16: docker://postgres:16
+              17: docker://postgres:17
+              18: docker://postgres:18
+#          - name: Windows
+#            runs-on: windows-latest
+#            matrix: windows
+#          - name: macOS
+#            runs-on: macos-latest
+#            matrix: macos
+        pgbouncer:
+          - name: PgBouncer v1.25
+            pgbouncer: 1.25.1
+          - name: PgBouncer v1.18
+            pgbouncer: 1.18.0
+          - name: PgBouncer v1.16
+            pgbouncer: 1.16.1
+          - name: PgBouncer v1.15
+            pgbouncer: 1.15.0
+        postgres:
+          - name: PostgreSQL v14
+            postgres: 14
+            golang: 1.26.0
+            revive: 1.14.0
+            gosec: 2.23.0
+          - name: PostgreSQL v15
+            postgres: 15
+            golang: 1.26.0
+            revive: 1.14.0
+            gosec: 2.23.0
+          - name: PostgreSQL v16
+            postgres: 16
+            golang: 1.26.0
+            revive: 1.14.0
+            gosec: 2.23.0
+          - name: PostgreSQL v17
+            postgres: 17
+            golang: 1.26.0
+            revive: 1.14.0
+            gosec: 2.23.0
+          - name: PostgreSQL v18
+            postgres: 18
+            golang: 1.26.0
+            revive: 1.14.0
+            gosec: 2.23.0
     steps:
+      - name: Set up pgbouncer ${{ matrix.pgbouncer.pgbouncer }}
+        if: matrix.os.matrix == 'linux'
+        run: |
+          apt-get update
+          apt-get -y upgrade
+          echo "Set up pgbouncer ${{ matrix.pgbouncer.pgbouncer }}"
+          apt-get install build-essential wget vim make gcc git curl libevent-dev libssl-dev pkg-config python3 pandoc -y
+          wget https://www.pgbouncer.org/downloads/files/${{ matrix.pgbouncer.pgbouncer }}/pgbouncer-${{ matrix.pgbouncer.pgbouncer }}.tar.gz
+          tar xzf pgbouncer-${{ matrix.pgbouncer.pgbouncer }}.tar.gz
+          cd pgbouncer-${{ matrix.pgbouncer.pgbouncer }}
+          ./configure --prefix=/usr/local
+          make
+          mkdir /etc/pgbouncer /var/log/pgbouncer /var/run/pgbouncer
+          chown -R postgres:postgres /etc/pgbouncer /var/log/pgbouncer /var/run/pgbouncer
+          cp pgbouncer /usr/sbin
+          cp etc/pgbouncer.ini /etc/pgbouncer
+          cp etc/pgbouncer.ini /etc/pgbouncer/pgbouncer.orig.ini
+          export PATH=$PATH:/usr/local/bin:/usr/local/go/bin
+          cd ..
+          rm -f pgbouncer-${{ matrix.pgbouncer.pgbouncer }}.tar.gz
+          rm -rf pgbouncer-${{ matrix.pgbouncer.pgbouncer }}
+      - name: Set up golang ${{ matrix.postgres.golang }}
+        if: matrix.os.matrix == 'linux'
+        uses: actions/setup-go@v6
+        with:
+          go-version: ${{ matrix.postgres.golang }}
+      - name: Set up revive ${{ matrix.postgres.revive }}
+        if: matrix.os.matrix == 'linux'
+        run: |
+          curl -s -L https://github.com/mgechev/revive/releases/download/v${{ matrix.postgres.revive }}/revive_linux_amd64.tar.gz | tar xzf - -C $(go env GOROOT)/bin revive
+      - name: Set up gosec ${{ matrix.postgres.gosec }}
+        if: matrix.os.matrix == 'linux'
+        run: |
+          curl -sfL https://raw.githubusercontent.com/securego/gosec/master/install.sh | sh -s -- -b $(go env GOROOT)/bin v${{ matrix.postgres.gosec }}
+      - name: Prepare testing environment
+        if: matrix.os.matrix == 'linux'
+        run: |
+          mkdir /opt/testing
+          chmod 755 /opt/testing
+          rm -rf /var/lib/apt/lists/*
+      - name: Show versions
+        run: |
+          go version
+          pgbouncer --version
+          postgres --version
       - name: Checkout code
         uses: actions/checkout@v6
+      - name: Copy test environment script
+        if: matrix.os.matrix == 'linux'
+        run: |
+          cp testing/prepare_test_environment.sh /opt/testing/
+          cp testing/fixtures.sql /opt/testing/
+      - name: Prepare PostgreSQL ${{ matrix.postgres.postgres }} and PgBouncer ${{ matrix.pgbouncer.pgbouncer }}
+        run: |
+          /opt/testing/prepare_test_environment.sh ${{ matrix.postgres.postgres }}
       - name: Set Git config
         run: git config --global --add safe.directory /__w/pgscv/pgscv
-      - name: Prepare test environment
-        run: prepare_test_environment.sh
-      - name: Run test
+      - name: Check code modernization
+        run: make modernize-check
+      - name: Run tests
         run: make test
 
   build:
