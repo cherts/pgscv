@@ -22,13 +22,13 @@ This project is a continuation of the development of the original pgSCV by [Alex
 - **Discovery and monitoring Cloud Managed Databases:** Yandex Managed Service for PostgreSQL ([see documentation](https://github.com/cherts/pgscv/wiki/Monitoring-Cloud-Managed-Databases)).
 - **Support Prometheus service discovery.** `/targets` endpoint is used to discover all monitoring services ([see documentation](https://github.com/cherts/pgscv/wiki/Service-discovery))
 - **Throttling support** The throttling allows limiting calls to the `/metrics` and `/metrics?target=xxx` endpoints to protect databases from a flood of monitoring requests from multiple collection agents ([see documentation](https://github.com/cherts/pgscv/wiki/Throttling)).
-- **Concurrency limitting support** It is possible to limit the parallel collection of monitoring data from the database to control the load created by the exporter. ([see documentatio](https://github.com/cherts/pgscv/wiki/Concurrency)).
+- **Concurrency limitting support** It is possible to limit the parallel collection of monitoring data from the database to control the load created by the exporter. ([see documentation](https://github.com/cherts/pgscv/wiki/Concurrency)).
 - **TLS and authentication**. `/metrics` and и `/metrics?target=xxx` endpoint could be protected with basic authentication and TLS.
 - **Collecting metrics from multiple services**. pgSCV can collect metrics from many databases instances.
 - **User-defined metrics**. pgSCV could be configured in a way to collect metrics defined by user.
 - **Collectors management**. Collectors could be disabled if necessary.
-- **Collectors filters**. Collectors could be adjusted to skip collecting metrics based on labels values, like
-  block devices, network interfaces, filesystems, users, databases, etc.
+- **Collectors filters**. Collectors could be adjusted to skip collecting metrics based on labels values, like block devices, network interfaces, filesystems, users, databases, etc.
+- **Automatic reload service configuration**. Regular configuration reload or manual via `/flush-services-config` endpoint ([see documentation](https://github.com/cherts/pgscv/wiki/Automatic-reload-service-configuration)).
 
 ### Requirements
 - Can run on Linux only; can connect to remote services running on other OS/PaaS.
