@@ -1,5 +1,5 @@
 ﻿# stage 1
-# __release_tag__ golang 1.26 was released 2026-02-10
+# __release_tag__ golang 1.26 was released 2026-03-05
 FROM golang:1.26 AS build
 LABEL stage=intermediate
 WORKDIR /app
