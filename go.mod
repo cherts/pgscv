@@ -1,6 +1,6 @@
 module github.com/cherts/pgscv
 
-go 1.26.0
+go 1.26.1
 
 require (
 	github.com/alecthomas/kingpin/v2 v2.4.0
@@ -10,19 +10,19 @@ require (
 	github.com/stretchr/testify v1.11.1
 	golang.org/x/crypto v0.48.0 // indirect
 	golang.org/x/net v0.51.0
-	golang.org/x/sys v0.41.0 // indirect
+	golang.org/x/sys v0.42.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0
 )
 
-require github.com/shirou/gopsutil/v4 v4.26.1
+require github.com/shirou/gopsutil/v4 v4.26.2
 
 require (
 	github.com/bradfitz/gomemcache v0.0.0-20250403215159-8d39553ac7cf
 	github.com/go-playground/validator/v10 v10.30.1
 	github.com/jackc/pgx/v5 v5.8.0
-	github.com/yandex-cloud/go-genproto v0.59.0
+	github.com/yandex-cloud/go-genproto v0.60.0
 	github.com/yandex-cloud/go-sdk v0.31.0
-	golang.org/x/time v0.14.0
+	golang.org/x/time v0.15.0
 	google.golang.org/protobuf v1.36.11
 )
 
@@ -31,7 +31,7 @@ require (
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
-	github.com/ebitengine/purego v0.9.1 // indirect
+	github.com/ebitengine/purego v0.10.0 // indirect
 	github.com/fsnotify/fsnotify v1.9.0 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.13 // indirect
 	github.com/ghodss/yaml v1.0.0 // indirect
@@ -54,13 +54,13 @@ require (
 	github.com/power-devops/perfstat v0.0.0-20240221224432-82ca36839d55 // indirect
 	github.com/prometheus/client_model v0.6.2 // indirect
 	github.com/prometheus/common v0.67.5 // indirect
+	github.com/prometheus/procfs v0.20.1 // indirect
 	github.com/tklauser/go-sysconf v0.3.16 // indirect
 	github.com/tklauser/numcpus v0.11.0 // indirect
-	github.com/prometheus/procfs v0.20.1 // indirect
 	github.com/xhit/go-str2duration/v2 v2.1.0 // indirect
 	github.com/yusufpapurcu/wmi v1.2.4 // indirect
-	go.yaml.in/yaml/v2 v2.4.3 // indirect
-	golang.org/x/sync v0.19.0 // indirect
+	go.yaml.in/yaml/v2 v2.4.4 // indirect
+	golang.org/x/sync v0.20.0 // indirect
 	golang.org/x/text v0.34.0 // indirect
 	google.golang.org/genproto v0.0.0-20260226221140-a57be14db171 // indirect
 	google.golang.org/genproto/googleapis/api v0.0.0-20260226221140-a57be14db171 // indirect
