@@ -90,8 +90,6 @@ services:
       - "wal_level=logical"
       - "-c"
       - "archive_command='/data/postgres_archive/archive_wal.sh \"%p\" \"%f\"'"
-      - "-c"
-      - "archive_cleanup_command='/data/postgres_archive/archive_cleanup.sh \"%r\"'"
     environment: &postgres_base_env
       POSTGRES_DB: ${POSTGRES_DB:-postgres}
       POSTGRES_USER: ${POSTGRES_USER:-postgres}
@@ -123,6 +121,10 @@ services:
     container_name: postgres12
     image: postgres:12-alpine
     hostname: postgres12
+    command:
+      <<: *postgres_base_command
+      - "-c"
+      - "archive_cleanup_command='/data/postgres_archive/archive_cleanup.sh \"%r\"'"
     volumes:
        - pg12_data:/data/postgres
        - pg_archive_data:/data/postgres_archive
