@@ -66,7 +66,7 @@ services:
     container_name: postgres11
     image: postgres:11-alpine
     hostname: postgres11
-    command: &postgres_base_command
+    command:
       - "postgres"
       - "-c"
       - "listen_addresses=*"
@@ -121,7 +121,32 @@ services:
     container_name: postgres12
     image: postgres:12-alpine
     hostname: postgres12
-    command: [*postgres_base_command, "-c archive_cleanup_command='/data/postgres_archive/archive_cleanup.sh \"%r\"'"]
+    command:
+      - "postgres"
+      - "-c"
+      - "listen_addresses=*"
+      - "-c"
+      - "shared_buffers=128MB"
+      - "-c"
+      - "shared_preload_libraries=pg_stat_statements"
+      - "-c"
+      - "pg_stat_statements.max=10000"
+      - "-c"
+      - "pg_stat_statements.track=all"
+      - "-c"
+      - "jit=off"
+      - "-c"
+      - "track_io_timing=on"
+      - "-c"
+      - "checkpoint_completion_target=0.9"
+      - "-c"
+      - "checkpoint_timeout=600"
+      - "-c"
+      - "wal_level=logical"
+      - "-c"
+      - "archive_command='/data/postgres_archive/archive_wal.sh \"%p\" \"%f\"'"
+      - "-c"
+      - "archive_cleanup_command='/data/postgres_archive/archive_cleanup.sh \"%r\"'"
     volumes:
        - pg12_data:/data/postgres
        - pg_archive_data:/data/postgres_archive
