@@ -89,6 +89,8 @@ services:
       - "-c"
       - "wal_level=logical"
       - "-c"
+      - "archive_mode=on"
+      - "-c"
       - "archive_command='/data/postgres_archive/archive_wal.sh \"%p\" \"%f\"'"
     environment: &postgres_base_env
       POSTGRES_DB: ${POSTGRES_DB:-postgres}
