@@ -7,5 +7,5 @@ fi
 PG_HOSTNAME=$(hostname)
 
 if [ -d "/data/postgres_archive/${PG_HOSTNAME}" ]; then
-    pg_archivecleanup -d /data/postgres_archive/${PG_HOSTNAME} $1
+    pg_archivecleanup -d /data/postgres_archive/${PG_HOSTNAME} $1.gz
 fi
