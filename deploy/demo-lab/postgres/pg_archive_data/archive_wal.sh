@@ -6,8 +6,4 @@ fi
 
 PG_HOSTNAME=$(hostname)
 
-if [ ! -d "/data/postgres_archive/${PG_HOSTNAME}" ]; then
-  su - postgres -c "mkdir -p \"/data/postgres_archive/${PG_HOSTNAME}\"" 2>/dev/null
-fi
-
 gzip < /data/postgres/$1 > /data/postgres_archive/${PG_HOSTNAME}/$2.gz
