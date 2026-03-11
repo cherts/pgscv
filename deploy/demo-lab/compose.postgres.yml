@@ -101,7 +101,9 @@ services:
       - 5431:5432
     volumes:
        - pg11_data:/data/postgres
+       - pg_archive_data:/data/postgres_archive
        - ${PWD}/postgres/init.sql:/docker-entrypoint-initdb.d/01-init.sql
+       - ${PWD}/postgres/archive_wal.sh:/data/archive_wal.sh
     networks: [ monitoring ]
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres -d postgres"]
@@ -122,7 +124,9 @@ services:
     hostname: postgres12
     volumes:
        - pg12_data:/data/postgres
+       - pg_archive_data:/data/postgres_archive
        - ${PWD}/postgres/init.sql:/docker-entrypoint-initdb.d/01-init.sql
+       - ${PWD}/postgres/archive_wal.sh:/data/archive_wal.sh
     ports:
       - 5432:5432
   postgres13:
@@ -132,7 +136,9 @@ services:
     hostname: postgres13
     volumes:
        - pg13_data:/data/postgres
+       - pg_archive_data:/data/postgres_archive
        - ${PWD}/postgres/init.sql:/docker-entrypoint-initdb.d/01-init.sql
+       - ${PWD}/postgres/archive_wal.sh:/data/archive_wal.sh
     ports:
       - 5433:5432
   postgres14:
@@ -142,7 +148,9 @@ services:
     hostname: postgres14
     volumes:
        - pg14_data:/data/postgres
+       - pg_archive_data:/data/postgres_archive
        - ${PWD}/postgres/init.sql:/docker-entrypoint-initdb.d/01-init.sql
+       - ${PWD}/postgres/archive_wal.sh:/data/archive_wal.sh
     ports:
       - 5434:5432
   postgres15:
@@ -152,7 +160,9 @@ services:
     hostname: postgres15
     volumes:
        - pg15_data:/data/postgres
+       - pg_archive_data:/data/postgres_archive
        - ${PWD}/postgres/init.sql:/docker-entrypoint-initdb.d/01-init.sql
+       - ${PWD}/postgres/archive_wal.sh:/data/archive_wal.sh
     ports:
       - 5435:5432
   postgres16:
@@ -162,7 +172,9 @@ services:
     hostname: postgres16
     volumes:
        - pg16_data:/data/postgres
+       - pg_archive_data:/data/postgres_archive
        - ${PWD}/postgres/init.sql:/docker-entrypoint-initdb.d/01-init.sql
+       - ${PWD}/postgres/archive_wal.sh:/data/archive_wal.sh
     ports:
       - 5436:5432
   postgres17:
@@ -172,7 +184,9 @@ services:
     hostname: postgres17
     volumes:
        - pg17_data:/data/postgres
+       - pg_archive_data:/data/postgres_archive
        - ${PWD}/postgres/init.sql:/docker-entrypoint-initdb.d/01-init.sql
+       - ${PWD}/postgres/archive_wal.sh:/data/archive_wal.sh
     ports:
       - 5437:5432
   postgres18:
