@@ -146,6 +146,8 @@ services:
       - "-c"
       - "wal_level=logical"
       - "-c"
+      - "archive_mode=on"
+      - "-c"
       - "archive_command='/data/postgres_archive/archive_wal.sh \"%p\" \"%f\"'"
       - "-c"
       - "archive_cleanup_command='/data/postgres_archive/archive_cleanup.sh \"%r\"'"
