@@ -89,9 +89,9 @@ services:
       - "-c"
       - "wal_level=logical"
       - "-c"
-      - "archive_command = '/data/postgres_archive/archive_wal.sh \"%p\" \"%f\"'"
+      - "archive_command='/data/postgres_archive/archive_wal.sh \"%p\" \"%f\"'"
       - "-c"
-      - "archive_cleanup_command = '/data/postgres_archive/archive_cleanup.sh \"%r\"'"
+      - "archive_cleanup_command='/data/postgres_archive/archive_cleanup.sh \"%r\"'"
     environment: &postgres_base_env
       POSTGRES_DB: ${POSTGRES_DB:-postgres}
       POSTGRES_USER: ${POSTGRES_USER:-postgres}
