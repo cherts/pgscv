@@ -88,6 +88,8 @@ services:
       - "checkpoint_timeout=600"
       - "-c"
       - "wal_level=logical"
+      - "-c"
+      - "archive_command = '/data/archive_wal.sh \"%p\" \"%f\"'"
     environment: &postgres_base_env
       POSTGRES_DB: ${POSTGRES_DB:-postgres}
       POSTGRES_USER: ${POSTGRES_USER:-postgres}
@@ -180,7 +182,9 @@ services:
     hostname: postgres18
     volumes:
        - pg18_data:/data/postgres
+       - pg_archive_data:/data/postgres_archive
        - ${PWD}/postgres/init.sql:/docker-entrypoint-initdb.d/01-init.sql
+       - ${PWD}/postgres/archive_wal.sh:/data/archive_wal.sh
     ports:
       - 5438:5432
   postgres9replica1:
@@ -377,6 +381,12 @@ services:
       - postgres17replica1
 
 volumes:
+  pg_archive_data:
+    driver: local
+    driver_opts:
+      o: bind
+      type: rw
+      device: ${PWD}/postgres/pg_archive_data
   pg9_data:
     driver: local
     driver_opts:
