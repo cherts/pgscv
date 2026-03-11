@@ -1,5 +1,9 @@
 #!/bin/bash
 
+if [ "$#" -ne 2 ]; then
+    exit 1
+fi
+
 PG_HOSTNAME=$(hostname)
 
 if [ ! -d "/data/postgres_archive/${PG_HOSTNAME}" ]; then
