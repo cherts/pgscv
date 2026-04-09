@@ -106,6 +106,10 @@ func TestMeminfoCollector_Update(t *testing.T) {
 			"node_vmstat_zswpwb", "node_vmstat_swpin_zero", "node_vmstat_nr_memmap_boot_pages",
 			"node_vmstat_zone_reclaim_success", "node_vmstat_thp_underused_split_page", "node_vmstat_nr_hugetlb",
 			"node_vmstat_swpout_zero", "node_vmstat_nr_memmap_pages", "node_vmstat_nr_iommu_pages",
+			"node_vmstat_pgdemote_proactive", "node_vmstat_direct_map_level2_collapses", "node_vmstat_direct_map_level3_collapses",
+			"node_vmstat_cma_alloc_success", "node_vmstat_nr_free_pages_blocks", "node_vmstat_nr_balloon_pages",
+			"node_vmstat_pgsteal_proactive", "node_vmstat_pgscan_proactive", "node_vmstat_cma_alloc_fail",
+			"node_memory_Balloon",
 		},
 		collector: NewMeminfoCollector,
 	}
