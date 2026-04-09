@@ -23,6 +23,7 @@ jobs:
     runs-on: ${{ matrix.os.runs-on }}
     container: ${{ matrix.os.container[matrix.postgres.postgres] }}
     strategy:
+      max-parallel: 5
       fail-fast: false
       matrix:
         os:
