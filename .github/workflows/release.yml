@@ -9,6 +9,7 @@ on:
 
 jobs:
   test:
+    if: github.ref == 'refs/heads/release'
     name: ${{ matrix.task.name }} ${{ matrix.os.name }} ${{ matrix.postgres.name }} ${{ matrix.pgbouncer.name }}
     runs-on: ${{ matrix.os.runs-on }}
     container: ${{ matrix.os.container[matrix.postgres.postgres] }}
@@ -131,6 +132,7 @@ jobs:
         run: make test
 
   build:
+    if: github.ref == 'refs/heads/release'
     runs-on: ubuntu-24.04
     needs: test
     steps:
@@ -147,6 +149,7 @@ jobs:
         id: version
         run: |
           LATEST_TAG=$(git describe --tags $(git rev-list --abbrev-commit --tags --max-count=1) --abbrev=0 2>/dev/null || echo "v1.0.0")
+          LATEST_TAG=$(echo "v1.0.0")
           echo "CURRENT_VERSION=${LATEST_TAG}" >>$GITHUB_OUTPUT
           echo "Current version: ${LATEST_TAG#v}"
       - name: Lint Dockerfile
@@ -173,6 +176,7 @@ jobs:
             ${{ steps.docker.outputs.DOCKERHUB_USERNAME }}/pgscv:${{ steps.version.outputs.CURRENT_VERSION }}
 
   goreleaser:
+    if: github.ref == 'refs/heads/release'
     runs-on: ubuntu-24.04
     needs: build
     steps:
