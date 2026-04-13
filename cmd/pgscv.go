@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
+	"runtime"
 	"syscall"
 
 	"github.com/cherts/pgscv/discovery/factory"
@@ -35,11 +36,11 @@ func main() {
 	sdlog.Logger.Infof = log.Infof
 	sdlog.Logger.Debugf = log.Debugf
 	if *showVersion {
-		fmt.Printf("%s %s %s-%s\n", appName, gitTag, gitCommit, gitBranch)
+		fmt.Printf("%s %s (%s) %s-%s\n", appName, gitTag, runtime.GOARCH, gitCommit, gitBranch)
 		os.Exit(0)
 	}
 
-	log.Infoln("starting ", appName, " ", gitTag, " ", gitCommit, "-", gitBranch)
+	log.Infoln("starting ", appName, " ", gitTag, " (", runtime.GOARCH, ") ", gitCommit, "-", gitBranch)
 
 	//go func() {
 	//	log.Infoln(http.ListenAndServe(":6060", nil))
