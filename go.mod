@@ -8,7 +8,7 @@ require (
 	github.com/jackc/pgx/v4 v4.18.3
 	github.com/nxadm/tail v1.4.11
 	github.com/prometheus/client_golang v1.23.2
-	github.com/rs/zerolog v1.35.0
+	github.com/rs/zerolog v1.35.1
 	github.com/stretchr/testify v1.11.1
 	golang.org/x/crypto v0.50.0 // indirect
 	golang.org/x/net v0.53.0
@@ -18,7 +18,7 @@ require (
 
 require (
 	github.com/go-playground/validator/v10 v10.30.2
-	github.com/yandex-cloud/go-genproto v0.70.0
+	github.com/yandex-cloud/go-genproto v0.73.0
 	github.com/yandex-cloud/go-sdk v0.31.0
 	golang.org/x/time v0.15.0
 	google.golang.org/protobuf v1.36.11
@@ -54,9 +54,9 @@ require (
 	github.com/xhit/go-str2duration/v2 v2.1.0 // indirect
 	go.yaml.in/yaml/v2 v2.4.4 // indirect
 	golang.org/x/text v0.36.0 // indirect
-	google.golang.org/genproto v0.0.0-20260406210006-6f92a3bedf2d // indirect
-	google.golang.org/genproto/googleapis/api v0.0.0-20260406210006-6f92a3bedf2d // indirect
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20260406210006-6f92a3bedf2d // indirect
+	google.golang.org/genproto v0.0.0-20260420184626-e10c466a9529 // indirect
+	google.golang.org/genproto/googleapis/api v0.0.0-20260420184626-e10c466a9529 // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20260420184626-e10c466a9529 // indirect
 	google.golang.org/grpc v1.80.0 // indirect
 	gopkg.in/tomb.v1 v1.0.0-20141024135613-dd632973f1e7 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
