@@ -27,9 +27,16 @@ const (
 		"wal_bytes, wal_buffers_full, wal_write, wal_sync, wal_write_time, wal_sync_time, extract('epoch' from stats_reset) as reset_time " +
 		"FROM pg_stat_wal"
 
-	postgresWalQueryLatest = "SELECT pg_is_in_recovery()::int AS recovery, " +
+	postgresWalQuery18 = "SELECT pg_is_in_recovery()::int AS recovery, " +
 		"(CASE pg_is_in_recovery() WHEN 'f' THEN FALSE::int ELSE pg_is_wal_replay_paused()::int END) AS recovery_paused, " +
 		"wal_records, wal_fpi, " +
+		"(CASE pg_is_in_recovery() WHEN 't' THEN pg_last_wal_receive_lsn() - '0/00000000' ELSE pg_current_wal_lsn() - '0/00000000' END) AS wal_written, " +
+		"wal_bytes, wal_buffers_full, extract('epoch' from stats_reset) as reset_time " +
+		"FROM pg_stat_wal"
+
+	postgresWalQueryLatest = "SELECT pg_is_in_recovery()::int AS recovery, " +
+		"(CASE pg_is_in_recovery() WHEN 'f' THEN FALSE::int ELSE pg_is_wal_replay_paused()::int END) AS recovery_paused, " +
+		"wal_records, wal_fpi, wal_fpi_bytes, " +
 		"(CASE pg_is_in_recovery() WHEN 't' THEN pg_last_wal_receive_lsn() - '0/00000000' ELSE pg_current_wal_lsn() - '0/00000000' END) AS wal_written, " +
 		"wal_bytes, wal_buffers_full, extract('epoch' from stats_reset) as reset_time " +
 		"FROM pg_stat_wal"
@@ -40,6 +47,7 @@ type postgresWalCollector struct {
 	recoveryPaused typedDesc
 	records        typedDesc
 	fpi            typedDesc
+	fpiBytes       typedDesc
 	bytes          typedDesc
 	writtenBytes   typedDesc // based on pg_current_wal_lsn()
 	buffersFull    typedDesc
@@ -74,6 +82,12 @@ func NewPostgresWalCollector(constLabels labels, settings model.CollectorSetting
 		),
 		fpi: newBuiltinTypedDesc(
 			descOpts{"postgres", "wal", "fpi_total", "Total number of WAL full page images generated (zero in case of standby).", 0},
+			prometheus.CounterValue,
+			nil, constLabels,
+			settings.Filters,
+		),
+		fpiBytes: newBuiltinTypedDesc(
+			descOpts{"postgres", "wal", "fpi_bytes_total", "Total amount of WAL full page images written (zero in case of standby) since last stats reset, in bytes.", 0},
 			prometheus.CounterValue,
 			nil, constLabels,
 			settings.Filters,
@@ -158,6 +172,8 @@ func (c *postgresWalCollector) Update(ctx context.Context, config Config, ch cha
 			ch <- c.fpi.newConstMetric(v)
 		case "wal_bytes":
 			ch <- c.bytes.newConstMetric(v)
+		case "wal_fpi_bytes":
+			ch <- c.fpiBytes.newConstMetric(v)
 		case "wal_written":
 			ch <- c.writtenBytes.newConstMetric(v)
 		case "wal_buffers_full":
@@ -226,6 +242,8 @@ func selectWalQuery(version int) string {
 		return postgresWalQuery13
 	case version < PostgresV18:
 		return postgresWalQuery17
+	case version < PostgresV19:
+		return postgresWalQuery18
 	default:
 		return postgresWalQueryLatest
 	}
