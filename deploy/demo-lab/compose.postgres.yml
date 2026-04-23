@@ -155,7 +155,7 @@ services:
        - pg12_data:/data/postgres
        - pg_wal_archive:/data/pg_wal_archive
        - ${PWD}/postgres/init.sql:/docker-entrypoint-initdb.d/01-init.sql
-       - ${PWD}/postgres/pg_archive_data/init_archive_data.sh:/docker-entrypoint-initdb.d/01-init_archive_data.sh
+       - ${PWD}/postgres/pg_wal_archive/init_archive_data.sh:/docker-entrypoint-initdb.d/01-init_archive_data.sh
     ports:
       - 5432:5432
   postgres13:
