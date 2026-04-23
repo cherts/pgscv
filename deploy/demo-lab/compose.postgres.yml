@@ -1,5 +1,5 @@
 services:
-  postgres9: &postgres_old_base
+  postgres9: &postgres_base_9
     container_name: postgres9
     image: postgres:9-alpine
     hostname: postgres9
@@ -53,7 +53,7 @@ services:
           cpus: '1'
           memory: 400M
   postgres10:
-    <<: *postgres_old_base
+    <<: *postgres_base_9
     container_name: postgres10
     image: postgres:10-alpine
     hostname: postgres10
@@ -62,7 +62,7 @@ services:
        - ${PWD}/postgres/init_10.sql:/docker-entrypoint-initdb.d/01-init.sql
     ports:
       - 5430:5432
-  postgres11: &postgres_base
+  postgres11: &postgres_base_11
     container_name: postgres11
     image: postgres:11-alpine
     hostname: postgres11
@@ -119,8 +119,8 @@ services:
         limits:
           cpus: '1'
           memory: 400M
-  postgres12:
-    <<: *postgres_base
+  postgres12: &postgres_base_12
+    <<: *postgres_base_11
     container_name: postgres12
     image: postgres:12-alpine
     hostname: postgres12
@@ -160,7 +160,7 @@ services:
     ports:
       - 5432:5432
   postgres13:
-    <<: *postgres_base
+    <<: *postgres_base_12
     container_name: postgres13
     image: postgres:13-alpine
     hostname: postgres13
@@ -172,7 +172,7 @@ services:
     ports:
       - 5433:5432
   postgres14:
-    <<: *postgres_base
+    <<: *postgres_base_12
     container_name: postgres14
     image: postgres:14-alpine
     hostname: postgres14
@@ -184,7 +184,7 @@ services:
     ports:
       - 5434:5432
   postgres15:
-    <<: *postgres_base
+    <<: *postgres_base_12
     container_name: postgres15
     image: postgres:15-alpine
     hostname: postgres15
@@ -196,7 +196,7 @@ services:
     ports:
       - 5435:5432
   postgres16:
-    <<: *postgres_base
+    <<: *postgres_base_12
     container_name: postgres16
     image: postgres:16-alpine
     hostname: postgres16
@@ -208,7 +208,7 @@ services:
     ports:
       - 5436:5432
   postgres17:
-    <<: *postgres_base
+    <<: *postgres_base_12
     container_name: postgres17
     image: postgres:17-alpine
     hostname: postgres17
@@ -220,7 +220,7 @@ services:
     ports:
       - 5437:5432
   postgres18:
-    <<: *postgres_base
+    <<: *postgres_base_12
     container_name: postgres18
     image: postgres:18-alpine
     hostname: postgres18
@@ -232,7 +232,7 @@ services:
     ports:
       - 5438:5432
   postgres9replica1:
-    <<: *postgres_old_base
+    <<: *postgres_base_9
     container_name: postgres9replica1
     image: postgres:9-alpine
     hostname: postgres9replica1
@@ -244,13 +244,12 @@ services:
        - pg9_replica1data:/data/postgres
        - pg_wal_archive:/data/pg_wal_archive
        - ${PWD}/postgres/init_basebackup.sh:/docker-entrypoint-initdb.d/01-basebackup.sh
-       - ${PWD}/postgres/pg_wal_archive/init_archive_data.sh:/docker-entrypoint-initdb.d/01-init_archive_data.sh
     ports:
       - 4429:5432
     depends_on:
       - postgres9
   postgres9replica2:
-    <<: *postgres_old_base
+    <<: *postgres_base_9
     container_name: postgres9replica2
     image: postgres:9-alpine
     hostname: postgres9replica2
@@ -262,13 +261,12 @@ services:
        - pg9_replica2data:/data/postgres
        - pg_wal_archive:/data/pg_wal_archive
        - ${PWD}/postgres/init_basebackup.sh:/docker-entrypoint-initdb.d/01-basebackup.sh
-       - ${PWD}/postgres/pg_wal_archive/init_archive_data.sh:/docker-entrypoint-initdb.d/01-init_archive_data.sh
     ports:
       - 3429:5432
     depends_on:
       - postgres9replica1
   postgres10replica1:
-    <<: *postgres_old_base
+    <<: *postgres_base_9
     container_name: postgres10replica1
     image: postgres:10-alpine
     hostname: postgres10replica1
@@ -280,13 +278,12 @@ services:
        - pg10_replica1data:/data/postgres
        - pg_wal_archive:/data/pg_wal_archive
        - ${PWD}/postgres/init_basebackup.sh:/docker-entrypoint-initdb.d/01-basebackup.sh
-       - ${PWD}/postgres/pg_wal_archive/init_archive_data.sh:/docker-entrypoint-initdb.d/01-init_archive_data.sh
     ports:
       - 4430:5432
     depends_on:
       - postgres10
   postgres11replica1:
-    <<: *postgres_old_base
+    <<: *postgres_base_11
     container_name: postgres11replica1
     image: postgres:11-alpine
     hostname: postgres11replica1
@@ -304,7 +301,7 @@ services:
     depends_on:
       - postgres11
   postgres12replica1:
-    <<: *postgres_base
+    <<: *postgres_base_12
     container_name: postgres12replica1
     image: postgres:12-alpine
     hostname: postgres12replica1
@@ -322,7 +319,7 @@ services:
     depends_on:
       - postgres12
   postgres13replica1:
-    <<: *postgres_base
+    <<: *postgres_base_12
     container_name: postgres13replica1
     image: postgres:13-alpine
     hostname: postgres13replica1
@@ -340,7 +337,7 @@ services:
     depends_on:
       - postgres13
   postgres14replica1:
-    <<: *postgres_base
+    <<: *postgres_base_12
     container_name: postgres14replica1
     image: postgres:14-alpine
     hostname: postgres14replica1
@@ -358,7 +355,7 @@ services:
     depends_on:
       - postgres14
   postgres15replica1:
-    <<: *postgres_base
+    <<: *postgres_base_12
     container_name: postgres15replica1
     image: postgres:15-alpine
     hostname: postgres15replica1
@@ -376,7 +373,7 @@ services:
     depends_on:
       - postgres15
   postgres16replica1:
-    <<: *postgres_base
+    <<: *postgres_base_12
     container_name: postgres16replica1
     image: postgres:16-alpine
     hostname: postgres16replica1
@@ -394,7 +391,7 @@ services:
     depends_on:
       - postgres16
   postgres17replica1:
-    <<: *postgres_base
+    <<: *postgres_base_12
     container_name: postgres17replica1
     image: postgres:17-alpine
     hostname: postgres17replica1
@@ -412,7 +409,7 @@ services:
     depends_on:
       - postgres17
   postgres18replica1:
-    <<: *postgres_base
+    <<: *postgres_base_12
     container_name: postgres18replica1
     image: postgres:18-alpine
     hostname: postgres18replica1
@@ -430,7 +427,7 @@ services:
     depends_on:
       - postgres18
   postgres18replica2:
-    <<: *postgres_base
+    <<: *postgres_base_12
     container_name: postgres18replica2
     image: postgres:18-alpine
     hostname: postgres18replica2
