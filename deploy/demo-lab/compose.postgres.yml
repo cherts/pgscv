@@ -105,6 +105,7 @@ services:
        - pg11_data:/data/postgres
        - pg_wal_archive:/data/pg_wal_archive
        - ${PWD}/postgres/init.sql:/docker-entrypoint-initdb.d/01-init.sql
+       - ${PWD}/postgres/pg_wal_archive/init_archive_data.sh:/docker-entrypoint-initdb.d/01-init_archive_data.sh
     networks: [ monitoring ]
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres -d postgres"]
@@ -167,6 +168,7 @@ services:
        - pg13_data:/data/postgres
        - pg_wal_archive:/data/pg_wal_archive
        - ${PWD}/postgres/init.sql:/docker-entrypoint-initdb.d/01-init.sql
+       - ${PWD}/postgres/pg_wal_archive/init_archive_data.sh:/docker-entrypoint-initdb.d/01-init_archive_data.sh
     ports:
       - 5433:5432
   postgres14:
@@ -178,6 +180,7 @@ services:
        - pg14_data:/data/postgres
        - pg_wal_archive:/data/pg_wal_archive
        - ${PWD}/postgres/init.sql:/docker-entrypoint-initdb.d/01-init.sql
+       - ${PWD}/postgres/pg_wal_archive/init_archive_data.sh:/docker-entrypoint-initdb.d/01-init_archive_data.sh
     ports:
       - 5434:5432
   postgres15:
@@ -189,6 +192,7 @@ services:
        - pg15_data:/data/postgres
        - pg_wal_archive:/data/pg_wal_archive
        - ${PWD}/postgres/init.sql:/docker-entrypoint-initdb.d/01-init.sql
+       - ${PWD}/postgres/pg_wal_archive/init_archive_data.sh:/docker-entrypoint-initdb.d/01-init_archive_data.sh
     ports:
       - 5435:5432
   postgres16:
@@ -200,6 +204,7 @@ services:
        - pg16_data:/data/postgres
        - pg_wal_archive:/data/pg_wal_archive
        - ${PWD}/postgres/init.sql:/docker-entrypoint-initdb.d/01-init.sql
+       - ${PWD}/postgres/pg_wal_archive/init_archive_data.sh:/docker-entrypoint-initdb.d/01-init_archive_data.sh
     ports:
       - 5436:5432
   postgres17:
@@ -211,6 +216,7 @@ services:
        - pg17_data:/data/postgres
        - pg_wal_archive:/data/pg_wal_archive
        - ${PWD}/postgres/init.sql:/docker-entrypoint-initdb.d/01-init.sql
+       - ${PWD}/postgres/pg_wal_archive/init_archive_data.sh:/docker-entrypoint-initdb.d/01-init_archive_data.sh
     ports:
       - 5437:5432
   postgres18:
@@ -222,6 +228,7 @@ services:
        - pg18_data:/data/postgres
        - pg_wal_archive:/data/pg_wal_archive
        - ${PWD}/postgres/init.sql:/docker-entrypoint-initdb.d/01-init.sql
+       - ${PWD}/postgres/pg_wal_archive/init_archive_data.sh:/docker-entrypoint-initdb.d/01-init_archive_data.sh
     ports:
       - 5438:5432
   postgres9replica1:
@@ -237,6 +244,7 @@ services:
        - pg9_replica1data:/data/postgres
        - pg_wal_archive:/data/pg_wal_archive
        - ${PWD}/postgres/init_basebackup.sh:/docker-entrypoint-initdb.d/01-basebackup.sh
+       - ${PWD}/postgres/pg_wal_archive/init_archive_data.sh:/docker-entrypoint-initdb.d/01-init_archive_data.sh
     ports:
       - 4429:5432
     depends_on:
@@ -254,6 +262,7 @@ services:
        - pg9_replica2data:/data/postgres
        - pg_wal_archive:/data/pg_wal_archive
        - ${PWD}/postgres/init_basebackup.sh:/docker-entrypoint-initdb.d/01-basebackup.sh
+       - ${PWD}/postgres/pg_wal_archive/init_archive_data.sh:/docker-entrypoint-initdb.d/01-init_archive_data.sh
     ports:
       - 3429:5432
     depends_on:
@@ -271,6 +280,7 @@ services:
        - pg10_replica1data:/data/postgres
        - pg_wal_archive:/data/pg_wal_archive
        - ${PWD}/postgres/init_basebackup.sh:/docker-entrypoint-initdb.d/01-basebackup.sh
+       - ${PWD}/postgres/pg_wal_archive/init_archive_data.sh:/docker-entrypoint-initdb.d/01-init_archive_data.sh
     ports:
       - 4430:5432
     depends_on:
@@ -288,6 +298,7 @@ services:
        - pg11_replica1data:/data/postgres
        - pg_wal_archive:/data/pg_wal_archive
        - ${PWD}/postgres/init_basebackup.sh:/docker-entrypoint-initdb.d/01-basebackup.sh
+       - ${PWD}/postgres/pg_wal_archive/init_archive_data.sh:/docker-entrypoint-initdb.d/01-init_archive_data.sh
     ports:
       - 4431:5432
     depends_on:
@@ -305,6 +316,7 @@ services:
        - pg12_replica1data:/data/postgres
        - pg_wal_archive:/data/pg_wal_archive
        - ${PWD}/postgres/init_basebackup.sh:/docker-entrypoint-initdb.d/01-basebackup.sh
+       - ${PWD}/postgres/pg_wal_archive/init_archive_data.sh:/docker-entrypoint-initdb.d/01-init_archive_data.sh
     ports:
       - 4432:5432
     depends_on:
@@ -322,6 +334,7 @@ services:
        - pg13_replica1data:/data/postgres
        - pg_wal_archive:/data/pg_wal_archive
        - ${PWD}/postgres/init_basebackup.sh:/docker-entrypoint-initdb.d/01-basebackup.sh
+       - ${PWD}/postgres/pg_wal_archive/init_archive_data.sh:/docker-entrypoint-initdb.d/01-init_archive_data.sh
     ports:
       - 4433:5432
     depends_on:
@@ -339,6 +352,7 @@ services:
        - pg14_replica1data:/data/postgres
        - pg_wal_archive:/data/pg_wal_archive
        - ${PWD}/postgres/init_basebackup.sh:/docker-entrypoint-initdb.d/01-basebackup.sh
+       - ${PWD}/postgres/pg_wal_archive/init_archive_data.sh:/docker-entrypoint-initdb.d/01-init_archive_data.sh
     ports:
       - 4434:5432
     depends_on:
@@ -356,6 +370,7 @@ services:
        - pg15_replica1data:/data/postgres
        - pg_wal_archive:/data/pg_wal_archive
        - ${PWD}/postgres/init_basebackup.sh:/docker-entrypoint-initdb.d/01-basebackup.sh
+       - ${PWD}/postgres/pg_wal_archive/init_archive_data.sh:/docker-entrypoint-initdb.d/01-init_archive_data.sh
     ports:
       - 4435:5432
     depends_on:
@@ -373,6 +388,7 @@ services:
        - pg16_replica1data:/data/postgres
        - pg_wal_archive:/data/pg_wal_archive
        - ${PWD}/postgres/init_basebackup.sh:/docker-entrypoint-initdb.d/01-basebackup.sh
+       - ${PWD}/postgres/pg_wal_archive/init_archive_data.sh:/docker-entrypoint-initdb.d/01-init_archive_data.sh
     ports:
       - 4436:5432
     depends_on:
@@ -390,6 +406,7 @@ services:
        - pg17_replica1data:/data/postgres
        - pg_wal_archive:/data/pg_wal_archive
        - ${PWD}/postgres/init_basebackup.sh:/docker-entrypoint-initdb.d/01-basebackup.sh
+       - ${PWD}/postgres/pg_wal_archive/init_archive_data.sh:/docker-entrypoint-initdb.d/01-init_archive_data.sh
     ports:
       - 4437:5432
     depends_on:
@@ -407,6 +424,7 @@ services:
        - pg18_replica1data:/data/postgres
        - pg_wal_archive:/data/pg_wal_archive
        - ${PWD}/postgres/init_basebackup.sh:/docker-entrypoint-initdb.d/01-basebackup.sh
+       - ${PWD}/postgres/pg_wal_archive/init_archive_data.sh:/docker-entrypoint-initdb.d/01-init_archive_data.sh
     ports:
       - 4438:5432
     depends_on:
@@ -424,6 +442,7 @@ services:
        - pg18_replica2data:/data/postgres
        - pg_wal_archive:/data/pg_wal_archive
        - ${PWD}/postgres/init_basebackup.sh:/docker-entrypoint-initdb.d/01-basebackup.sh
+       - ${PWD}/postgres/pg_wal_archive/init_archive_data.sh:/docker-entrypoint-initdb.d/01-init_archive_data.sh
     ports:
       - 3438:5432
     depends_on:
