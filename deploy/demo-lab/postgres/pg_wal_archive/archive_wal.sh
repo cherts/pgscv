@@ -6,4 +6,4 @@ fi
 
 PG_HOSTNAME=$(hostname)
 
-gzip < /data/postgres/$1 > /data/postgres_archive/${PG_HOSTNAME}/$2.gz
+gzip < /data/postgres/$1 > /data/pg_wal_archive/${PG_HOSTNAME}/$2.gz
