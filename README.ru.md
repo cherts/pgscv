@@ -33,8 +33,8 @@
 Загрузите архив со страницы [releases](https://github.com/cherts/pgscv/releases). Распакуйте архив. Создайте минимальный файл конфигураации. Запустите pgSCV под пользователем postgres.
 
 ```bash
-apt-get update && apt-get install jq curl
-LATEST_VER=$(curl https://api.github.com/repos/cherts/pgscv/releases/latest 2>/dev/null | jq -r .tag_name | sed 's/[^0-9.]//g')
+apt-get update && apt-get install jq curl && \
+LATEST_VER=$(curl https://api.github.com/repos/cherts/pgscv/releases/latest 2>/dev/null | jq -r .tag_name | sed 's/[^0-9.]//g') && \
 curl -s -L https://github.com/cherts/pgscv/releases/download/v${LATEST_VER}/pgscv_${LATEST_VER}_linux_$(uname -m).tar.gz -o - | tar xzf - -C /tmp && \
 mv /tmp/pgscv.yaml /etc && \
 mv /tmp/pgscv.service /etc/systemd/system &&  \
