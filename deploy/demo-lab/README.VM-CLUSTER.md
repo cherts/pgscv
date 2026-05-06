@@ -79,8 +79,8 @@ A total of 50 containers are launched!
 Prepare demo laboratory::
 
 ```bash
-cat docker-compose.yml docker-compose.vm-cluster.yml compose.*.yml | grep device | awk -F' ' '{print $2}' | sed -e 's/${PWD}\///g' | xargs mkdir -p
-cat docker-compose.yml docker-compose.vm-cluster.yml compose.*.yml | grep device | awk -F' ' '{print $2}' | sed -e 's/${PWD}\///g' | xargs chmod 777
+cat compose.*.yml | grep device | awk -F' ' '{print $2}' | sed -e 's/${PWD}\///g' | xargs mkdir -p
+cat compose.*.yml | grep device | awk -F' ' '{print $2}' | sed -e 's/${PWD}\///g' | xargs chmod 777
 ```
 
 Start demo laboratory:
