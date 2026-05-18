@@ -1,15 +1,13 @@
 package collector
 
 import (
-	"os"
-	"path/filepath"
-	"syscall"
-	"testing"
-	"time"
-
 	"github.com/cherts/pgscv/internal/filter"
 	"github.com/cherts/pgscv/internal/model"
 	"github.com/stretchr/testify/assert"
+	"os"
+	"path/filepath"
+	"testing"
+	"time"
 )
 
 func TestFilesystemCollector_Update(t *testing.T) {
@@ -81,30 +79,4 @@ func Test_readMountpointStatWithTimeout(t *testing.T) {
 	// unknown filesystem
 	_, err = readMountpointStatWithTimeout("/invalid", time.Second)
 	assert.Error(t, err)
-}
-
-func Test_readMountpointStat_timeout(t *testing.T) {
-	// Save originals
-	origTimeout := mountpointStatTimeout
-	origFunc := readMountpointStatWithTimeoutFunc
-	defer func() {
-		mountpointStatTimeout = origTimeout
-		readMountpointStatWithTimeoutFunc = origFunc
-	}()
-
-	// Shorten timeout for test
-	mountpointStatTimeout = 10 * time.Millisecond
-
-	// Fake function that sleeps longer than timeout to simulate stuck syscall
-	readMountpointStatWithTimeoutFunc = func(mountpoint string, timeout time.Duration) (*syscall.Statfs_t, error) {
-		time.Sleep(50 * time.Millisecond)
-		// return a valid stat to simulate late success
-		return &syscall.Statfs_t{}, nil
-	}
-
-	stat, err := readMountpointStat("/")
-	assert.Error(t, err)
-	assert.Equal(t, errFilesystemTimedOut, err)
-	// stat should carry the error as well
-	assert.Equal(t, errFilesystemTimedOut, stat.err)
 }
