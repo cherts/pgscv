@@ -161,13 +161,14 @@ func readMountpointStat(mountpoint string) (filesystemStat, error) {
 	// is discarded and goroutine finishes normally.
 
 	timeout := mountpointStatTimeout // three seconds is sufficient to consider filesystem unresponsive.
+	readFn := readMountpointStatWithTimeoutFunc
 	statCh := make(chan *syscall.Statfs_t, 1)
 	errCh := make(chan error, 1)
 
 	// Run goroutine with reading stats. Check kind of returned error. If error related to timeout,
 	// print warning and return. Other kinds of error should be reported to parent.
 	go func() {
-		s, err := readMountpointStatWithTimeoutFunc(mountpoint, timeout)
+		s, err := readFn(mountpoint, timeout)
 		if err != nil {
 			if err == errFilesystemTimedOut {
 				log.Warnf("%s: %s, skip", mountpoint, err)
