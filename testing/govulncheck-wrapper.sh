@@ -2,7 +2,7 @@
 
 # govulncheck-wrapper.sh - Run govulncheck while ignoring specified vulnerabilities
 #
-# Usage: ./hack/govulncheck-wrapper.sh [--config FILE] [--verbose]
+# Usage: ./testing/govulncheck-wrapper.sh [--config FILE] [--verbose]
 #
 # Configuration file format (YAML):
 #   ignored_vulnerabilities:
