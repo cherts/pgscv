@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"sync"
 	"syscall"
 	"time"
 
@@ -17,6 +18,9 @@ import (
 
 var (
 	errFilesystemTimedOut = errors.New("filesystem timed out")
+	filesystemStatfs      = syscall.Statfs
+	filesystemTimeout     = 3 * time.Second
+	filesystemMu          sync.RWMutex
 )
 
 type filesystemCollector struct {
@@ -153,9 +157,11 @@ func readMountpointStat(mountpoint string) (filesystemStat, error) {
 	// is impossible to forcibly interrupt stuck syscall). Hope when syscall finished at all, stat
 	// is discarded and goroutine finishes normally.
 
-	timeout := 3 * time.Second // three seconds is sufficient to consider filesystem unresponsive.
-	statCh := make(chan *syscall.Statfs_t)
-	errCh := make(chan error)
+	filesystemMu.RLock()
+	timeout := filesystemTimeout
+	filesystemMu.RUnlock()
+	statCh := make(chan *syscall.Statfs_t, 1)
+	errCh := make(chan error, 1)
 
 	// Run goroutine with reading stats. Check kind of returned error. If error related to timeout,
 	// print warning and return. Other kinds of error should be reported to parent.
@@ -167,29 +173,27 @@ func readMountpointStat(mountpoint string) (filesystemStat, error) {
 				return
 			}
 			errCh <- err
+			return
 		}
 
 		// Syscall successful - send stat to the channel.
 		statCh <- s
 	}()
 
-	// Waiting for results of spawned goroutine or time out.
-	for {
-		select {
-		case s := <-statCh:
-			return filesystemStat{
-				size:      float64(s.Blocks) * float64(s.Bsize),
-				free:      float64(s.Bfree) * float64(s.Bsize),
-				avail:     float64(s.Bavail) * float64(s.Bsize),
-				files:     float64(s.Files),
-				filesfree: float64(s.Ffree),
-			}, nil
-		case err := <-errCh:
-			return filesystemStat{err: err}, err
-		case <-time.After(timeout):
-			// Timeout expired, filesystem considered stuck, return.
-			return filesystemStat{err: errFilesystemTimedOut}, errFilesystemTimedOut
-		}
+	select {
+	case s := <-statCh:
+		return filesystemStat{
+			size:      float64(s.Blocks) * float64(s.Bsize),
+			free:      float64(s.Bfree) * float64(s.Bsize),
+			avail:     float64(s.Bavail) * float64(s.Bsize),
+			files:     float64(s.Files),
+			filesfree: float64(s.Ffree),
+		}, nil
+	case err := <-errCh:
+		return filesystemStat{err: err}, err
+	case <-time.After(timeout):
+		// Timeout expired, filesystem considered stuck, return.
+		return filesystemStat{err: errFilesystemTimedOut}, errFilesystemTimedOut
 	}
 }
 
@@ -198,7 +202,10 @@ func readMountpointStatWithTimeout(mountpoint string, timeout time.Duration) (*s
 	var buf syscall.Statfs_t
 	start := time.Now()
 
-	err := syscall.Statfs(mountpoint, &buf)
+	filesystemMu.RLock()
+	f := filesystemStatfs
+	filesystemMu.RUnlock()
+	err := f(mountpoint, &buf)
 	if err != nil {
 		return nil, err
 	}
