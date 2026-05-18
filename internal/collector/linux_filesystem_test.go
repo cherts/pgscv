@@ -1,13 +1,15 @@
 package collector
 
 import (
+	"os"
+	"path/filepath"
+	"syscall"
+	"testing"
+	"time"
+
 	"github.com/cherts/pgscv/internal/filter"
 	"github.com/cherts/pgscv/internal/model"
 	"github.com/stretchr/testify/assert"
-	"os"
-	"path/filepath"
-	"testing"
-	"time"
 )
 
 func TestFilesystemCollector_Update(t *testing.T) {
@@ -79,4 +81,21 @@ func Test_readMountpointStatWithTimeout(t *testing.T) {
 	// unknown filesystem
 	_, err = readMountpointStatWithTimeout("/invalid", time.Second)
 	assert.Error(t, err)
+}
+
+func Test_readMountpointStat_timeout(t *testing.T) {
+	originalStatfs := filesystemStatfs
+	originalTimeout := filesystemTimeout
+	filesystemTimeout = 10 * time.Millisecond
+	filesystemStatfs = func(path string, buf *syscall.Statfs_t) error {
+		time.Sleep(50 * time.Millisecond)
+		return nil
+	}
+	defer func() {
+		filesystemStatfs = originalStatfs
+		filesystemTimeout = originalTimeout
+	}()
+
+	_, err := readMountpointStat("/")
+	assert.ErrorIs(t, err, errFilesystemTimedOut)
 }
