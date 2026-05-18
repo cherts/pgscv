@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"sync"
 	"syscall"
 	"time"
 
@@ -19,6 +20,7 @@ var (
 	errFilesystemTimedOut = errors.New("filesystem timed out")
 	filesystemStatfs      = syscall.Statfs
 	filesystemTimeout     = 3 * time.Second
+	filesystemMu          sync.RWMutex
 )
 
 type filesystemCollector struct {
@@ -155,7 +157,9 @@ func readMountpointStat(mountpoint string) (filesystemStat, error) {
 	// is impossible to forcibly interrupt stuck syscall). Hope when syscall finished at all, stat
 	// is discarded and goroutine finishes normally.
 
+	filesystemMu.RLock()
 	timeout := filesystemTimeout
+	filesystemMu.RUnlock()
 	statCh := make(chan *syscall.Statfs_t, 1)
 	errCh := make(chan error, 1)
 
@@ -198,7 +202,10 @@ func readMountpointStatWithTimeout(mountpoint string, timeout time.Duration) (*s
 	var buf syscall.Statfs_t
 	start := time.Now()
 
-	err := filesystemStatfs(mountpoint, &buf)
+	filesystemMu.RLock()
+	f := filesystemStatfs
+	filesystemMu.RUnlock()
+	err := f(mountpoint, &buf)
 	if err != nil {
 		return nil, err
 	}

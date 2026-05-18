@@ -84,6 +84,7 @@ func Test_readMountpointStatWithTimeout(t *testing.T) {
 }
 
 func Test_readMountpointStat_timeout(t *testing.T) {
+	filesystemMu.Lock()
 	originalStatfs := filesystemStatfs
 	originalTimeout := filesystemTimeout
 	filesystemTimeout = 10 * time.Millisecond
@@ -91,9 +92,12 @@ func Test_readMountpointStat_timeout(t *testing.T) {
 		time.Sleep(50 * time.Millisecond)
 		return nil
 	}
+	filesystemMu.Unlock()
 	defer func() {
+		filesystemMu.Lock()
 		filesystemStatfs = originalStatfs
 		filesystemTimeout = originalTimeout
+		filesystemMu.Unlock()
 	}()
 
 	_, err := readMountpointStat("/")
