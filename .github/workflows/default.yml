@@ -111,7 +111,7 @@ jobs:
           apt-get update
           apt-get -y upgrade
           echo "Set up pgbouncer ${{ matrix.pgbouncer.pgbouncer }}"
-          apt-get install build-essential wget vim make gcc git curl libevent-dev libssl-dev pkg-config python3 pandoc -y
+          apt-get install build-essential jq wget vim make gcc git curl libevent-dev libssl-dev pkg-config python3 pandoc -y
           wget https://www.pgbouncer.org/downloads/files/${{ matrix.pgbouncer.pgbouncer }}/pgbouncer-${{ matrix.pgbouncer.pgbouncer }}.tar.gz
           tar xzf pgbouncer-${{ matrix.pgbouncer.pgbouncer }}.tar.gz
           cd pgbouncer-${{ matrix.pgbouncer.pgbouncer }}
