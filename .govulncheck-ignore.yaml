@@ -1,0 +1,15 @@
+# govulncheck ignore configuration
+#
+# This file specifies vulnerabilities that should be ignored when running
+# govulncheck. Vulnerabilities are only ignored if no fix is available.
+# Once a fix is released, the wrapper script will flag them automatically.
+#
+# Each entry must specify:
+# - id: The vulnerability ID (GO-XXXX-XXXX format)
+# - module: The exact module path where the vulnerability exists
+# - reason: Why this vulnerability is accepted (should note "No fix available")
+
+ignored_vulnerabilities:
+  - id: GO-2026-4518
+    module: github.com/jackc/pgproto3/v2
+    reason: "No fix available - module support is End of Life"
