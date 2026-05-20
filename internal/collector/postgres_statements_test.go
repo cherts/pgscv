@@ -35,6 +35,8 @@ func TestPostgresStatementsCollector_Update(t *testing.T) {
 			"postgres_statements_wal_bytes_all_total",
 			"postgres_statements_wal_bytes_total",
 			"postgres_statements_wal_buffers_full",
+			"postgres_statements_generic_plan_calls_total",
+			"postgres_statements_custom_plan_calls_total",
 		},
 		collector: NewPostgresStatementsCollector,
 		service:   model.ServiceTypePostgresql,
@@ -176,8 +178,10 @@ func Test_selectStatementsQuery(t *testing.T) {
 		{version: PostgresV13, want: fmt.Sprintf(postgresStatementsQuery16TopK, "p.query", "example"), topK: 100},
 		{version: PostgresV17, want: fmt.Sprintf(postgresStatementsQuery17, "p.query", "example"), topK: 0},
 		{version: PostgresV17, want: fmt.Sprintf(postgresStatementsQuery17TopK, "p.query", "example"), topK: 100},
-		{version: PostgresV18, want: fmt.Sprintf(postgresStatementsQueryLatest, "p.query", "example"), topK: 0},
-		{version: PostgresV18, want: fmt.Sprintf(postgresStatementsQueryLatestTopK, "p.query", "example"), topK: 100},
+		{version: PostgresV18, want: fmt.Sprintf(postgresStatementsQuery18, "p.query", "example"), topK: 0},
+		{version: PostgresV18, want: fmt.Sprintf(postgresStatementsQuery18TopK, "p.query", "example"), topK: 100},
+		{version: PostgresV19, want: fmt.Sprintf(postgresStatementsQueryLatest, "p.query", "example"), topK: 0},
+		{version: PostgresV19, want: fmt.Sprintf(postgresStatementsQueryLatestTopK, "p.query", "example"), topK: 100},
 	}
 
 	for _, tc := range testcases {

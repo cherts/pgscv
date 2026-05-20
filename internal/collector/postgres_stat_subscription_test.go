@@ -101,7 +101,8 @@ func Test_selectSubscriptionQuery(t *testing.T) {
 		{version: 150000, want: postgresStatSubscriptionQuery16},
 		{version: 160000, want: postgresStatSubscriptionQuery16},
 		{version: 170000, want: postgresStatSubscriptionQuery17},
-		{version: 180000, want: postgresStatSubscriptionQueryLatest},
+		{version: 180000, want: postgresStatSubscriptionQuery18},
+		{version: 190000, want: postgresStatSubscriptionQueryLatest},
 	}
 
 	for _, tc := range testcases {
