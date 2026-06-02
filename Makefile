@@ -33,7 +33,9 @@ LDFLAGS = -a -installsuffix cgo -ldflags "-X main.appName=${APPNAME} -X main.git
 LDFLAGS_BETA = -a -installsuffix cgo -ldflags "-X main.appName=${APPNAME} -X main.gitTag=${SANITIZED_BETA_TAG} -X main.gitCommit=${COMMIT} -X main.gitBranch=${BRANCH}"
 
 MODERNIZE_CMD = go run golang.org/x/tools/go/analysis/passes/modernize/cmd/modernize@latest
-GOVULNCHECK_CMD = go run golang.org/x/vuln/cmd/govulncheck@latest
+GOVULNCHECK_INSTALL_CMD = go install golang.org/x/vuln/cmd/govulncheck@latest
+YQ_INSTALL_CMD = go install github.com/mikefarah/yq/v4@latest
+GOVULNCHECK_RUN_CMD = testing/govulncheck-wrapper.sh
 
 .PHONY: help \
 		clean lint test race \
@@ -119,4 +121,6 @@ modernize-check: ## Run gopls modernize only check
 govulncheck: ## Run go vulnerability check
 	@echo "Running go vulnerability check..."
 	go env -w GOFLAGS="-buildvcs=false"
-	$(GOVULNCHECK_CMD) ./...
+	$(GOVULNCHECK_INSTALL_CMD)
+	$(YQ_INSTALL_CMD)
+	$(GOVULNCHECK_RUN_CMD) --config testing/.govulncheck-ignore.yaml --verbose
