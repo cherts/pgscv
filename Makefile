@@ -33,11 +33,12 @@ LDFLAGS = -a -installsuffix cgo -ldflags "-X main.appName=${APPNAME} -X main.git
 LDFLAGS_BETA = -a -installsuffix cgo -ldflags "-X main.appName=${APPNAME} -X main.gitTag=${SANITIZED_BETA_TAG} -X main.gitCommit=${COMMIT} -X main.gitBranch=${BRANCH}"
 
 MODERNIZE_CMD = go run golang.org/x/tools/go/analysis/passes/modernize/cmd/modernize@latest
+GOVULNCHECK_CMD = go run golang.org/x/vuln/cmd/govulncheck@latest
 
 .PHONY: help \
 		clean lint test race \
 		build docker-lint docker-buildx-setup docker-build docker-push go-update \
-		modernize modernize-fix modernize-check
+		modernize modernize-fix modernize-check govulncheck
 
 .DEFAULT_GOAL := help
 
@@ -114,3 +115,8 @@ modernize-check: ## Run gopls modernize only check
 	@echo "Checking if code needs modernization..."
 	go env -w GOFLAGS="-buildvcs=false"
 	$(MODERNIZE_CMD) -test ./...
+
+govulncheck: ## Run go vulnerability check
+	@echo "Running go vulnerability check..."
+	go env -w GOFLAGS="-buildvcs=false"
+	$(GOVULNCHECK_CMD) ./...

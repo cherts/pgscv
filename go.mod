@@ -1,6 +1,6 @@
 module github.com/cherts/pgscv
 
-go 1.26.2
+go 1.26.3
 
 require (
 	github.com/alecthomas/kingpin/v2 v2.4.0
@@ -19,7 +19,6 @@ require (
 require (
 	github.com/go-playground/validator/v10 v10.30.3
 	github.com/yandex-cloud/go-genproto v0.85.0
-	github.com/yandex-cloud/go-sdk v0.31.0
 	golang.org/x/time v0.15.0
 	google.golang.org/protobuf v1.36.11
 )

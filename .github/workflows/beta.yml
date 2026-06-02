@@ -44,7 +44,7 @@ jobs:
 #            matrix: macos
         pgbouncer:
           - name: PgBouncer v1.25
-            pgbouncer: 1.25.1
+            pgbouncer: 1.25.2
           - name: PgBouncer v1.18
             pgbouncer: 1.18.0
           - name: PgBouncer v1.16
@@ -54,29 +54,29 @@ jobs:
         postgres:
           - name: PostgreSQL v14
             postgres: 14
-            golang: 1.26.2
-            revive: 1.14.0
-            gosec: 2.23.0
+            golang: 1.26.3
+            revive: 1.15.0
+            gosec: 2.26.1
           - name: PostgreSQL v15
             postgres: 15
-            golang: 1.26.2
-            revive: 1.14.0
-            gosec: 2.23.0
+            golang: 1.26.3
+            revive: 1.15.0
+            gosec: 2.26.1
           - name: PostgreSQL v16
             postgres: 16
-            golang: 1.26.2
-            revive: 1.14.0
-            gosec: 2.23.0
+            golang: 1.26.3
+            revive: 1.15.0
+            gosec: 2.26.1
           - name: PostgreSQL v17
             postgres: 17
-            golang: 1.26.2
-            revive: 1.14.0
-            gosec: 2.23.0
+            golang: 1.26.3
+            revive: 1.15.0
+            gosec: 2.26.1
           - name: PostgreSQL v18
             postgres: 18
-            golang: 1.26.2
-            revive: 1.14.0
-            gosec: 2.23.0
+            golang: 1.26.3
+            revive: 1.15.0
+            gosec: 2.26.1
     steps:
       - name: Set up pgbouncer ${{ matrix.pgbouncer.pgbouncer }}
         if: matrix.os.matrix == 'linux'
@@ -84,7 +84,7 @@ jobs:
           apt-get update
           apt-get -y upgrade
           echo "Set up pgbouncer ${{ matrix.pgbouncer.pgbouncer }}"
-          apt-get install build-essential wget vim make gcc git curl libevent-dev libssl-dev pkg-config python3 pandoc -y
+          apt-get install build-essential jq wget vim make gcc git curl libevent-dev libssl-dev pkg-config python3 pandoc -y
           wget https://www.pgbouncer.org/downloads/files/${{ matrix.pgbouncer.pgbouncer }}/pgbouncer-${{ matrix.pgbouncer.pgbouncer }}.tar.gz
           tar xzf pgbouncer-${{ matrix.pgbouncer.pgbouncer }}.tar.gz
           cd pgbouncer-${{ matrix.pgbouncer.pgbouncer }}
@@ -137,6 +137,8 @@ jobs:
         run: git config --global --add safe.directory /__w/pgscv/pgscv
       - name: Check code modernization
         run: make modernize-check
+      - name: Check code govulncheck
+        run: make govulncheck
       - name: Run tests
         run: make test
 
