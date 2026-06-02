@@ -49,7 +49,7 @@ jobs:
 #            matrix: macos
         pgbouncer:
           - name: PgBouncer v1.25
-            pgbouncer: 1.25.1
+            pgbouncer: 1.25.2
 #          - name: PgBouncer v1.24
 #            pgbouncer: 1.24.1
 #          - name: PgBouncer v1.23
@@ -71,39 +71,39 @@ jobs:
         postgres:
 #          - name: PostgreSQL v12
 #            postgres: 12
-#            golang: 1.26.1
-#            revive: 1.14.0
-#            gosec: 2.23.0
+#            golang: 1.26.3
+#            revive: 1.15.0
+#            gosec: 2.26.1
 #          - name: PostgreSQL v13
 #            postgres: 13
-#            golang: 1.26.1
-#            revive: 1.14.0
-#            gosec: 2.23.0
+#            golang: 1.26.3
+#            revive: 1.15.0
+#            gosec: 2.26.1
           - name: PostgreSQL v14
             postgres: 14
-            golang: 1.26.1
-            revive: 1.14.0
-            gosec: 2.23.0
+            golang: 1.26.3
+            revive: 1.15.0
+            gosec: 2.26.1
           - name: PostgreSQL v15
             postgres: 15
-            golang: 1.26.1
-            revive: 1.14.0
-            gosec: 2.23.0
+            golang: 1.26.3
+            revive: 1.15.0
+            gosec: 2.26.1
           - name: PostgreSQL v16
             postgres: 16
-            golang: 1.26.1
-            revive: 1.14.0
-            gosec: 2.23.0
+            golang: 1.26.3
+            revive: 1.15.0
+            gosec: 2.26.1
           - name: PostgreSQL v17
             postgres: 17
-            golang: 1.26.1
-            revive: 1.14.0
-            gosec: 2.23.0
+            golang: 1.26.3
+            revive: 1.15.0
+            gosec: 2.26.1
           - name: PostgreSQL v18
             postgres: 18
-            golang: 1.26.1
-            revive: 1.14.0
-            gosec: 2.23.0
+            golang: 1.26.3
+            revive: 1.15.0
+            gosec: 2.26.1
     steps:
       - name: Set up pgbouncer ${{ matrix.pgbouncer.pgbouncer }}
         if: matrix.os.matrix == 'linux'
@@ -166,3 +166,7 @@ jobs:
         run: make modernize-check
       - name: Run tests
         run: make test
+      - name: Install govulncheck
+        run: go install golang.org/x/vuln/cmd/govulncheck@latest
+      - name: Run govulncheck
+        run: govulncheck ./...
