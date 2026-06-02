@@ -18,7 +18,7 @@ const (
 		"FROM pg_stat_user_indexes s1 " +
 		"JOIN pg_statio_user_indexes s2 USING (schemaname, relname, indexrelname) " +
 		"JOIN pg_index i ON (s1.indexrelid = i.indexrelid) " +
-		"WHERE NOT EXISTS (SELECT 1 FROM pg_locks WHERE relation = s1.indexrelid AND mode = 'AccessExclusiveLock' AND granted)"
+		"WHERE NOT EXISTS (SELECT 1 FROM pg_locks WHERE relation = s1.indexrelid AND mode = 'AccessExclusiveLock')"
 
 	userIndexesQueryTopK = "WITH stat AS (SELECT schemaname AS schema, relname AS table, indexrelname AS index, (i.indisprimary OR i.indisunique) AS key, " +
 		"i.indisvalid AS isvalid, idx_scan, idx_tup_read, idx_tup_fetch, idx_blks_read, idx_blks_hit, pg_relation_size(s1.indexrelid) AS size_bytes, " +
@@ -29,7 +29,7 @@ const (
 		"FROM pg_stat_user_indexes s1 " +
 		"JOIN pg_statio_user_indexes s2 USING (schemaname, relname, indexrelname) " +
 		"JOIN pg_index i ON (s1.indexrelid = i.indexrelid) " +
-		"WHERE NOT EXISTS ( SELECT 1 FROM pg_locks WHERE relation = s1.indexrelid AND mode = 'AccessExclusiveLock' AND granted)) " +
+		"WHERE NOT EXISTS ( SELECT 1 FROM pg_locks WHERE relation = s1.indexrelid AND mode = 'AccessExclusiveLock')) " +
 		"SELECT current_database() AS database, \"schema\", \"table\", \"index\", \"key\", isvalid, idx_scan, idx_tup_read, idx_tup_fetch, " +
 		"idx_blks_read, idx_blks_hit, size_bytes FROM stat WHERE visible " +
 		"UNION ALL SELECT current_database() AS database, 'all_shemas', 'all_other_tables', 'all_other_indexes', true, null, " +
