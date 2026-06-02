@@ -635,6 +635,16 @@ func getDirectorySize(path string) (int64, error) {
 
 // findMountpoint checks path in the list of passed mountpoints.
 func findMountpoint(mounts []mount, path string) (string, string, error) {
+	return findMountpointRecursive(mounts, path, make(map[string]bool))
+}
+
+// findMountpointRecursive is a helper function that prevents infinite recursion by tracking visited paths.
+func findMountpointRecursive(mounts []mount, path string, visited map[string]bool) (string, string, error) {
+	if visited[path] {
+		return "", "", fmt.Errorf("circular symlink detected for path '%s'", path)
+	}
+	visited[path] = true
+
 	fi, err := os.Lstat(path)
 	if err != nil {
 		return "", "", err
@@ -654,7 +664,7 @@ func findMountpoint(mounts []mount, path string) (string, string, error) {
 			resolved = strings.Join(dirs, "/")
 		}
 
-		return findMountpoint(mounts, resolved)
+		return findMountpointRecursive(mounts, resolved, visited)
 	}
 
 	// Check path in a list of all mounts.
@@ -675,7 +685,7 @@ func findMountpoint(mounts []mount, path string) (string, string, error) {
 		path = "/"
 	}
 
-	return findMountpoint(mounts, path)
+	return findMountpointRecursive(mounts, path, visited)
 }
 
 // getMountpoints get list of partitions and run parser.
