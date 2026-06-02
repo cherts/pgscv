@@ -84,22 +84,27 @@ func Test_readMountpointStatWithTimeout(t *testing.T) {
 }
 
 func Test_readMountpointStat_timeout(t *testing.T) {
-	filesystemMu.Lock()
-	originalStatfs := filesystemStatfs
-	originalTimeout := filesystemTimeout
-	filesystemTimeout = 10 * time.Millisecond
-	filesystemStatfs = func(path string, buf *syscall.Statfs_t) error {
-		time.Sleep(50 * time.Millisecond)
-		return nil
-	}
-	filesystemMu.Unlock()
+	// Save originals
+	origTimeout := mountpointStatTimeout
+	origFunc := readMountpointStatWithTimeoutFunc
 	defer func() {
-		filesystemMu.Lock()
-		filesystemStatfs = originalStatfs
-		filesystemTimeout = originalTimeout
-		filesystemMu.Unlock()
+		mountpointStatTimeout = origTimeout
+		readMountpointStatWithTimeoutFunc = origFunc
 	}()
 
-	_, err := readMountpointStat("/")
-	assert.ErrorIs(t, err, errFilesystemTimedOut)
+	// Shorten timeout for test
+	mountpointStatTimeout = 10 * time.Millisecond
+
+	// Fake function that sleeps longer than timeout to simulate stuck syscall
+	readMountpointStatWithTimeoutFunc = func(mountpoint string, timeout time.Duration) (*syscall.Statfs_t, error) {
+		time.Sleep(50 * time.Millisecond)
+		// return a valid stat to simulate late success
+		return &syscall.Statfs_t{}, nil
+	}
+
+	stat, err := readMountpointStat("/")
+	assert.Error(t, err)
+	assert.Equal(t, errFilesystemTimedOut, err)
+	// stat should carry the error as well
+	assert.Equal(t, errFilesystemTimedOut, stat.err)
 }
