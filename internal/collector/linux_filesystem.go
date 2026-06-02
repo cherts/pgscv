@@ -20,6 +20,12 @@ var (
 	errFilesystemTimedOut = errors.New("filesystem timed out")
 )
 
+// Hookable variables to ease testing of timeout behaviour.
+var (
+	mountpointStatTimeout             = 3 * time.Second
+	readMountpointStatWithTimeoutFunc = readMountpointStatWithTimeout
+)
+
 type filesystemCollector struct {
 	bytes      typedDesc
 	bytesTotal typedDesc
@@ -154,20 +160,22 @@ func readMountpointStat(mountpoint string) (filesystemStat, error) {
 	// is impossible to forcibly interrupt stuck syscall). Hope when syscall finished at all, stat
 	// is discarded and goroutine finishes normally.
 
-	timeout := 3 * time.Second // three seconds is sufficient to consider filesystem unresponsive.
-	statCh := make(chan *syscall.Statfs_t)
-	errCh := make(chan error)
+	timeout := mountpointStatTimeout // three seconds is sufficient to consider filesystem unresponsive.
+	readFn := readMountpointStatWithTimeoutFunc
+	statCh := make(chan *syscall.Statfs_t, 1)
+	errCh := make(chan error, 1)
 
 	// Run goroutine with reading stats. Check kind of returned error. If error related to timeout,
 	// print warning and return. Other kinds of error should be reported to parent.
 	go func() {
-		s, err := readMountpointStatWithTimeout(mountpoint, timeout)
+		s, err := readFn(mountpoint, timeout)
 		if err != nil {
 			if err == errFilesystemTimedOut {
 				log.Warnf("%s: %s, skip", mountpoint, err)
 				return
 			}
 			errCh <- err
+			return
 		}
 
 		// Syscall successful - send stat to the channel.
