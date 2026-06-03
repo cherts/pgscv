@@ -24,7 +24,7 @@ const (
 		"idx_blks_hit, toast_blks_read, toast_blks_hit, tidx_blks_read, tidx_blks_hit, " +
 		"pg_table_size(s1.relid) AS size_bytes, reltuples " +
 		"FROM pg_stat_user_tables s1 JOIN pg_statio_user_tables s2 USING (schemaname, relname) JOIN pg_class c ON s1.relid = c.oid " +
-		"WHERE NOT EXISTS (SELECT 1 FROM pg_locks WHERE relation = s1.relid AND mode = 'AccessExclusiveLock' AND granted)"
+		"WHERE NOT EXISTS (SELECT 1 FROM pg_locks WHERE relation = s1.relid AND mode = 'AccessExclusiveLock')"
 
 	userTablesQueryTopK = "WITH stat AS ( SELECT s1.schemaname AS schema, s1.relname AS table, seq_scan, seq_tup_read, idx_scan, idx_tup_fetch, " +
 		"n_tup_ins, n_tup_upd, n_tup_del, n_tup_hot_upd, n_live_tup, n_dead_tup, n_mod_since_analyze, " +
@@ -45,7 +45,7 @@ const (
 		"(row_number() OVER (ORDER BY toast_blks_read DESC NULLS LAST) < $1) OR (row_number() OVER (ORDER BY toast_blks_hit DESC NULLS LAST) < $1) OR " +
 		"(row_number() OVER (ORDER BY pg_table_size(s1.relid) DESC NULLS LAST) < $1) OR (row_number() OVER (ORDER BY reltuples DESC NULLS LAST) < $1) AS visible " +
 		"FROM pg_stat_user_tables s1 JOIN pg_statio_user_tables s2 USING (schemaname, relname) " +
-		"JOIN pg_class c ON s1.relid = c.oid WHERE NOT EXISTS (SELECT 1 FROM pg_locks WHERE relation = s1.relid AND mode = 'AccessExclusiveLock' AND granted)) " +
+		"JOIN pg_class c ON s1.relid = c.oid WHERE NOT EXISTS (SELECT 1 FROM pg_locks WHERE relation = s1.relid AND mode = 'AccessExclusiveLock')) " +
 		"SELECT current_database() AS database, schema, \"table\", seq_scan, seq_tup_read, idx_scan, idx_tup_fetch, n_tup_ins, n_tup_upd, n_tup_del, " +
 		"n_tup_hot_upd, n_live_tup, n_dead_tup, n_mod_since_analyze, last_vacuum_seconds, last_analyze_seconds, last_vacuum_time, last_analyze_time, " +
 		"vacuum_count, autovacuum_count, analyze_count, autoanalyze_count, heap_blks_read, heap_blks_hit, idx_blks_read, idx_blks_hit, toast_blks_read, " +
