@@ -89,7 +89,7 @@ func (c *postgresStatTupleCollector) Update(ctx context.Context, config Config, 
 	if res == nil {
 		res, err = conn.Query(ctx, query)
 		if err != nil {
-			log.Warnf("get pg_subscription_rel failed: %s; skip", err)
+			log.Warnf("get pgstattuple failed: %s; skip", err)
 			return err
 		}
 		saveToCache(collectorPostgresStatTuple, wg, config.CacheConfig, cacheKey, res)
