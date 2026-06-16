@@ -1,6 +1,5 @@
 DOCKER_ACCOUNT = cherts
 APPNAME = pgscv
-APPOS=${GOOS}
 
 OS_NAME := $(shell uname -s | tr A-Z a-z)
 
@@ -79,11 +78,11 @@ race: dep ## Run data race detector
 
 build: dep ## Build
 	mkdir -p ./bin
-	CGO_ENABLED=0 GOOS=${APPOS} GOARCH=${GOARCH} go build ${LDFLAGS} -o bin/${APPNAME}${APPEXT} ./cmd
+	CGO_ENABLED=0 GOOS=${GOOS} GOARCH=${GOARCH} go build ${LDFLAGS} -o bin/${APPNAME}${APPEXT} ./cmd
 
 build-beta: dep ## Build beta
 	mkdir -p ./bin
-	CGO_ENABLED=0 GOOS=${APPOS} GOARCH=${GOARCH} go build ${LDFLAGS_BETA} -o bin/${APPNAME} ./cmd
+	CGO_ENABLED=0 GOOS=${GOOS} GOARCH=${GOARCH} go build ${LDFLAGS_BETA} -o bin/${APPNAME} ./cmd
 
 docker-lint: ## Lint Dockerfile
 	@echo "Lint container Dockerfile"

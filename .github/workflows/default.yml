@@ -71,39 +71,39 @@ jobs:
         postgres:
 #          - name: PostgreSQL v12
 #            postgres: 12
-#            golang: 1.26.3
+#            golang: 1.26.4
 #            revive: 1.15.0
-#            gosec: 2.26.1
+#            gosec: 2.27.1
 #          - name: PostgreSQL v13
 #            postgres: 13
-#            golang: 1.26.3
+#            golang: 1.26.4
 #            revive: 1.15.0
-#            gosec: 2.26.1
+#            gosec: 2.27.1
           - name: PostgreSQL v14
             postgres: 14
-            golang: 1.26.3
+            golang: 1.26.4
             revive: 1.15.0
-            gosec: 2.26.1
+            gosec: 2.27.1
           - name: PostgreSQL v15
             postgres: 15
-            golang: 1.26.3
+            golang: 1.26.4
             revive: 1.15.0
-            gosec: 2.26.1
+            gosec: 2.27.1
           - name: PostgreSQL v16
             postgres: 16
-            golang: 1.26.3
+            golang: 1.26.4
             revive: 1.15.0
-            gosec: 2.26.1
+            gosec: 2.27.1
           - name: PostgreSQL v17
             postgres: 17
-            golang: 1.26.3
+            golang: 1.26.4
             revive: 1.15.0
-            gosec: 2.26.1
+            gosec: 2.27.1
           - name: PostgreSQL v18
             postgres: 18
-            golang: 1.26.3
+            golang: 1.26.4
             revive: 1.15.0
-            gosec: 2.26.1
+            gosec: 2.27.1
     steps:
       - name: Set up pgbouncer ${{ matrix.pgbouncer.pgbouncer }}
         if: matrix.os.matrix == 'linux'
