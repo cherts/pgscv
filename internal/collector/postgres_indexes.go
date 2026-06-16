@@ -13,14 +13,17 @@ import (
 )
 
 const (
-	userIndexesQuery = "SELECT current_database() AS database, schemaname AS schema, relname AS table, indexrelname AS index, (i.indisprimary OR i.indisunique) AS key," +
+	userIndexesQuery = "WITH pg_locked AS (SELECT relation FROM pg_locks WHERE mode = 'AccessExclusiveLock' AND relation IS NOT NULL) " +
+		"SELECT current_database() AS database, schemaname AS schema, relname AS table, indexrelname AS index, (i.indisprimary OR i.indisunique) AS key, " +
 		"i.indisvalid AS isvalid, idx_scan, idx_tup_read, idx_tup_fetch, idx_blks_read, idx_blks_hit, pg_relation_size(s1.indexrelid) AS size_bytes " +
 		"FROM pg_stat_user_indexes s1 " +
 		"JOIN pg_statio_user_indexes s2 USING (schemaname, relname, indexrelname) " +
 		"JOIN pg_index i ON (s1.indexrelid = i.indexrelid) " +
-		"WHERE NOT EXISTS (SELECT 1 FROM pg_locks WHERE relation = s1.indexrelid AND mode = 'AccessExclusiveLock')"
+		"LEFT JOIN pg_locked l ON l.relation = s1.indexrelid " +
+		"WHERE l.relation IS NULL"
 
-	userIndexesQueryTopK = "WITH stat AS (SELECT schemaname AS schema, relname AS table, indexrelname AS index, (i.indisprimary OR i.indisunique) AS key, " +
+	userIndexesQueryTopK = "WITH pg_locked AS (SELECT relation FROM pg_locks WHERE mode = 'AccessExclusiveLock' AND relation IS NOT NULL), " +
+		"stat AS (SELECT schemaname AS schema, relname AS table, indexrelname AS index, (i.indisprimary OR i.indisunique) AS key, " +
 		"i.indisvalid AS isvalid, idx_scan, idx_tup_read, idx_tup_fetch, idx_blks_read, idx_blks_hit, pg_relation_size(s1.indexrelid) AS size_bytes, " +
 		"NOT i.indisvalid OR /* unused and size > 50mb */ (idx_scan = 0 AND pg_relation_size(s1.indexrelid) > 50*1024*1024) OR " +
 		"(row_number() OVER (ORDER BY idx_scan DESC NULLS LAST) < $1) OR (row_number() OVER (ORDER BY idx_tup_read DESC NULLS LAST) < $1) OR " +
@@ -29,7 +32,8 @@ const (
 		"FROM pg_stat_user_indexes s1 " +
 		"JOIN pg_statio_user_indexes s2 USING (schemaname, relname, indexrelname) " +
 		"JOIN pg_index i ON (s1.indexrelid = i.indexrelid) " +
-		"WHERE NOT EXISTS ( SELECT 1 FROM pg_locks WHERE relation = s1.indexrelid AND mode = 'AccessExclusiveLock')) " +
+		"LEFT JOIN pg_locked l ON l.relation = s1.indexrelid " +
+		"WHERE l.relation IS NULL) " +
 		"SELECT current_database() AS database, \"schema\", \"table\", \"index\", \"key\", isvalid, idx_scan, idx_tup_read, idx_tup_fetch, " +
 		"idx_blks_read, idx_blks_hit, size_bytes FROM stat WHERE visible " +
 		"UNION ALL SELECT current_database() AS database, 'all_shemas', 'all_other_tables', 'all_other_indexes', true, null, " +

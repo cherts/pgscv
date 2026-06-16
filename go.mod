@@ -1,6 +1,6 @@
 module github.com/cherts/pgscv
 
-go 1.26.3
+go 1.26.4
 
 require (
 	github.com/alecthomas/kingpin/v2 v2.4.0
@@ -10,15 +10,15 @@ require (
 	github.com/prometheus/client_golang v1.23.2
 	github.com/rs/zerolog v1.35.1
 	github.com/stretchr/testify v1.11.1
-	golang.org/x/crypto v0.52.0 // indirect
-	golang.org/x/net v0.55.0
-	golang.org/x/sys v0.45.0 // indirect
+	golang.org/x/crypto v0.53.0 // indirect
+	golang.org/x/net v0.56.0
+	golang.org/x/sys v0.46.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0
 )
 
 require (
 	github.com/go-playground/validator/v10 v10.30.3
-	github.com/yandex-cloud/go-genproto v0.86.0
+	github.com/yandex-cloud/go-genproto v0.87.0
 	github.com/yandex-cloud/go-sdk v0.31.0
 	golang.org/x/time v0.15.0
 	google.golang.org/protobuf v1.36.11
@@ -49,13 +49,13 @@ require (
 	github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/prometheus/client_model v0.6.2 // indirect
-	github.com/prometheus/common v0.68.0 // indirect
+	github.com/prometheus/common v0.68.1 // indirect
 	github.com/prometheus/procfs v0.20.1 // indirect
 	github.com/xhit/go-str2duration/v2 v2.1.0 // indirect
-	golang.org/x/text v0.37.0 // indirect
-	google.golang.org/genproto v0.0.0-20260526163538-3dc84a4a5aaa // indirect
-	google.golang.org/genproto/googleapis/api v0.0.0-20260526163538-3dc84a4a5aaa // indirect
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20260526163538-3dc84a4a5aaa // indirect
+	golang.org/x/text v0.38.0 // indirect
+	google.golang.org/genproto v0.0.0-20260615183401-62b3387ff324 // indirect
+	google.golang.org/genproto/googleapis/api v0.0.0-20260615183401-62b3387ff324 // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20260615183401-62b3387ff324 // indirect
 	google.golang.org/grpc v1.81.1 // indirect
 	gopkg.in/tomb.v1 v1.0.0-20141024135613-dd632973f1e7 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
