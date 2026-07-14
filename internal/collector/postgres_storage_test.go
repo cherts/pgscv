@@ -2,7 +2,7 @@ package collector
 
 import (
 	"database/sql"
-	"github.com/jackc/pgproto3/v2"
+	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/cherts/pgscv/internal/model"
 	"github.com/cherts/pgscv/internal/store"
 	"github.com/stretchr/testify/assert"
@@ -41,8 +41,8 @@ func Test_parsePostgresTempFileInflght(t *testing.T) {
 			res: &model.PGResult{
 				Nrows: 1,
 				Ncols: 4,
-				Colnames: []pgproto3.FieldDescription{
-					{Name: []byte("tablespace")}, {Name: []byte("files_total")}, {Name: []byte("bytes_total")}, {Name: []byte("max_age_seconds")},
+				Colnames: []pgconn.FieldDescription{
+					{Name: "tablespace"}, {Name: "files_total"}, {Name: "bytes_total"}, {Name: "max_age_seconds"},
 				},
 				Rows: [][]sql.NullString{
 					{

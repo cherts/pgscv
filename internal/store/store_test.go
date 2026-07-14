@@ -3,11 +3,12 @@ package store
 import (
 	"database/sql"
 	"fmt"
-	"github.com/cherts/pgscv/internal/model"
-	"github.com/jackc/pgproto3/v2"
-	"github.com/jackc/pgx/v4"
-	"github.com/stretchr/testify/assert"
 	"testing"
+
+	"github.com/cherts/pgscv/internal/model"
+	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgconn"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestNew(t *testing.T) {
@@ -73,8 +74,8 @@ func TestDB_Query(t *testing.T) {
 			want: &model.PGResult{
 				Nrows: 3,
 				Ncols: 5,
-				Colnames: []pgproto3.FieldDescription{
-					{Name: []byte("example")}, {Name: []byte("one")}, {Name: []byte("two")}, {Name: []byte("three")}, {Name: []byte("four")},
+				Colnames: []pgconn.FieldDescription{
+					{Name: "example"}, {Name: "one"}, {Name: "two"}, {Name: "three"}, {Name: "four"},
 				},
 				Rows: [][]sql.NullString{
 					{{String: "example1", Valid: true}, {String: "2", Valid: true}, {String: "3", Valid: true}, {String: "4", Valid: true}, {String: "5", Valid: true}},
