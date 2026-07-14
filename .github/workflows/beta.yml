@@ -124,7 +124,7 @@ jobs:
           pgbouncer --version
           postgres --version
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
       - name: Copy test environment script
         if: matrix.os.matrix == 'linux'
         run: |
@@ -155,7 +155,7 @@ jobs:
       IMAGE_NAME: ${{ github.repository }}
     steps:
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
       - name: Set environment
@@ -212,7 +212,7 @@ jobs:
     needs: build
     steps:
       - name: Run checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
       - name: Run setup Go
