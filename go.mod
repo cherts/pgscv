@@ -4,7 +4,7 @@ go 1.26.5
 
 require (
 	github.com/alecthomas/kingpin/v2 v2.4.0
-	github.com/jackc/pgx/v5 v5.7.1
+	github.com/jackc/pgx/v5 v5.10.0
 	github.com/nxadm/tail v1.4.11
 	github.com/prometheus/client_golang v1.23.2
 	github.com/rs/zerolog v1.35.1
