@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"github.com/cherts/pgscv/internal/model"
-	"github.com/jackc/pgproto3/v2"
+	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -34,11 +34,11 @@ func Test_parsePgbouncerPoolsStats(t *testing.T) {
 			res: &model.PGResult{
 				Nrows: 2,
 				Ncols: 15,
-				Colnames: []pgproto3.FieldDescription{
-					{Name: []byte("database")}, {Name: []byte("user")}, {Name: []byte("pool_mode")},
-					{Name: []byte("cl_active")}, {Name: []byte("cl_waiting")}, {Name: []byte("cl_active_cancel_req")}, {Name: []byte("cl_waiting_cancel_req")},
-					{Name: []byte("sv_active")}, {Name: []byte("sv_active_cancel")}, {Name: []byte("sv_being_canceled")}, {Name: []byte("sv_idle")},
-					{Name: []byte("sv_used")}, {Name: []byte("sv_tested")}, {Name: []byte("sv_login")}, {Name: []byte("maxwait")},
+				Colnames: []pgconn.FieldDescription{
+					{Name: "database"}, {Name: "user"}, {Name: "pool_mode"},
+					{Name: "cl_active"}, {Name: "cl_waiting"}, {Name: "cl_active_cancel_req"}, {Name: "cl_waiting_cancel_req"},
+					{Name: "sv_active"}, {Name: "sv_active_cancel"}, {Name: "sv_being_canceled"}, {Name: "sv_idle"},
+					{Name: "sv_used"}, {Name: "sv_tested"}, {Name: "sv_login"}, {Name: "maxwait"},
 				},
 				Rows: [][]sql.NullString{
 					{
@@ -91,8 +91,8 @@ func Test_parsePgbouncerClientsStats(t *testing.T) {
 			res: &model.PGResult{
 				Nrows: 10,
 				Ncols: 5,
-				Colnames: []pgproto3.FieldDescription{
-					{Name: []byte("user")}, {Name: []byte("database")}, {Name: []byte("addr")}, {Name: []byte("state")}, {Name: []byte("port")},
+				Colnames: []pgconn.FieldDescription{
+					{Name: "user"}, {Name: "database"}, {Name: "addr"}, {Name: "state"}, {Name: "port"},
 				},
 				Rows: [][]sql.NullString{
 					{{String: "user1", Valid: true}, {String: "db1", Valid: true}, {String: "1.1.1.1", Valid: true}, {String: "active", Valid: true}, {String: "11", Valid: true}},

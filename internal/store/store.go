@@ -9,7 +9,7 @@ import (
 
 	"github.com/cherts/pgscv/internal/log"
 	"github.com/cherts/pgscv/internal/model"
-	"github.com/jackc/pgx/v4"
+	"github.com/jackc/pgx/v5"
 )
 
 const (
@@ -51,7 +51,7 @@ func New(connString string, connTimeout int) (*DB, error) {
 // NewWithConfig creates new connection to Postgres/Pgbouncer using passed Config.
 func NewWithConfig(config *pgx.ConnConfig) (*DB, error) {
 	// Enable simple protocol for compatibility with Pgbouncer.
-	config.PreferSimpleProtocol = true
+	config.DefaultQueryExecMode = pgx.QueryExecModeSimpleProtocol
 
 	// Using simple protocol requires explicit options to be set.
 	config.RuntimeParams = map[string]string{

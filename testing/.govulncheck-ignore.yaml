@@ -9,10 +9,10 @@
 # - module: The exact module path where the vulnerability exists
 # - reason: Why this vulnerability is accepted (should note "No fix available")
 
-ignored_vulnerabilities:
-  - id: GO-2026-4518
-    module: github.com/jackc/pgproto3/v2
-    reason: "No fix available - module support is End of Life"
-  - id: GO-2026-5004
-    module: github.com/jackc/pgx/v4
-    reason: "No fix available - module support is End of Life"
+#ignored_vulnerabilities:
+#  - id: GO-2026-4518
+#    module: github.com/jackc/pgproto3/v2
+#    reason: "No fix available - module support is End of Life"
+#  - id: GO-2026-5004
+#    module: github.com/jackc/pgx/v4
+#    reason: "No fix available - module support is End of Life"

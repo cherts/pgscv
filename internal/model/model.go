@@ -6,7 +6,7 @@ import (
 	"regexp"
 
 	"github.com/cherts/pgscv/internal/filter"
-	"github.com/jackc/pgproto3/v2"
+	"github.com/jackc/pgx/v5/pgconn"
 )
 
 const (
@@ -24,7 +24,7 @@ const (
 type PGResult struct {
 	Nrows    int
 	Ncols    int
-	Colnames []pgproto3.FieldDescription
+	Colnames []pgconn.FieldDescription
 	Rows     [][]sql.NullString
 }
 
