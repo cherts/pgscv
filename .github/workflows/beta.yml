@@ -31,7 +31,6 @@ jobs:
             runs-on: ubuntu-latest
             matrix: linux
             container:
-              14: docker://postgres:14
               15: docker://postgres:15
               16: docker://postgres:16
               17: docker://postgres:17
@@ -52,11 +51,6 @@ jobs:
           - name: PgBouncer v1.15
             pgbouncer: 1.15.0
         postgres:
-          - name: PostgreSQL v14
-            postgres: 14
-            golang: 1.26.5
-            revive: 1.15.0
-            gosec: 2.28.0
           - name: PostgreSQL v15
             postgres: 15
             golang: 1.26.5
