@@ -7,6 +7,10 @@ on:
     tags:
       - "v0.*"
 
+permissions:
+  contents: write      # Required to create the GitHub Release
+  id-token: write      # Required for Cosign keyless signing
+
 jobs:
   test:
     name: ${{ matrix.task.name }} ${{ matrix.os.name }} ${{ matrix.postgres.name }} ${{ matrix.pgbouncer.name }}
@@ -170,10 +174,11 @@ jobs:
           context: .
           file: ./Dockerfile
           push: true
-          platforms: linux/amd64,linux/arm64
+          platforms: linux/386,linux/amd64,linux/arm,linux/arm64
           tags: |
             ${{ steps.docker.outputs.DOCKERHUB_USERNAME }}/pgscv:latest
             ${{ steps.docker.outputs.DOCKERHUB_USERNAME }}/pgscv:${{ steps.version.outputs.CURRENT_VERSION }}
+          outputs: type=image,name=target,annotation-index.org.opencontainers.image.description=pgSCV is a PostgreSQL ecosystem metrics collector
 
   goreleaser:
     runs-on: ubuntu-24.04
