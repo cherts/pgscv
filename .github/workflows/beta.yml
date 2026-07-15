@@ -3,10 +3,6 @@ name: Beta
 
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - beta/*
-      - dev/*
   pull_request:
     types: [assigned, unassigned]
     paths:
@@ -171,6 +167,8 @@ jobs:
             cherts/pgscv
           tags: |
             type=raw,value=v${{ steps.version.outputs.VERSION }}-${{ steps.version.outputs.GIT_BRANCH }}-${{ steps.version.outputs.GIT_COMMIT }}-${{ steps.version.outputs.GIT_DATE }}-beta
+      - name: Set up Cosign
+        uses: sigstore/cosign-installer@v4.1.2
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v4
       - name: Set up Docker Buildx
@@ -188,7 +186,7 @@ jobs:
           username: ${{ steps.dockerhub.outputs.DOCKERHUB_USERNAME }}
           password: ${{ steps.dockerhub.outputs.DOCKERHUB_TOKEN }}
       - name: Build and push
-        id: push
+        id: build-and-push
         uses: docker/build-push-action@v7
         with:
           context: .
@@ -197,12 +195,24 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+      - name: Sign image with a cosign
+        run: |
+          images=""
+          for tag in ${TAGS}; do
+            images+="${tag}@${DIGEST} "
+          done
+          cosign sign --yes --key env://COSIGN_PRIVATE_KEY ${images}
+        env:
+          TAGS: ${{ steps.meta.outputs.tags }}
+          COSIGN_PRIVATE_KEY: ${{ secrets.COSIGN_PRIVATE_KEY }}
+          COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}
+          DIGEST: ${{ steps.build-and-push.outputs.digest }}
       - name: Generate artifact attestation
         uses: actions/attest-build-provenance@v4
         id: attest
         with:
           subject-name: ghcr.io/${{ github.repository }}
-          subject-digest: ${{ steps.push.outputs.digest }}
+          subject-digest: ${{ steps.build-and-push.outputs.digest }}
           push-to-registry: true
       - name: Cleanup registry
         uses: actions/delete-package-versions@v5
@@ -221,12 +231,12 @@ jobs:
         uses: actions/checkout@v7
         with:
           fetch-depth: 0
-      - name: Run setup Go
+      - name: Set up Go
         uses: actions/setup-go@v6
         with:
           go-version-file: go.mod
           check-latest: true
-      - name: Install Cosign
+      - name: Set up Cosign
         uses: sigstore/cosign-installer@v4.1.2
       - name: Run GoReleaser
         uses: goreleaser/goreleaser-action@v7

@@ -183,7 +183,7 @@ jobs:
         uses: actions/checkout@v7
         with:
           fetch-depth: 0
-      - name: Run setup Go
+      - name: Set up Go
         uses: actions/setup-go@v6
         with:
           go-version-file: go.mod
