@@ -186,6 +186,7 @@ jobs:
           username: ${{ steps.dockerhub.outputs.DOCKERHUB_USERNAME }}
           password: ${{ steps.dockerhub.outputs.DOCKERHUB_TOKEN }}
       - name: Build and push
+        if: ${{ steps.dockerhub.outputs.DOCKERHUB_USERNAME != '' && steps.dockerhub.outputs.DOCKERHUB_TOKEN != '' }}
         id: build-and-push
         uses: docker/build-push-action@v7
         with:
@@ -197,6 +198,7 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           outputs: type=image,name=target,annotation-index.org.opencontainers.image.description=pgSCV is a PostgreSQL ecosystem metrics collector
       - name: Sign image with a cosign
+        if: ${{ steps.dockerhub.outputs.DOCKERHUB_USERNAME != '' && steps.dockerhub.outputs.DOCKERHUB_TOKEN != '' }}
         run: |
           images=""
           for tag in ${TAGS}; do

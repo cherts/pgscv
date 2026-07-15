@@ -149,15 +149,20 @@ jobs:
         run: |
           echo DOCKERHUB_USERNAME="${{ secrets.DOCKERHUB_USERNAME }}" >>$GITHUB_OUTPUT
           echo DOCKERHUB_TOKEN="${{ secrets.DOCKERHUB_TOKEN }}" >>$GITHUB_OUTPUT
-      - name: Set environment
-        id: version
-        run: |
-          LATEST_TAG=$(git describe --tags $(git rev-list --abbrev-commit --tags --max-count=1) --abbrev=0 2>/dev/null || echo "v$(git rev-parse --abbrev-ref HEAD | cut -d'/' -f2)")
-          echo "CURRENT_VERSION=${LATEST_TAG}" >>$GITHUB_OUTPUT
-          echo "Current version: ${LATEST_TAG#v}"
       - name: Lint Dockerfile
         run: make docker-lint
-      - name: Set up QEMU (enables multi-arch emulation)
+      - name: Set up Docker meta
+        id: meta
+        uses: docker/metadata-action@v6
+        with:
+          images: ${{ steps.docker.outputs.DOCKERHUB_USERNAME }}/pgscv
+          tags: |
+            type=ref,event=branch
+            type=ref,event=tag
+            type=semver,pattern={{version}}
+      - name: Set up Cosign
+        uses: sigstore/cosign-installer@v4.1.2
+      - name: Set up QEMU
         uses: docker/setup-qemu-action@v4
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v4
@@ -169,16 +174,29 @@ jobs:
           password: ${{ steps.docker.outputs.DOCKERHUB_TOKEN }}
       - name: Build and push image
         if: ${{ steps.docker.outputs.DOCKERHUB_USERNAME != '' && steps.docker.outputs.DOCKERHUB_TOKEN != '' }}
+        id: build-and-push
         uses: docker/build-push-action@v7
         with:
           context: .
           file: ./Dockerfile
           push: true
           platforms: linux/386,linux/amd64,linux/arm,linux/arm64
-          tags: |
-            ${{ steps.docker.outputs.DOCKERHUB_USERNAME }}/pgscv:latest
-            ${{ steps.docker.outputs.DOCKERHUB_USERNAME }}/pgscv:${{ steps.version.outputs.CURRENT_VERSION }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
           outputs: type=image,name=target,annotation-index.org.opencontainers.image.description=pgSCV is a PostgreSQL ecosystem metrics collector
+      - name: Sign image with a cosign
+        if: ${{ steps.docker.outputs.DOCKERHUB_USERNAME != '' && steps.docker.outputs.DOCKERHUB_TOKEN != '' }}
+        run: |
+          images=""
+          for tag in ${TAGS}; do
+            images+="${tag}@${DIGEST} "
+          done
+          cosign sign --yes --key env://COSIGN_PRIVATE_KEY ${images}
+        env:
+          TAGS: ${{ steps.meta.outputs.tags }}
+          COSIGN_PRIVATE_KEY: ${{ secrets.COSIGN_PRIVATE_KEY }}
+          COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}
+          DIGEST: ${{ steps.build-and-push.outputs.digest }}
 
   goreleaser:
     runs-on: ubuntu-24.04
