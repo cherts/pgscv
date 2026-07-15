@@ -6,9 +6,9 @@ All pgSCV docker images published to DockerHub are signed with [Cosign](https://
 
 Every pgSCV docker images published to `registry-1.docker.io/cherts/pgscv` is signed with our private key and can be verified using the corresponding public key. This ensures:
 
-- **Authenticity**: Confirms charts are published by CloudPirates
-- **Integrity**: Ensures charts haven't been tampered with since signing
-- **Supply Chain Security**: Provides end-to-end verification of chart origins
+- **Authenticity**: Confirms docker images are published by Mikhail Grigorev
+- **Integrity**: Ensures docker images haven't been tampered with since signing
+- **Supply Chain Security**: Provides end-to-end verification of images origins
 
 ## Public Key
 
