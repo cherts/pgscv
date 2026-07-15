@@ -1,5 +1,5 @@
 ---
-name: Docker
+name: Docker-Release
 
 on:
   workflow_dispatch:

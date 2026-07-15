@@ -5,18 +5,25 @@ before:
     - make dep
 
 builds:
-  - binary: pgscv
+  - id: pgscv
+    binary: pgscv
     main: ./cmd
-    goarch:
-      - '386'
-      - amd64
-      - arm64
-      - arm
     goos:
       - linux
     #  - windows
     #  - freebsd
     #  - darwin
+    goarch:
+      - '386'
+      - amd64
+      - arm64
+      - arm
+    goarm:
+      - 6
+      - 7
+    goarm64:
+      - v8.0
+      - v9.0
     #ignore:
     #  - goarch: arm
     #    goos: windows
@@ -31,7 +38,8 @@ builds:
       - -X main.appName=pgscv -X main.gitTag={{.Tag}} -X main.gitCommit={{.Commit}} -X main.gitBranch={{.Branch}}
 
 archives:
-  - builds: [pgscv]
+  - id: pgscv
+    formats: ["tar.gz"]
     builds_info:
       group: root
       owner: root

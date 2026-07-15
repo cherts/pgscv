@@ -17,6 +17,12 @@ on:
       - "go.mod"
       - "go.sum"
 
+permissions:
+  contents: write      # Required to create the GitHub Release
+  id-token: write      # Required for Cosign keyless signing
+  packages: write      # Required if pushing signed Docker images to GHCR
+  attestations: write  # Required if pushing artifact attestation
+
 jobs:
   test:
     name: ${{ matrix.task.name }} ${{ matrix.os.name }} ${{ matrix.postgres.name }} ${{ matrix.pgbouncer.name }}
@@ -136,14 +142,9 @@ jobs:
       - name: Run tests
         run: make test
 
-  build:
+  docker:
     runs-on: ubuntu-24.04
     needs: test
-    permissions:
-      contents: read
-      packages: write
-      id-token: write
-      attestations: write
     steps:
       - name: Checkout code
         uses: actions/checkout@v7
@@ -192,7 +193,7 @@ jobs:
         with:
           context: .
           file: ./Dockerfile.beta
-          platforms: linux/amd64,linux/arm64
+          platforms: linux/amd64,linux/arm64/v8,linux/arm/v7,linux/arm/v6,linux/386
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
@@ -214,7 +215,7 @@ jobs:
 
   goreleaser:
     runs-on: ubuntu-24.04
-    needs: build
+    needs: docker
     steps:
       - name: Run checkout
         uses: actions/checkout@v7
@@ -223,11 +224,14 @@ jobs:
       - name: Run setup Go
         uses: actions/setup-go@v6
         with:
-          go-version: 1.26
+          go-version-file: go.mod
+          check-latest: true
+      - name: Install Cosign
+        uses: sigstore/cosign-installer@v4.1.2
       - name: Run GoReleaser
         uses: goreleaser/goreleaser-action@v7
         with:
-          version: '~> v2'
+          version: latest
           args: release --snapshot --clean --skip=publish --verbose
         env:
           GITHUB_TOKEN: ${{ secrets.CUSTOM_GITHUB_TOKEN }}
