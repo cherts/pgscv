@@ -98,6 +98,10 @@ kubectl create ns pgscv-ns
 helm install -n pgscv-ns pgscv deploy/helm-chart/
 ```
 
+### Verify Docker Image Signatures
+
+See [COSIGN.md](COSIGN.md)
+
 ### Complete setup
 Checkout complete setup [guide](https://github.com/cherts/pgscv/wiki/Setup-for-regular-users).
 
