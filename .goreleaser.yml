@@ -35,7 +35,11 @@ builds:
 
 archives:
   - id: pgscv
+    ids: [pgscv]
     formats: ["tar.gz"]
+#    format_overrides:
+#      - goos: windows
+#        formats: [zip]
     builds_info:
       group: root
       owner: root
@@ -49,6 +53,12 @@ archives:
           group: root
           mode: 0640
       - src: "deploy/pgscv.service"
+        strip_parent: true
+        info:
+          owner: root
+          group: root
+          mode: 0644
+      - src: "deploy/pgscv.service.rhel"
         strip_parent: true
         info:
           owner: root
@@ -76,10 +86,48 @@ checksum:
   name_template: 'checksums.txt'
 
 nfpms:
-  - vendor: pgscv
+  - id: pgscv-deb-rpm
+    package_name: pgscv
+    file_name_template: "{{ .ConventionalFileName }}"
+    ids: [pgscv]
+    vendor: "pgSCV Team"
     homepage: https://github.com/cherts/pgscv
-    maintainer: Mikhail Grigorev
+    maintainer: "Mikhail Grigorev <sleuthhound@gmail.com>"
     description: pgSCV - PostgreSQL ecosystem metrics collector.
     license: BSD-3
-    formats: []
+    section: database
+    priority: optional
+    formats: [deb, rpm]
     bindir: /usr/sbin
+    contents:
+      - src: deploy/pgscv.service
+        dst: /usr/lib/systemd/system/pgscv.service
+        packager: apk
+      - src: deploy/pgscv.service.rhel
+        dst: /usr/lib/systemd/system/pgscv.service
+        packager: rpm
+      - src: deploy/pgscv.default
+        dst: /etc/default/pgscv
+        type: "config|noreplace"
+        packager: apk
+      - src: deploy/pgscv.default
+        dst: /etc/sysconfig/pgscv
+        type: "config|noreplace"
+        packager: rpm
+      - src: LICENSE
+        dst: /usr/share/doc/pgscv/LICENSE
+      - src: README.md
+        dst: /usr/share/doc/pgscv/README.md
+      - src: deploy/pgscv.yaml
+        dst: /etc/pgscv.yaml
+        type: "config|noreplace"
+
+release:
+  github:
+    owner: cherts
+    name: pgscv
+  draft: false
+  prerelease: auto
+  name_template: "v{{ .Version }}"
+  header: |
+    ## pgSCV v{{ .Version }}
