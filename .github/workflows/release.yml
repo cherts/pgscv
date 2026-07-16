@@ -95,7 +95,7 @@ jobs:
           rm -rf pgbouncer-${{ matrix.pgbouncer.pgbouncer }}
       - name: Set up golang ${{ matrix.postgres.golang }}
         if: matrix.os.matrix == 'linux'
-        uses: actions/setup-go@v6
+        uses: actions/setup-go@v7
         with:
           go-version: ${{ matrix.postgres.golang }}
       - name: Set up revive ${{ matrix.postgres.revive }}
@@ -207,7 +207,7 @@ jobs:
         with:
           fetch-depth: 0
       - name: Set up Go
-        uses: actions/setup-go@v6
+        uses: actions/setup-go@v7
         with:
           go-version-file: go.mod
           check-latest: true
