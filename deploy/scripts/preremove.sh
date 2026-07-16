@@ -1,8 +1,18 @@
 #!/bin/sh
-set -e
 
-# Stop the service before removal
-systemctl stop pgscv || true
-systemctl disable pgscv  || true
+# Determine OS platform
+# shellcheck source=/dev/null
+. /etc/os-release
+
+stop_pgscv_openrc() {
+    echo "Stopping pgscv service"
+    rc-service stop pgscv >/dev/null 2>&1 || true
+}
+
+case "$ID" in
+    alpine)
+        stop_pgscv_openrc
+        ;;
+esac
 
 exit 0
