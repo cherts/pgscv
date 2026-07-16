@@ -1,0 +1,16 @@
+#!/sbin/openrc-run
+
+name="pgscv"
+description="pgSCV - PostgreSQL ecosystem metrics collector"
+command_background=true
+
+cfgfile=${cfgfile:-/etc/pgscv.yaml}
+pidfile=/var/run/${RC_SVCNAME}.pid
+command=/usr/sbin/pgscv
+command_args="--config-file=/etc/pgscv.yaml"
+required_files="$cfgfile"
+
+depend() {
+    need net
+    after firewall
+}

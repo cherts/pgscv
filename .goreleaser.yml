@@ -109,7 +109,7 @@ nfpms:
     license: BSD-3
     section: database
     priority: optional
-    formats: [deb, rpm]
+    formats: [deb, rpm, apk]
     bindir: /usr/sbin
     contents:
       - src: deploy/pgscv.service
@@ -118,6 +118,9 @@ nfpms:
       - src: deploy/pgscv.service.rhel
         dst: /usr/lib/systemd/system/pgscv.service
         packager: rpm
+      - src: deploy/pgscv.openrc
+        dst: /etc/init.d/pgscv
+        packager: apk
       - src: deploy/pgscv.default
         dst: /etc/default/pgscv
         type: "config|noreplace"
@@ -140,6 +143,10 @@ nfpms:
       postinstall: deploy/scripts/postinstall.sh
       preremove: deploy/scripts/preremove.sh
       postremove: deploy/scripts/postremove.sh
+    apk:
+      scripts:
+        preupgrade: deploy/scripts/preinstall.sh
+        postupgrade: deploy/scripts/postinstall.sh
 
 release:
   github:
