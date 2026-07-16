@@ -79,7 +79,7 @@ func (c *postgresSubscriptionRelCollector) Update(config Config, ch chan<- prome
 		return err
 	}
 
-	// walk through all databases, connect to it and collect schema-specific stats
+	// walk through all databases, connect to it and collect pg_subscription_rel-specific stats
 	for _, d := range databases {
 		// Skip database if not matched to allowed.
 		if !config.DatabasesRE.MatchString(d) {
@@ -102,9 +102,10 @@ func collectSubscriptionRel(conn *store.DB, config Config, ch chan<- prometheus.
 	database := conn.Conn().Config().Database
 	res, err := conn.Query(selectSubscriptionRelQuery(config.pgVersion.Numeric, database))
 	if err != nil {
-		log.Warnf("get pg_subscription_rel failed: %s; skip", err)
+		log.Errorf("get pg_subscription_rel stats of database %s failed: %s; skip", database, err)
+		return
 	} else {
-		log.Debug("parse postgres subscription_rel stats")
+		log.Debugf("parse postgres subscription_rel stats of database %s", database)
 
 		for _, row := range res.Rows {
 			var (
@@ -135,13 +136,12 @@ func collectSubscriptionRel(conn *store.DB, config Config, ch chan<- prometheus.
 				case "count":
 					count, err = strconv.ParseFloat(row[i].String, 64)
 					if err != nil {
-						continue
+						return
 					}
 				}
 			}
 			ch <- desc.newConstMetric(count, datName, subName, state)
 		}
-
 	}
 }
 
