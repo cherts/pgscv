@@ -102,14 +102,14 @@ nfpms:
     contents:
       - src: deploy/pgscv.service
         dst: /usr/lib/systemd/system/pgscv.service
-        packager: apk
+        packager: deb
       - src: deploy/pgscv.service.rhel
         dst: /usr/lib/systemd/system/pgscv.service
         packager: rpm
       - src: deploy/pgscv.default
         dst: /etc/default/pgscv
         type: "config|noreplace"
-        packager: apk
+        packager: deb
       - src: deploy/pgscv.default
         dst: /etc/sysconfig/pgscv
         type: "config|noreplace"
@@ -121,6 +121,11 @@ nfpms:
       - src: deploy/pgscv.yaml
         dst: /etc/pgscv.yaml
         type: "config|noreplace"
+    scripts:
+      preinstall: deploy/scripts/preinstall.sh
+      postinstall: deploy/scripts/postinstall.sh
+      preremove: deploy/scripts/preremove.sh
+      postremove: deploy/scripts/postremove.sh
 
 release:
   github:
