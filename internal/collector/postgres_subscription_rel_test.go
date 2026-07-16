@@ -1,6 +1,7 @@
 package collector
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/cherts/pgscv/internal/model"
@@ -24,14 +25,14 @@ func Test_selectSubscriptionRelQuery(t *testing.T) {
 		version int
 		want    string
 	}{
-		{version: 100000, want: postgresSubscriptionRel15},
-		{version: 100005, want: postgresSubscriptionRel15},
-		{version: 130002, want: postgresSubscriptionRel15},
-		{version: 140005, want: postgresSubscriptionRel15},
-		{version: 150001, want: postgresSubscriptionRel15},
-		{version: 160002, want: postgresSubscriptionRelLatest},
-		{version: 170005, want: postgresSubscriptionRelLatest},
-		{version: 180000, want: postgresSubscriptionRelLatest},
+		{version: PostgresV10, want: fmt.Sprintf(postgresSubscriptionRel15, "pgscv_fixtures")},
+		{version: 100005, want: fmt.Sprintf(postgresSubscriptionRel15, "pgscv_fixtures")},
+		{version: 130002, want: fmt.Sprintf(postgresSubscriptionRel15, "pgscv_fixtures")},
+		{version: 140005, want: fmt.Sprintf(postgresSubscriptionRel15, "pgscv_fixtures")},
+		{version: 150001, want: fmt.Sprintf(postgresSubscriptionRel15, "pgscv_fixtures")},
+		{version: 160002, want: fmt.Sprintf(postgresSubscriptionRelLatest, "pgscv_fixtures")},
+		{version: 170005, want: fmt.Sprintf(postgresSubscriptionRelLatest, "pgscv_fixtures")},
+		{version: PostgresV18, want: fmt.Sprintf(postgresSubscriptionRelLatest, "pgscv_fixtures")},
 	}
 
 	for _, tc := range testcases {
