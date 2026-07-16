@@ -1,11 +1,13 @@
 package collector
 
 import (
+	"fmt"
 	"strconv"
 
 	"github.com/cherts/pgscv/internal/log"
 	"github.com/cherts/pgscv/internal/model"
 	"github.com/cherts/pgscv/internal/store"
+	"github.com/jackc/pgx/v5"
 	"github.com/prometheus/client_golang/prometheus"
 )
 
@@ -13,12 +15,13 @@ const (
 	postgresSubscriptionRel15 = "SELECT CURRENT_CATALOG AS datname, subname, srsubstate::TEXT AS state, count(*) AS count " +
 		"FROM pg_subscription_rel sr " +
 		"LEFT JOIN pg_stat_subscription ss ON sr.srsubid = ss.subid " +
+		"WHERE CURRENT_CATALOG = '%s' " +
 		"GROUP BY 2, 3"
 
 	postgresSubscriptionRelLatest = "SELECT CURRENT_CATALOG AS datname, subname, srsubstate::TEXT AS state, count(*) AS count " +
 		"FROM pg_subscription_rel sr " +
 		"LEFT JOIN pg_stat_subscription ss ON sr.srsubid = ss.subid " +
-		"WHERE leader_pid IS NULL " +
+		"WHERE leader_pid IS NULL AND CURRENT_CATALOG = '%s' " +
 		"GROUP BY 2, 3"
 )
 
@@ -56,11 +59,53 @@ func (c *postgresSubscriptionRelCollector) Update(config Config, ch chan<- prome
 	}
 	defer conn.Close()
 
-	res, err := conn.Query(selectSubscriptionRelQuery(config.pgVersion.Numeric))
+	collect := func(conn *store.DB) {
+		collectSubscriptionRel(conn, config, ch, c.count)
+	}
+
+	if config.DatabasesRE == nil {
+		// service discovery case
+		collect(conn)
+		return nil
+	}
+
+	databases, err := listDatabases(conn)
 	if err != nil {
-		log.Warnf("get pg_subscription_rel failed: %s; skip", err)
+		return err
+	}
+
+	pgconfig, err := pgx.ParseConfig(config.ConnString)
+	if err != nil {
+		return err
+	}
+
+	// walk through all databases, connect to it and collect pg_subscription_rel-specific stats
+	for _, d := range databases {
+		// Skip database if not matched to allowed.
+		if !config.DatabasesRE.MatchString(d) {
+			continue
+		}
+		pgconfig.Database = d
+		conn, err := store.NewWithConfig(pgconfig)
+		if err != nil {
+			return err
+		}
+		defer conn.Close()
+		collect(conn)
+	}
+
+	return nil
+}
+
+// collectSubscriptionRel collects metrics related to pg_subscription_rel.
+func collectSubscriptionRel(conn *store.DB, config Config, ch chan<- prometheus.Metric, desc typedDesc) {
+	database := conn.Conn().Config().Database
+	res, err := conn.Query(selectSubscriptionRelQuery(config.pgVersion.Numeric, database))
+	if err != nil {
+		log.Errorf("get pg_subscription_rel stats of database %s failed: %s; skip", database, err)
+		return
 	} else {
-		log.Debug("parse postgres subscription_rel stats")
+		log.Debugf("parse postgres subscription_rel stats of database %s", database)
 
 		for _, row := range res.Rows {
 			var (
@@ -91,24 +136,21 @@ func (c *postgresSubscriptionRelCollector) Update(config Config, ch chan<- prome
 				case "count":
 					count, err = strconv.ParseFloat(row[i].String, 64)
 					if err != nil {
-						return err
+						return
 					}
 				}
 			}
-			ch <- c.count.newConstMetric(count, datName, subName, state)
+			ch <- desc.newConstMetric(count, datName, subName, state)
 		}
-
 	}
-
-	return nil
 }
 
 // selectSubscriptionRelQuery returns suitable subscription_rel query depending on passed version.
-func selectSubscriptionRelQuery(version int) string {
+func selectSubscriptionRelQuery(version int, database string) string {
 	switch {
 	case version < PostgresV16:
-		return postgresSubscriptionRel15
+		return fmt.Sprintf(postgresSubscriptionRel15, database)
 	default:
-		return postgresSubscriptionRelLatest
+		return fmt.Sprintf(postgresSubscriptionRelLatest, database)
 	}
 }
