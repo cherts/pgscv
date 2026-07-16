@@ -36,7 +36,7 @@ func Test_selectSubscriptionRelQuery(t *testing.T) {
 
 	for _, tc := range testcases {
 		t.Run("", func(t *testing.T) {
-			assert.Equal(t, tc.want, selectSubscriptionRelQuery(tc.version))
+			assert.Equal(t, tc.want, selectSubscriptionRelQuery(tc.version, "pgscv_fixtures"))
 		})
 	}
 }
