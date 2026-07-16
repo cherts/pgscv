@@ -81,6 +81,18 @@ archives:
 
 changelog:
   sort: asc
+  filters:
+    exclude:
+      - "^docs:"
+      - "^test:"
+      - "^chore:"
+      - "Merge pull request"
+      - "Merge branch"
+
+source:
+  enabled: true
+  name_template: "{{ .ProjectName }}-{{ .Version }}-source"
+  format: tar.gz
 
 checksum:
   name_template: 'checksums.txt'
@@ -121,6 +133,8 @@ nfpms:
       - src: deploy/pgscv.yaml
         dst: /etc/pgscv.yaml
         type: "config|noreplace"
+        file_info:
+          mode: 0640
     scripts:
       preinstall: deploy/scripts/preinstall.sh
       postinstall: deploy/scripts/postinstall.sh

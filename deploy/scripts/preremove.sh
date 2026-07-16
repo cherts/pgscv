@@ -5,7 +5,7 @@
 . /etc/os-release
 
 stop_pgscv_openrc() {
-    echo "Stopping pgscv service"
+    echo "PreRemove: Stopping pgscv service"
     rc-service stop pgscv >/dev/null 2>&1 || true
 }
 
