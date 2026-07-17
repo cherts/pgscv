@@ -104,44 +104,44 @@ func collectSubscriptionRel(conn *store.DB, config Config, ch chan<- prometheus.
 	if err != nil {
 		log.Errorf("get pg_subscription_rel stats of database %s failed: %s; skip", database, err)
 		return
-	} else {
-		log.Debugf("parse postgres subscription_rel stats of database %s", database)
+	}
 
-		for _, row := range res.Rows {
-			var (
-				datName string
-				subName string
-				state   string
-				count   float64
-			)
-			for i, colname := range res.Colnames {
-				switch string(colname.Name) {
-				case "datname":
-					datName = row[i].String
-				case "subname":
-					subName = row[i].String
-				case "state":
-					switch row[i].String {
-					case "i":
-						state = "initialize"
-					case "d":
-						state = "data_is_being_copied,"
-					case "f":
-						state = "finished_table_copy"
-					case "s":
-						state = "synchronized"
-					case "r":
-						state = "normal_replication"
-					}
-				case "count":
-					count, err = strconv.ParseFloat(row[i].String, 64)
-					if err != nil {
-						return
-					}
+	log.Debugf("parse postgres subscription_rel stats of database %s", database)
+
+	for _, row := range res.Rows {
+		var (
+			datName string
+			subName string
+			state   string
+			count   float64
+		)
+		for i, colname := range res.Colnames {
+			switch string(colname.Name) {
+			case "datname":
+				datName = row[i].String
+			case "subname":
+				subName = row[i].String
+			case "state":
+				switch row[i].String {
+				case "i":
+					state = "initialize"
+				case "d":
+					state = "data_is_being_copied,"
+				case "f":
+					state = "finished_table_copy"
+				case "s":
+					state = "synchronized"
+				case "r":
+					state = "normal_replication"
+				}
+			case "count":
+				count, err = strconv.ParseFloat(row[i].String, 64)
+				if err != nil {
+					return
 				}
 			}
-			ch <- desc.newConstMetric(count, datName, subName, state)
 		}
+		ch <- desc.newConstMetric(count, datName, subName, state)
 	}
 }
 
