@@ -5,12 +5,13 @@ description="pgSCV - PostgreSQL ecosystem metrics collector"
 command_background=true
 
 cfgfile=${cfgfile:-/etc/pgscv.yaml}
-pidfile=/var/run/${RC_SVCNAME}.pid
+pidfile=/run/${RC_SVCNAME}.pid
 command=/usr/sbin/pgscv
 command_args="--config-file=/etc/pgscv.yaml"
+command_user="postgres"
 required_files="$cfgfile"
+capabilities="^cap_net_bind_service"
 
 depend() {
     need net
-    after firewall
 }
