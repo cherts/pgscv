@@ -49,9 +49,41 @@ summary_alpine() {
     echo "----------------------------------------------------------------------"
 }
 
+summary_upgrade() {
+    echo "----------------------------------------------------------------------"
+    echo " pgSCV package has been successfully upgraded."
+    echo ""
+    echo " Please follow the next steps to start the software:"
+    echo "    sudo systemctl restart pgscv"
+    echo ""
+    echo " Configuration settings can be adjusted here:"
+    echo "    /etc/pgscv.yaml"
+    echo ""
+    echo "----------------------------------------------------------------------"
+}
+
 set_config_owner
 restart_pgscv_if_required
 case "$ID" in
+    debian|ubuntu)
+        case "$1" in
+            configure)
+                summary
+            ;;
+            upgrade)
+                summary_upgrade
+            ;;
+        esac
+        ;;
+    rhel|fedora|centos|amzn|almalinux|rocky|ol)
+        if [ "$1" = "0" ]; then
+            # Package is being completely updated
+            summary_upgrade
+        elif [ "$1" = "1" ]; then
+            # Package is being completely installed
+            summary
+        fi
+        ;;
     alpine)
         add_pgscv_openrc
         summary_alpine
