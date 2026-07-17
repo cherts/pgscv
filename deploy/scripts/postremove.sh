@@ -19,6 +19,13 @@ systemd_daemon_reload() {
     systemctl daemon-reload || true
 }
 
+restart_pgscv_if_required_systemd() {
+    if service pgscv status >/dev/null 2>&1; then
+        echo "PostRemove: Restarting pgscv service"
+        systemctl restart pgscv >/dev/null 2>&1 || true
+    fi
+}
+
 stop_pgscv_if_required_openrc() {
     if service pgscv status >/dev/null 2>&1; then
         echo "PostRemove: Stopping pgscv service"
@@ -63,8 +70,9 @@ case "$ID" in
             systemd_daemon_reload
         elif [ "$1" = "1" ]; then
             # Package is being upgraded
-            echo "PostRemove: pgSCV is being upgraded, performing partial cleanup only"
+            echo "PostRemove: pgSCV is being upgraded, performing partial cleanup and restart only"
             systemd_daemon_reload
+            restart_pgscv_if_required_systemd
         fi
         ;;
     alpine)
