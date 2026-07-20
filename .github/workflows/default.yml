@@ -164,9 +164,7 @@ jobs:
         run: git config --global --add safe.directory /__w/pgscv/pgscv
       - name: Check code modernization
         run: make modernize-check
+      - name: Check code govulncheck
+        run: make govulncheck
       - name: Run tests
         run: make test
-      - name: Install govulncheck
-        run: go install golang.org/x/vuln/cmd/govulncheck@latest
-      - name: Run govulncheck
-        run: govulncheck ./...
