@@ -40,7 +40,7 @@ This project is a continuation of the development of the original pgSCV by [Alex
 Download the archive from [releases](https://github.com/cherts/pgscv/releases). Unpack the archive. Create minimum config file. Start pgSCV systemd service under `postgres` user.
 
 ```bash
-apt-get update && apt-get install jq curl && \
+apt-get update && apt-get install jq curl tar gzip && \
 LATEST_VER=$(curl https://api.github.com/repos/cherts/pgscv/releases/latest 2>/dev/null | jq -r .tag_name | sed 's/[^0-9.]//g') && \
 curl -s -L https://github.com/cherts/pgscv/releases/download/v${LATEST_VER}/pgscv_${LATEST_VER}_linux_$(uname -m).tar.gz -o - | tar xzf - -C /tmp && \
 mv /tmp/pgscv.yaml /etc && \
