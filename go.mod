@@ -6,7 +6,7 @@ require (
 	github.com/alecthomas/kingpin/v2 v2.4.0
 	github.com/jackc/pgx/v5 v5.10.0
 	github.com/nxadm/tail v1.4.11
-	github.com/prometheus/client_golang v1.23.2
+	github.com/prometheus/client_golang v1.24.0
 	github.com/rs/zerolog v1.35.1
 	github.com/stretchr/testify v1.11.1
 	golang.org/x/crypto v0.54.0 // indirect
@@ -17,7 +17,7 @@ require (
 
 require (
 	github.com/go-playground/validator/v10 v10.30.3
-	github.com/yandex-cloud/go-genproto v0.96.0
+	github.com/yandex-cloud/go-genproto v0.97.0
 	github.com/yandex-cloud/go-sdk v0.32.0
 	golang.org/x/time v0.15.0
 	google.golang.org/protobuf v1.36.11
@@ -50,9 +50,9 @@ require (
 	github.com/rogpeppe/go-internal v1.15.0 // indirect
 	github.com/xhit/go-str2duration/v2 v2.1.0 // indirect
 	golang.org/x/text v0.40.0 // indirect
-	google.golang.org/genproto v0.0.0-20260715232425-e75dac1f907d // indirect
-	google.golang.org/genproto/googleapis/api v0.0.0-20260715232425-e75dac1f907d // indirect
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20260715232425-e75dac1f907d // indirect
+	google.golang.org/genproto v0.0.0-20260720211330-0afa2a65878a // indirect
+	google.golang.org/genproto/googleapis/api v0.0.0-20260720211330-0afa2a65878a // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20260720211330-0afa2a65878a // indirect
 	google.golang.org/grpc v1.82.1 // indirect
 	gopkg.in/tomb.v1 v1.0.0-20141024135613-dd632973f1e7 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
