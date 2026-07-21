@@ -3,15 +3,17 @@ package collector
 
 import (
 	"context"
+	"maps"
+	"os"
+	"strconv"
+	"sync"
+	"time"
+
 	"github.com/cherts/pgscv/internal/filter"
 	"github.com/cherts/pgscv/internal/log"
 	"github.com/cherts/pgscv/internal/model"
 	"github.com/jackc/pgx/v5"
 	"github.com/prometheus/client_golang/prometheus"
-	"maps"
-	"strconv"
-	"sync"
-	"time"
 )
 
 const (
@@ -210,11 +212,25 @@ type PgscvCollector struct {
 // NewPgscvCollector accepts Factories and creates per-service instance of Collector.
 func NewPgscvCollector(serviceID string, factories Factories, config Config) (*PgscvCollector, error) {
 	collectors := make(map[string]Collector)
-	pgConfig, err := pgx.ParseConfig(config.ConnString)
-	if err != nil {
-		return nil, err
+	constLabels := labels{"service_id": serviceID}
+
+	// For system collector, add local hostname as host label
+	if config.ServiceType == model.ServiceTypeSystem {
+		hostname, err := os.Hostname()
+		if err != nil {
+			hostname = "unknown"
+		}
+		constLabels["host"] = hostname
+	} else {
+		// For non-system collector, add host and port labels from connection string
+		pgConfig, err := pgx.ParseConfig(config.ConnString)
+		if err != nil {
+			return nil, err
+		}
+		constLabels["host"] = pgConfig.Host
+		constLabels["port"] = strconv.FormatUint(uint64(pgConfig.Port), 10)
 	}
-	constLabels := labels{"service_id": serviceID, "host": pgConfig.Host, "port": strconv.FormatUint(uint64(pgConfig.Port), 10)}
+
 	if config.ConstLabels != nil {
 		maps.Copy(constLabels, *config.ConstLabels)
 	}
