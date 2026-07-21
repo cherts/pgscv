@@ -16,12 +16,9 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 )
 
-var (
-	errFilesystemTimedOut = errors.New("filesystem timed out")
-)
-
 // Hookable variables to ease testing of timeout behaviour.
 var (
+	errFilesystemTimedOut             = errors.New("filesystem timed out")
 	mountpointStatTimeout             = 3 * time.Second
 	readMountpointStatWithTimeoutFunc = readMountpointStatWithTimeout
 )
