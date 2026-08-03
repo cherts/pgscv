@@ -46,14 +46,14 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v4
       - name: Login to GHCR registry
-        uses: docker/login-action@v4.5.2
+        uses: docker/login-action@v4.6.0
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Login to DockerHub registry
         if: ${{ steps.dockerhub.outputs.DOCKERHUB_USERNAME != '' && steps.dockerhub.outputs.DOCKERHUB_TOKEN != '' }}
-        uses: docker/login-action@v4.5.2
+        uses: docker/login-action@v4.6.0
         with:
           username: ${{ steps.dockerhub.outputs.DOCKERHUB_USERNAME }}
           password: ${{ steps.dockerhub.outputs.DOCKERHUB_TOKEN }}
