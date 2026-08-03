@@ -5,11 +5,14 @@ on:
   workflow_dispatch:
   push:
     tags:
-      - "v1.*"
+      - "v0.*"
+
+permissions:
+  contents: write      # Required to create the GitHub Release
+  id-token: write      # Required for Cosign keyless signing
 
 jobs:
   test:
-    if: github.ref == 'refs/heads/release'
     name: ${{ matrix.task.name }} ${{ matrix.os.name }} ${{ matrix.postgres.name }} ${{ matrix.pgbouncer.name }}
     runs-on: ${{ matrix.os.runs-on }}
     container: ${{ matrix.os.container[matrix.postgres.postgres] }}
@@ -35,7 +38,7 @@ jobs:
 #            matrix: macos
         pgbouncer:
           - name: PgBouncer v1.25
-            pgbouncer: 1.25.1
+            pgbouncer: 1.25.2
           - name: PgBouncer v1.18
             pgbouncer: 1.18.0
           - name: PgBouncer v1.16
@@ -45,29 +48,29 @@ jobs:
         postgres:
           - name: PostgreSQL v14
             postgres: 14
-            golang: 1.26.4
+            golang: 1.26.5
             revive: 1.15.0
-            gosec: 2.27.1
+            gosec: 2.28.0
           - name: PostgreSQL v15
             postgres: 15
-            golang: 1.26.4
+            golang: 1.26.5
             revive: 1.15.0
-            gosec: 2.27.1
+            gosec: 2.28.0
           - name: PostgreSQL v16
             postgres: 16
-            golang: 1.26.4
+            golang: 1.26.5
             revive: 1.15.0
-            gosec: 2.27.1
+            gosec: 2.28.0
           - name: PostgreSQL v17
             postgres: 17
-            golang: 1.26.4
+            golang: 1.26.5
             revive: 1.15.0
-            gosec: 2.27.1
+            gosec: 2.28.0
           - name: PostgreSQL v18
             postgres: 18
-            golang: 1.26.4
+            golang: 1.26.5
             revive: 1.15.0
-            gosec: 2.27.1
+            gosec: 2.28.0
     steps:
       - name: Set up pgbouncer ${{ matrix.pgbouncer.pgbouncer }}
         if: matrix.os.matrix == 'linux'
@@ -75,7 +78,7 @@ jobs:
           apt-get update
           apt-get -y upgrade
           echo "Set up pgbouncer ${{ matrix.pgbouncer.pgbouncer }}"
-          apt-get install build-essential wget vim make gcc git curl libevent-dev libssl-dev pkg-config python3 pandoc -y
+          apt-get install build-essential jq wget vim make gcc git curl libevent-dev libssl-dev pkg-config python3 pandoc -y
           wget https://www.pgbouncer.org/downloads/files/${{ matrix.pgbouncer.pgbouncer }}/pgbouncer-${{ matrix.pgbouncer.pgbouncer }}.tar.gz
           tar xzf pgbouncer-${{ matrix.pgbouncer.pgbouncer }}.tar.gz
           cd pgbouncer-${{ matrix.pgbouncer.pgbouncer }}
@@ -92,7 +95,7 @@ jobs:
           rm -rf pgbouncer-${{ matrix.pgbouncer.pgbouncer }}
       - name: Set up golang ${{ matrix.postgres.golang }}
         if: matrix.os.matrix == 'linux'
-        uses: actions/setup-go@v6
+        uses: actions/setup-go@v7
         with:
           go-version: ${{ matrix.postgres.golang }}
       - name: Set up revive ${{ matrix.postgres.revive }}
@@ -115,7 +118,7 @@ jobs:
           pgbouncer --version
           postgres --version
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
       - name: Copy test environment script
         if: matrix.os.matrix == 'linux'
         run: |
@@ -128,21 +131,17 @@ jobs:
         run: git config --global --add safe.directory /__w/pgscv/pgscv
       - name: Check code modernization
         run: make modernize-check
+      - name: Check code govulncheck
+        run: make govulncheck
       - name: Run tests
         run: make test
-      - name: Install govulncheck
-        run: go install golang.org/x/vuln/cmd/govulncheck@latest
-      - name: Run govulncheck
-        run: govulncheck ./...
 
-
-  build:
-    if: github.ref == 'refs/heads/release'
+  docker:
     runs-on: ubuntu-24.04
     needs: test
     steps:
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
       - name: Set docker environment
@@ -159,7 +158,16 @@ jobs:
           echo "Current version: ${LATEST_TAG#v}"
       - name: Lint Dockerfile
         run: make docker-lint
-      - name: Set up QEMU (enables multi-arch emulation)
+      - name: Set up Docker meta
+        id: meta
+        uses: docker/metadata-action@v6
+        with:
+          images: ${{ steps.docker.outputs.DOCKERHUB_USERNAME }}/pgscv
+          tags: |
+            type=raw,value=${{ steps.version.outputs.CURRENT_VERSION }}
+      - name: Set up Cosign
+        uses: sigstore/cosign-installer@v4.1.2
+      - name: Set up QEMU
         uses: docker/setup-qemu-action@v4
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v4
@@ -171,32 +179,49 @@ jobs:
           password: ${{ steps.docker.outputs.DOCKERHUB_TOKEN }}
       - name: Build and push image
         if: ${{ steps.docker.outputs.DOCKERHUB_USERNAME != '' && steps.docker.outputs.DOCKERHUB_TOKEN != '' }}
+        id: build-and-push
         uses: docker/build-push-action@v7
         with:
           context: .
           file: ./Dockerfile
           push: true
-          platforms: linux/amd64,linux/arm64
-          tags: |
-            ${{ steps.docker.outputs.DOCKERHUB_USERNAME }}/pgscv:${{ steps.version.outputs.CURRENT_VERSION }}
+          platforms: linux/386,linux/amd64,linux/arm,linux/arm64
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          outputs: type=image,name=target,annotation-index.org.opencontainers.image.description=pgSCV is a PostgreSQL ecosystem metrics collector
+      - name: Sign image with a cosign
+        if: ${{ steps.docker.outputs.DOCKERHUB_USERNAME != '' && steps.docker.outputs.DOCKERHUB_TOKEN != '' }}
+        run: |
+          images=""
+          for tag in ${TAGS}; do
+            images+="${tag}@${DIGEST} "
+          done
+          cosign sign --yes --key env://COSIGN_PRIVATE_KEY ${images}
+        env:
+          TAGS: ${{ steps.meta.outputs.tags }}
+          COSIGN_PRIVATE_KEY: ${{ secrets.COSIGN_PRIVATE_KEY }}
+          COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}
+          DIGEST: ${{ steps.build-and-push.outputs.digest }}
 
   goreleaser:
-    if: github.ref == 'refs/heads/release'
     runs-on: ubuntu-24.04
-    needs: build
+    needs: docker
     steps:
       - name: Run checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
-      - name: Run setup Go
-        uses: actions/setup-go@v6
+      - name: Set up Go
+        uses: actions/setup-go@v7
         with:
-          go-version: 1.26
+          go-version-file: go.mod
+          check-latest: true
+      - name: Install Cosign
+        uses: sigstore/cosign-installer@v4.1.2
       - name: Run GoReleaser
         uses: goreleaser/goreleaser-action@v7
         with:
           version: '~> v2'
-          args: release --clean
+          args: release --clean --verbose
         env:
           GITHUB_TOKEN: ${{ secrets.CUSTOM_GITHUB_TOKEN }}

@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 
 PG_VER=${1:-"18"}
-PGB_VERSION=${2:-"1.25.1"}
-GO_VERSION="1.26.4"
-REVIVE_VERSION="1.14.0"
-GOSEC_VERSION="2.23.0"
+PGB_VERSION=${2:-"1.25.2"}
+GO_VERSION="1.26.5"
+REVIVE_VERSION="1.15.0"
+GOSEC_VERSION="2.28.0"
 
 # Don't edit this config
 SOURCE="${BASH_SOURCE[0]}"

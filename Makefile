@@ -1,4 +1,7 @@
 DOCKER_ACCOUNT = cherts
+DOCKER_BUILD_PLATFORM ?= linux/amd64
+DOCKER_PLATFORMS ?= linux/amd64,linux/arm64
+DOCKER_BUILDX_BUILDER ?= pgscv-builder
 APPNAME = pgscv
 
 OS_NAME := $(shell uname -s | tr A-Z a-z)
@@ -31,16 +34,21 @@ endif
 BRANCH=$(shell git rev-parse --abbrev-ref HEAD)
 
 VERSION_BETA=1.0-$(BRANCH)-$(COMMIT)-$(DATE)-beta
+SANITIZED_BETA_TAG := $(subst release/1.0,1.0,$(VERSION_BETA))
+SANITIZED_BETA_TAG := $(subst /,-,$(SANITIZED_BETA_TAG))
 
 LDFLAGS = -a -installsuffix cgo -ldflags "-X main.appName=${APPNAME} -X main.gitTag=${VERSION} -X main.gitCommit=${COMMIT} -X main.gitBranch=${BRANCH}"
 LDFLAGS_BETA = -a -installsuffix cgo -ldflags "-X main.appName=${APPNAME} -X main.gitTag=${VERSION_BETA} -X main.gitCommit=${COMMIT} -X main.gitBranch=${BRANCH}"
 
 MODERNIZE_CMD = go run golang.org/x/tools/go/analysis/passes/modernize/cmd/modernize@latest
+GOVULNCHECK_INSTALL_CMD = go install golang.org/x/vuln/cmd/govulncheck@latest
+YQ_INSTALL_CMD = go install github.com/mikefarah/yq/v4@latest
+GOVULNCHECK_RUN_CMD = testing/govulncheck-wrapper.sh
 
 .PHONY: help \
 		clean lint test race \
 		build docker-lint docker-build docker-push go-update \
-		modernize modernize-fix modernize-check
+		modernize modernize-fix modernize-check govulncheck
 
 .DEFAULT_GOAL := help
 
@@ -82,28 +90,29 @@ build: dep ## Build
 
 build-beta: dep ## Build beta
 	mkdir -p ./bin
-	CGO_ENABLED=0 GOOS=${GOOS} GOARCH=${GOARCH} go build ${LDFLAGS_BETA} -o bin/${APPNAME} ./cmd
+	CGO_ENABLED=0 GOOS=${GOOS} GOARCH=${GOARCH} go build ${LDFLAGS_BETA} -o bin/${APPNAME}${APPEXT} ./cmd
 
 docker-lint: ## Lint Dockerfile
 	@echo "Lint container Dockerfile"
 	docker run --rm -i -v $(PWD)/Dockerfile:/Dockerfile \
 	hadolint/hadolint hadolint --ignore DL3002 --ignore DL3008 --ignore DL3059 /Dockerfile
 
-docker-build: ## Build docker image
-	docker build -t ${DOCKER_ACCOUNT}/${APPNAME}:${TAG} .
-	docker image prune --force --filter label=stage=intermediate
-	docker tag ${DOCKER_ACCOUNT}/${APPNAME}:${TAG} ${DOCKER_ACCOUNT}/${APPNAME}:latest
+docker-buildx-setup: ## Setup docker buildx builder
+	docker buildx inspect $(DOCKER_BUILDX_BUILDER) > /dev/null || docker buildx create --name $(DOCKER_BUILDX_BUILDER)
+	docker buildx use $(DOCKER_BUILDX_BUILDER)
+	docker buildx inspect --bootstrap > /dev/null
+
+docker-build: docker-buildx-setup ## Build docker image
+	docker buildx build --no-cache --platform $(DOCKER_BUILD_PLATFORM) --tag ${DOCKER_ACCOUNT}/${APPNAME}:${TAG} --file ./Dockerfile --load .
 
 docker-push: ## Push docker image
-	docker push ${DOCKER_ACCOUNT}/${APPNAME}:${TAG}
-	docker push ${DOCKER_ACCOUNT}/${APPNAME}:latest
+	docker buildx build --no-cache --platform $(DOCKER_PLATFORMS) --tag $(DOCKER_ACCOUNT)/${APPNAME}:${TAG} --file ./Dockerfile --push .
 
-docker-build-beta: ## Build docker image (beta)
-	docker build -t ${DOCKER_ACCOUNT}/${APPNAME}:v${VERSION_BETA} .
-	docker image prune --force --filter label=stage=intermediate
+docker-build-beta: docker-buildx-setup ## Build docker image (beta)
+	docker buildx build --no-cache --platform $(DOCKER_BUILD_PLATFORM) --tag ${DOCKER_ACCOUNT}/${APPNAME}:v${VERSION_BETA} --file ./Dockerfile.beta --load .
 
 docker-push-beta: ## Push docker image (beta)
-	docker push ${DOCKER_ACCOUNT}/${APPNAME}:v${VERSION_BETA}
+	docker buildx build --no-cache --platform $(DOCKER_PLATFORMS) --tag $(DOCKER_ACCOUNT)/${APPNAME}:v${VERSION_BETA} --file ./Dockerfile.beta --push .
 
 modernize: modernize-fix ## Run gopls modernize check and fix
 
@@ -116,3 +125,10 @@ modernize-check: ## Run gopls modernize only check
 	@echo "Checking if code needs modernization..."
 	go env -w GOFLAGS="-buildvcs=false"
 	$(MODERNIZE_CMD) -test ./...
+
+govulncheck: ## Run go vulnerability check
+	@echo "Running go vulnerability check..."
+	go env -w GOFLAGS="-buildvcs=false"
+	$(GOVULNCHECK_INSTALL_CMD)
+	$(YQ_INSTALL_CMD)
+	$(GOVULNCHECK_RUN_CMD) --config testing/.govulncheck-ignore.yaml --verbose

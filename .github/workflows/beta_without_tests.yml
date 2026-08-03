@@ -1,0 +1,122 @@
+---
+name: Beta-without-tests
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+  packages: write
+  attestations: write
+
+jobs:
+  docker:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - name: Set environment
+        id: version
+        run: |
+          echo VERSION="1.0" >>$GITHUB_OUTPUT
+          echo GIT_BRANCH="${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}" >>$GITHUB_OUTPUT
+          echo GIT_COMMIT="$(git rev-parse --short "${GITHUB_SHA}")" >>$GITHUB_OUTPUT
+          echo GIT_DATE="$(git log -1 --format=%cd --date=format:"%Y%m%d")" >>$GITHUB_OUTPUT
+      - name: Set DockerHub environment
+        id: dockerhub
+        run: |
+          echo DOCKERHUB_USERNAME="${{ secrets.DOCKERHUB_USERNAME }}" >>$GITHUB_OUTPUT
+          echo DOCKERHUB_TOKEN="${{ secrets.DOCKERHUB_TOKEN }}" >>$GITHUB_OUTPUT
+      - name: Set up Docker meta
+        id: meta
+        uses: docker/metadata-action@v6
+        with:
+          images: |
+            ghcr.io/${{ github.repository }}
+            cherts/pgscv
+          tags: |
+            type=raw,value=v${{ steps.version.outputs.VERSION }}-${{ steps.version.outputs.GIT_BRANCH }}-${{ steps.version.outputs.GIT_COMMIT }}-${{ steps.version.outputs.GIT_DATE }}-beta
+      - name: Set up Cosign
+        uses: sigstore/cosign-installer@v4.1.2
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v4
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
+      - name: Login to GHCR registry
+        uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Login to DockerHub registry
+        if: ${{ steps.dockerhub.outputs.DOCKERHUB_USERNAME != '' && steps.dockerhub.outputs.DOCKERHUB_TOKEN != '' }}
+        uses: docker/login-action@v4
+        with:
+          username: ${{ steps.dockerhub.outputs.DOCKERHUB_USERNAME }}
+          password: ${{ steps.dockerhub.outputs.DOCKERHUB_TOKEN }}
+      - name: Build and push
+        if: ${{ steps.dockerhub.outputs.DOCKERHUB_USERNAME != '' && steps.dockerhub.outputs.DOCKERHUB_TOKEN != '' }}
+        id: build-and-push
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          file: ./Dockerfile.beta
+          platforms: linux/386,linux/amd64,linux/arm,linux/arm64
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          outputs: type=image,name=target,annotation-index.org.opencontainers.image.description=pgSCV is a PostgreSQL ecosystem metrics collector
+      - name: Sign image with a cosign
+        if: ${{ steps.dockerhub.outputs.DOCKERHUB_USERNAME != '' && steps.dockerhub.outputs.DOCKERHUB_TOKEN != '' }}
+        run: |
+          images=""
+          for tag in ${TAGS}; do
+            images+="${tag}@${DIGEST} "
+          done
+          cosign sign --yes --key env://COSIGN_PRIVATE_KEY ${images}
+        env:
+          TAGS: ${{ steps.meta.outputs.tags }}
+          COSIGN_PRIVATE_KEY: ${{ secrets.COSIGN_PRIVATE_KEY }}
+          COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}
+          DIGEST: ${{ steps.build-and-push.outputs.digest }}
+      - name: Generate artifact attestation
+        uses: actions/attest-build-provenance@v4
+        id: attest
+        with:
+          subject-name: ghcr.io/${{ github.repository }}
+          subject-digest: ${{ steps.build-and-push.outputs.digest }}
+          push-to-registry: true
+      - name: Cleanup registry
+        uses: actions/delete-package-versions@v5
+        with:
+          owner: ${{ github.repository_owner }}
+          package-name: 'pgscv'
+          package-type: container
+          min-versions-to-keep: 10
+#          delete-only-untagged-versions: 'true'
+
+  goreleaser:
+    runs-on: ubuntu-24.04
+    needs: docker
+    steps:
+      - name: Run checkout
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - name: Set up Go
+        uses: actions/setup-go@v7
+        with:
+          go-version-file: go.mod
+          check-latest: true
+      - name: Set up Cosign
+        uses: sigstore/cosign-installer@v4.1.2
+      - name: Run GoReleaser
+        uses: goreleaser/goreleaser-action@v7
+        with:
+          version: '~> v2'
+          args: release --snapshot --clean --skip=publish --verbose
+        env:
+          GITHUB_TOKEN: ${{ secrets.CUSTOM_GITHUB_TOKEN }}

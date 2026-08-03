@@ -1,3 +1,5 @@
+version: 2
+
 project_name: pgscv
 
 before:
@@ -5,13 +7,9 @@ before:
     - make dep
 
 builds:
-  - binary: pgscv
+  - id: pgscv
+    binary: pgscv
     main: ./cmd
-    goarch:
-      - '386'
-      - amd64
-      - arm64
-      - arm
     goos:
       - linux
       - windows
@@ -20,12 +18,11 @@ builds:
     ignore:
       - goarch: '386'
         goos: windows
-    #  - goarch: arm
-    #    goos: windows
-    #  - goarch: arm64
-    #    goos: windows
-    #  - goarch: arm64
-    #    goos: freebsd
+    goarch:
+      - '386'
+      - amd64
+      - arm64
+      - arm
     env:
       - CGO_ENABLED=0
     ldflags:
@@ -33,7 +30,12 @@ builds:
       - -X main.appName=pgscv -X main.gitTag={{.Tag}} -X main.gitCommit={{.Commit}} -X main.gitBranch={{.Branch}}
 
 archives:
-  - builds: [pgscv]
+  - id: pgscv
+    ids: [pgscv]
+    formats: ["tar.gz"]
+#    format_overrides:
+#      - goos: windows
+#        formats: [zip]
     builds_info:
       group: root
       owner: root
@@ -52,6 +54,18 @@ archives:
           owner: root
           group: root
           mode: 0644
+      - src: "deploy/pgscv.service.rhel"
+        strip_parent: true
+        info:
+          owner: root
+          group: root
+          mode: 0644
+      - src: "deploy/pgscv.openrc"
+        strip_parent: true
+        info:
+          owner: root
+          group: root
+          mode: 0755
       - src: "deploy/pgscv.default"
         strip_parent: true
         info:
@@ -69,15 +83,79 @@ archives:
 
 changelog:
   sort: asc
+  filters:
+    exclude:
+      - "^docs:"
+      - "^test:"
+      - "^chore:"
+      - "Merge pull request"
+      - "Merge branch"
+
+source:
+  enabled: true
+  name_template: "{{ .ProjectName }}-{{ .Version }}-source"
+  format: tar.gz
 
 checksum:
   name_template: 'checksums.txt'
 
 nfpms:
-  - vendor: pgscv
+  - id: pgscv-deb-rpm
+    package_name: pgscv
+    file_name_template: "{{ .ConventionalFileName }}"
+    ids: [pgscv]
+    vendor: "pgSCV Team"
     homepage: https://github.com/cherts/pgscv
-    maintainer: Mikhail Grigorev
+    maintainer: "Mikhail Grigorev <sleuthhound@gmail.com>"
     description: pgSCV - PostgreSQL ecosystem metrics collector.
     license: BSD-3
-    formats: []
+    section: database
+    priority: optional
+    formats: [deb, rpm, apk]
     bindir: /usr/sbin
+    contents:
+      - src: deploy/pgscv.service
+        dst: /usr/lib/systemd/system/pgscv.service
+        packager: deb
+      - src: deploy/pgscv.service.rhel
+        dst: /usr/lib/systemd/system/pgscv.service
+        packager: rpm
+      - src: deploy/pgscv.openrc
+        dst: /etc/init.d/pgscv
+        packager: apk
+      - src: deploy/pgscv.default
+        dst: /etc/default/pgscv
+        type: "config|noreplace"
+        packager: deb
+      - src: deploy/pgscv.default
+        dst: /etc/sysconfig/pgscv
+        type: "config|noreplace"
+        packager: rpm
+      - src: LICENSE
+        dst: /usr/share/doc/pgscv/LICENSE
+      - src: README.md
+        dst: /usr/share/doc/pgscv/README.md
+      - src: deploy/pgscv.yaml
+        dst: /etc/pgscv.yaml
+        type: "config|noreplace"
+        file_info:
+          mode: 0640
+    scripts:
+      preinstall: deploy/scripts/preinstall.sh
+      postinstall: deploy/scripts/postinstall.sh
+      preremove: deploy/scripts/preremove.sh
+      postremove: deploy/scripts/postremove.sh
+    apk:
+      scripts:
+        preupgrade: deploy/scripts/preinstall.sh
+        postupgrade: deploy/scripts/postinstall.sh
+
+release:
+  github:
+    owner: cherts
+    name: pgscv
+  draft: false
+  prerelease: auto
+  name_template: "v{{ .Version }}"
+  header: |
+    ## pgSCV v{{ .Version }}

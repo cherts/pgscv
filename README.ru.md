@@ -91,6 +91,9 @@ kubectl create ns pgscv-ns
 helm install -n pgscv-ns pgscv deploy/helm-chart/
 ```
 
+### Проверка подписей образов Docker
+Смотри файл [COSIGN.md](COSIGN.md)
+
 ### Полная настройка
 Полная настройка описана в [руководстве](https://github.com/cherts/pgscv/wiki/Setup-for-regular-users).
 
