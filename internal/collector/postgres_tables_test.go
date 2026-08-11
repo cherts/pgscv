@@ -20,6 +20,7 @@ func TestPostgresTablesCollector_Update(t *testing.T) {
 			"postgres_table_tuples_inserted_total",
 			"postgres_table_tuples_updated_total",
 			"postgres_table_tuples_hot_updated_total",
+			"postgres_table_tuples_new_page_updated_total",
 			"postgres_table_tuples_deleted_total",
 			"postgres_table_tuples_live_total",
 			"postgres_table_tuples_dead_total",
