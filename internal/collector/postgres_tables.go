@@ -113,7 +113,7 @@ const (
 		"LEFT JOIN pg_locked l ON l.relation = s1.relid " +
 		"WHERE l.relation IS NULL) " +
 		"SELECT current_database() AS database, schema, \"table\", seq_scan, seq_tup_read, idx_scan, idx_tup_fetch, n_tup_ins, n_tup_upd, n_tup_del, " +
-		"n_tup_hot_upd, n_live_tup, n_dead_tup, n_mod_since_analyze, last_vacuum_seconds, last_analyze_seconds, last_vacuum_time, last_analyze_time, " +
+		"n_tup_hot_upd, n_tup_newpage_upd, n_live_tup, n_dead_tup, n_mod_since_analyze, last_vacuum_seconds, last_analyze_seconds, last_vacuum_time, last_analyze_time, " +
 		"vacuum_count, autovacuum_count, analyze_count, autoanalyze_count, heap_blks_read, heap_blks_hit, idx_blks_read, idx_blks_hit, toast_blks_read, " +
 		"toast_blks_hit, tidx_blks_read, tidx_blks_hit, size_bytes, reltuples FROM stat WHERE visible UNION ALL (SELECT current_database() AS database, " +
 		"'all_shemas', 'all_other_tables', NULLIF(SUM(COALESCE(seq_scan,0)),0), NULLIF(SUM(COALESCE(seq_tup_read,0)),0), NULLIF(SUM(COALESCE(idx_scan,0)),0), " +
