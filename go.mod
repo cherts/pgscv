@@ -20,7 +20,7 @@ require (
 	github.com/yandex-cloud/go-genproto v0.102.0
 	github.com/yandex-cloud/go-sdk v0.32.0
 	golang.org/x/time v0.15.0
-	google.golang.org/protobuf v1.36.11
+	google.golang.org/protobuf v1.36.12
 )
 
 require (
