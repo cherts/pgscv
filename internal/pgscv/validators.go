@@ -1,6 +1,8 @@
 package pgscv
 
 import (
+	"reflect"
+
 	"github.com/cherts/pgscv/internal/cache"
 	"github.com/cherts/pgscv/internal/log"
 	"github.com/go-playground/validator/v10"
@@ -13,7 +15,7 @@ const (
 
 func registerCustomValidators(v *validator.Validate) {
 	_ = v.RegisterValidation(poolConfigValidator, func(fl validator.FieldLevel) bool {
-		poolConfig, ok := fl.Field().Interface().(PoolConfig)
+		poolConfig, ok := reflect.TypeAssert[PoolConfig](fl.Field())
 		if !ok {
 			return false
 		}
