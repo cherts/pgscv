@@ -2,13 +2,11 @@
 package collector
 
 import (
-	"bufio"
-	"fmt"
-	"io"
 	"os"
 	"strings"
 
 	"github.com/cherts/pgscv/internal/log"
+	"github.com/shirou/gopsutil/v4/disk"
 )
 
 // mount describes properties of mounted filesystems
@@ -16,36 +14,28 @@ type mount struct {
 	device     string
 	mountpoint string
 	fstype     string
-	options    string
+	options    []string
 }
 
-// parseProcMounts parses /proc/mounts and returns slice of mounted filesystems properties.
-func parseProcMounts(r io.Reader) ([]mount, error) {
+// parseMounts parses disk partition info and returns slice of mounted filesystems properties.
+func parseMounts(r []disk.PartitionStat) ([]mount, error) {
 	log.Debug("parse mounted filesystems")
 	var (
-		scanner = bufio.NewScanner(r)
-		mounts  []mount
+		mounts []mount
 	)
 
 	// Parse line by line, split line to param and value, parse the value to float and save to store.
-	for scanner.Scan() {
-		parts := strings.Fields(scanner.Text())
-
-		if len(parts) != 6 {
-			return nil, fmt.Errorf("invalid input: '%s', skip", scanner.Text())
-		}
-
+	for _, diskData := range r {
 		s := mount{
-			device:     parts[0],
-			mountpoint: parts[1],
-			fstype:     parts[2],
-			options:    parts[3],
+			device:     diskData.Device,
+			mountpoint: diskData.Mountpoint,
+			fstype:     diskData.Fstype,
+			options:    diskData.Opts,
 		}
-
 		mounts = append(mounts, s)
 	}
 
-	return mounts, scanner.Err()
+	return mounts, nil
 }
 
 // truncateDeviceName truncates passed full path to device to short device name.

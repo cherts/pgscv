@@ -18,7 +18,7 @@ This project is a continuation of the development of the original pgSCV by [Alex
 
 ### Features
 - **Supported services:** support collecting metrics of PostgreSQL, Pgbouncer and Patroni.
-- **OS metrics:** support collecting metrics of operating system (only Linux).
+- **OS metrics:** support collecting metrics of operating system (Linux, Windows, MacOS, FreeBSD).
 - **Discovery and monitoring Cloud Managed Databases:** Yandex Managed Service for PostgreSQL ([see documentation](https://github.com/cherts/pgscv/wiki/Monitoring-Cloud-Managed-Databases)).
 - **Support Prometheus service discovery.** `/targets` endpoint is used to discover all monitoring services ([see documentation](https://github.com/cherts/pgscv/wiki/Service-discovery))
 - **Concurrency limitting support** It is possible to limit the parallel collection of monitoring data from the database to control the load created by the exporter. ([see documentation](https://github.com/cherts/pgscv/wiki/Concurrency)).
@@ -30,7 +30,8 @@ This project is a continuation of the development of the original pgSCV by [Alex
 - **Automatic reload service configuration**. Regular configuration reload or manual via `/flush-services-config` endpoint ([see documentation](https://github.com/cherts/pgscv/wiki/Automatic-reload-service-configuration)).
 
 ### Requirements
-- Can run on Linux only; can connect to remote services running on other OS/PaaS.
+- Can run on Linux, Windows, MacOS, FreeBSD only.
+- Can connect to remote services running on other OS/PaaS.
 - Requisites for connecting to the services, such as login and password.
 - Database user should have privileges for executing stats functions and reading views.
   For more details see [security considerations](https://github.com/cherts/pgscv/wiki/Security-considerations).
