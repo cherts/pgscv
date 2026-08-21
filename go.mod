@@ -17,7 +17,7 @@ require (
 
 require (
 	github.com/go-playground/validator/v10 v10.30.3
-	github.com/yandex-cloud/go-genproto v0.113.0
+	github.com/yandex-cloud/go-genproto v0.114.0
 	github.com/yandex-cloud/go-sdk v0.33.0
 	golang.org/x/time v0.15.0
 	google.golang.org/protobuf v1.36.12
@@ -49,9 +49,9 @@ require (
 	github.com/xhit/go-str2duration/v2 v2.1.0 // indirect
 	go.yaml.in/yaml/v3 v3.0.5 // indirect
 	golang.org/x/text v0.41.0 // indirect
-	google.golang.org/genproto v0.0.0-20260810153831-ec0a7760b754 // indirect
-	google.golang.org/genproto/googleapis/api v0.0.0-20260810153831-ec0a7760b754 // indirect
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20260810153831-ec0a7760b754 // indirect
-	google.golang.org/grpc v1.83.0 // indirect
+	google.golang.org/genproto v0.0.0-20260819154853-08b0e4226688 // indirect
+	google.golang.org/genproto/googleapis/api v0.0.0-20260819154853-08b0e4226688 // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20260819154853-08b0e4226688 // indirect
+	google.golang.org/grpc v1.83.1 // indirect
 	gopkg.in/tomb.v1 v1.0.0-20141024135613-dd632973f1e7 // indirect
 )
