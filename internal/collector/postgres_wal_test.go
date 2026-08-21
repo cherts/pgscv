@@ -2,10 +2,10 @@ package collector
 
 import (
 	"database/sql"
-	"github.com/jackc/pgx/v5/pgconn"
 	"testing"
 
 	"github.com/cherts/pgscv/internal/model"
+	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -26,6 +26,7 @@ func TestPostgresWalCollector_Update(t *testing.T) {
 			"postgres_wal_sync_total",
 			"postgres_wal_seconds_total",
 			"postgres_wal_seconds_all_total",
+			"postgres_wal_fpi_bytes_total",
 		},
 		collector: NewPostgresWalCollector,
 		service:   model.ServiceTypePostgresql,
@@ -40,6 +41,30 @@ func Test_parsePostgresWalStats(t *testing.T) {
 		res  *model.PGResult
 		want map[string]float64
 	}{
+		{
+			name: "pg19",
+			res: &model.PGResult{
+				Nrows: 1,
+				Ncols: 8,
+				Colnames: []pgconn.FieldDescription{
+					{Name: "recovery"}, {Name: "recovery_paused"},
+					{Name: "wal_records"}, {Name: "wal_fpi"}, {Name: "wal_bytes"}, {Name: "wal_fpi_bytes"},
+					{Name: "wal_written"}, {Name: "wal_buffers_full"}, {Name: "reset_time"},
+				},
+				Rows: [][]sql.NullString{
+					{
+						{String: "0", Valid: true}, {String: "0", Valid: true},
+						{String: "58452", Valid: true}, {String: "4712", Valid: true}, {String: "587241", Valid: true}, {String: "38600704", Valid: true},
+						{String: "8746951", Valid: true}, {String: "1234", Valid: true}, {String: "123456789", Valid: true},
+					},
+				},
+			},
+			want: map[string]float64{
+				"recovery": 0, "recovery_paused": 0,
+				"wal_records": 58452, "wal_fpi": 4712, "wal_bytes": 587241, "wal_fpi_bytes": 38600704,
+				"wal_written": 8746951, "wal_buffers_full": 1234, "reset_time": 123456789,
+			},
+		},
 		{
 			name: "pg18",
 			res: &model.PGResult{
@@ -125,7 +150,8 @@ func Test_selectWalQuery(t *testing.T) {
 		{version: 130005, want: postgresWalQuery13},
 		{version: 140005, want: postgresWalQuery17},
 		{version: 170005, want: postgresWalQuery17},
-		{version: 180000, want: postgresWalQueryLatest},
+		{version: 180000, want: postgresWalQuery18},
+		{version: 190000, want: postgresWalQueryLatest},
 	}
 
 	for _, tc := range testcases {
