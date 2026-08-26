@@ -254,7 +254,9 @@ func collectSchemaInvalidIndexes(conn *store.DB, ch chan<- prometheus.Metric, de
 func getSchemaInvalidIndexes(conn *store.DB) (map[string]postgresGenericStat, error) {
 	var query = "SELECT c1.relnamespace::regnamespace::text AS schema, c2.relname AS table, c1.relname AS index, " +
 		"pg_relation_size(i.indexrelid) AS bytes " +
-		"FROM pg_index i JOIN pg_class c1 ON i.indexrelid = c1.oid JOIN pg_class c2 ON i.indrelid = c2.oid WHERE NOT i.indisvalid"
+		"FROM pg_index i JOIN pg_class c1 ON i.indexrelid = c1.oid JOIN pg_class c2 ON i.indrelid = c2.oid " +
+		"WHERE NOT i.indisvalid " +
+		"AND NOT EXISTS (SELECT 1 FROM pg_locks l WHERE l.relation = i.indexrelid AND l.mode = 'AccessExclusiveLock')"
 	res, err := conn.Query(query)
 	if err != nil {
 		return nil, err
