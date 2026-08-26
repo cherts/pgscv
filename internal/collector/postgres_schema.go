@@ -379,7 +379,9 @@ func getSchemaRedundantIndexes(conn *store.DB) (map[string]postgresGenericStat, 
 		`AND (regexp_replace(i1.indexprs, 'location \\d+', 'location', 'g') IS NOT DISTINCT FROM regexp_replace(i2.indexprs, 'location \\d+', 'location', 'g')) ` +
 		"AND ((i1.nkeys > i2.nkeys AND NOT i2.indisunique) OR (i1.nkeys = i2.nkeys AND ((i1.indisunique AND i2.indisunique AND (i1.indexrelid>i2.indexrelid)) " +
 		"OR (NOT i1.indisunique AND NOT i2.indisunique AND (i1.indexrelid>i2.indexrelid)) " +
-		"OR (i1.indisunique AND NOT i2.indisunique)))) AND i1.key_array[1:i2.nkeys]=i2.key_array"
+		"OR (i1.indisunique AND NOT i2.indisunique)))) AND i1.key_array[1:i2.nkeys]=i2.key_array " +
+		"AND i1.indisvalid AND i2.indisvalid " +
+		"AND NOT EXISTS (SELECT 1 FROM pg_locks l WHERE l.relation = i2.indexrelid AND l.mode = 'AccessExclusiveLock')"
 
 	res, err := conn.Query(query)
 	if err != nil {
