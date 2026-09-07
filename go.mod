@@ -16,7 +16,7 @@ require (
 )
 
 require (
-	github.com/go-playground/validator/v10 v10.30.3
+	github.com/go-playground/validator/v10 v10.30.4
 	github.com/yandex-cloud/go-genproto v0.116.0
 	github.com/yandex-cloud/go-sdk v0.33.0
 	golang.org/x/time v0.15.0
