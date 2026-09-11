@@ -13,6 +13,29 @@ import (
 	"golang.org/x/net/context"
 )
 
+const (
+	// schemaInvalidIndexesQuery11 defines query for searching invalid indexes for versions prior 12.
+	//
+	// Indexes locked in AccessExclusiveLock mode (DROP INDEX, REINDEX, etc. in progress) are skipped, because
+	// pg_relation_size() opens the index with AccessShareLock and waits until the lock is released - such wait
+	// hangs the whole collector.
+	schemaInvalidIndexesQuery11 = "SELECT c1.relnamespace::regnamespace::text AS schema, c2.relname AS table, c1.relname AS index, " +
+		"pg_relation_size(i.indexrelid) AS bytes " +
+		"FROM pg_index i JOIN pg_class c1 ON i.indexrelid = c1.oid JOIN pg_class c2 ON i.indrelid = c2.oid " +
+		"WHERE NOT i.indisvalid " +
+		"AND NOT EXISTS (SELECT 1 FROM pg_locks l WHERE l.relation = i.indexrelid AND l.mode = 'AccessExclusiveLock')"
+
+	// schemaInvalidIndexesQuery12 defines query for searching invalid indexes for versions 12 and newer.
+	//
+	// CREATE INDEX CONCURRENTLY and REINDEX CONCURRENTLY create a transient index (with '_ccnew' suffix in case of
+	// reindex) which stays invalid until the command is finished. Such indexes are not a problem, but produce
+	// short-living flapping metrics, hence indexes which are being built at the moment are skipped. Indexes left over
+	// after *failed* concurrent builds are still reported - no progress entry is associated with them anymore.
+	// Note, pg_stat_progress_create_index view is available since Postgres 12.
+	schemaInvalidIndexesQuery12 = schemaInvalidIndexesQuery11 +
+		" AND NOT EXISTS (SELECT 1 FROM pg_stat_progress_create_index p WHERE p.index_relid = i.indexrelid OR p.relid = i.indrelid)"
+)
+
 // postgresSchemaCollector defines metric descriptors and stats store.
 type postgresSchemaCollector struct {
 	syscatalog   typedDesc
@@ -95,7 +118,7 @@ func (c *postgresSchemaCollector) Update(config Config, ch chan<- prometheus.Met
 		}
 
 		// 3. collect metrics related to invalid indexes.
-		collectSchemaInvalidIndexes(conn, ch, c.invalididx)
+		collectSchemaInvalidIndexes(conn, ch, c.invalididx, config.pgVersion.Numeric)
 
 		// 4. collect metrics related to non indexed foreign key constraints.
 		collectSchemaNonIndexedFK(conn, ch, c.nonidxfkey)
@@ -225,9 +248,9 @@ func getSchemaNonPKTables(conn *store.DB) ([]string, error) {
 }
 
 // collectSchemaInvalidIndexes collects metrics related to invalid indexes.
-func collectSchemaInvalidIndexes(conn *store.DB, ch chan<- prometheus.Metric, desc typedDesc) {
+func collectSchemaInvalidIndexes(conn *store.DB, ch chan<- prometheus.Metric, desc typedDesc, version int) {
 	database := conn.Conn().Config().Database
-	stats, err := getSchemaInvalidIndexes(conn)
+	stats, err := getSchemaInvalidIndexes(conn, version)
 	if err != nil {
 		log.Errorf("get invalid indexes stats of database %s failed: %s; skip", database, err)
 		return
@@ -251,16 +274,21 @@ func collectSchemaInvalidIndexes(conn *store.DB, ch chan<- prometheus.Metric, de
 }
 
 // getSchemaInvalidIndexes searches invalid indexes in the database and return its names if such indexes have been found.
-func getSchemaInvalidIndexes(conn *store.DB) (map[string]postgresGenericStat, error) {
-	var query = "SELECT c1.relnamespace::regnamespace::text AS schema, c2.relname AS table, c1.relname AS index, " +
-		"pg_relation_size(i.indexrelid) AS bytes " +
-		"FROM pg_index i JOIN pg_class c1 ON i.indexrelid = c1.oid JOIN pg_class c2 ON i.indrelid = c2.oid WHERE NOT i.indisvalid"
-	res, err := conn.Query(query)
+func getSchemaInvalidIndexes(conn *store.DB, version int) (map[string]postgresGenericStat, error) {
+	res, err := conn.Query(selectSchemaInvalidIndexesQuery(version))
 	if err != nil {
 		return nil, err
 	}
 
 	return parsePostgresGenericStats(res, []string{"schema", "table", "index"}), nil
+}
+
+// selectSchemaInvalidIndexesQuery returns suitable invalid indexes query depending on passed version.
+func selectSchemaInvalidIndexesQuery(version int) string {
+	if version < PostgresV12 {
+		return schemaInvalidIndexesQuery11
+	}
+	return schemaInvalidIndexesQuery12
 }
 
 // collectSchemaNonIndexedFK collects metrics related to non indexed foreign key constraints.
@@ -351,7 +379,9 @@ func getSchemaRedundantIndexes(conn *store.DB) (map[string]postgresGenericStat, 
 		`AND (regexp_replace(i1.indexprs, 'location \\d+', 'location', 'g') IS NOT DISTINCT FROM regexp_replace(i2.indexprs, 'location \\d+', 'location', 'g')) ` +
 		"AND ((i1.nkeys > i2.nkeys AND NOT i2.indisunique) OR (i1.nkeys = i2.nkeys AND ((i1.indisunique AND i2.indisunique AND (i1.indexrelid>i2.indexrelid)) " +
 		"OR (NOT i1.indisunique AND NOT i2.indisunique AND (i1.indexrelid>i2.indexrelid)) " +
-		"OR (i1.indisunique AND NOT i2.indisunique)))) AND i1.key_array[1:i2.nkeys]=i2.key_array"
+		"OR (i1.indisunique AND NOT i2.indisunique)))) AND i1.key_array[1:i2.nkeys]=i2.key_array " +
+		"AND i1.indisvalid AND i2.indisvalid " +
+		"AND NOT EXISTS (SELECT 1 FROM pg_locks l WHERE l.relation = i2.indexrelid AND l.mode = 'AccessExclusiveLock')"
 
 	res, err := conn.Query(query)
 	if err != nil {
