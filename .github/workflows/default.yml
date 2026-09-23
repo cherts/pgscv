@@ -48,6 +48,8 @@ jobs:
 #            runs-on: macos-latest
 #            matrix: macos
         pgbouncer:
+          - name: PgBouncer v1.26
+            pgbouncer: 1.26.0
           - name: PgBouncer v1.25
             pgbouncer: 1.25.2
 #          - name: PgBouncer v1.24
