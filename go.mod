@@ -16,9 +16,9 @@ require (
 )
 
 require (
-	github.com/go-playground/validator/v10 v10.30.4
-	github.com/yandex-cloud/go-genproto v0.116.0
-	github.com/yandex-cloud/go-sdk v0.33.0
+	github.com/go-playground/validator/v10 v10.30.5
+	github.com/yandex-cloud/go-genproto v0.122.0
+	github.com/yandex-cloud/go-sdk v0.36.0
 	golang.org/x/time v0.16.0
 	google.golang.org/protobuf v1.36.12
 )
@@ -31,7 +31,7 @@ require (
 	github.com/gabriel-vasile/mimetype v1.4.15 // indirect
 	github.com/ghodss/yaml v1.0.0 // indirect
 	github.com/go-playground/locales v0.14.1 // indirect
-	github.com/go-playground/universal-translator v0.18.1 // indirect
+	github.com/go-playground/universal-translator v0.18.2 // indirect
 	github.com/golang-jwt/jwt/v4 v4.5.2 // indirect
 	github.com/hashicorp/errwrap v1.1.0 // indirect
 	github.com/hashicorp/go-multierror v1.1.1 // indirect
@@ -46,12 +46,12 @@ require (
 	github.com/prometheus/common v0.71.0 // indirect
 	github.com/prometheus/procfs v0.22.0 // indirect
 	github.com/rogpeppe/go-internal v1.15.0 // indirect
-	github.com/xhit/go-str2duration/v2 v2.1.0 // indirect
+	github.com/xhit/go-str2duration/v2 v2.2.0 // indirect
 	go.yaml.in/yaml/v3 v3.0.5 // indirect
 	golang.org/x/text v0.42.0 // indirect
-	google.golang.org/genproto v0.0.0-20260908043556-f8649ddbbfe6 // indirect
-	google.golang.org/genproto/googleapis/api v0.0.0-20260908043556-f8649ddbbfe6 // indirect
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20260908043556-f8649ddbbfe6 // indirect
-	google.golang.org/grpc v1.83.2 // indirect
+	google.golang.org/genproto v0.0.0-20260921155816-b14227669459 // indirect
+	google.golang.org/genproto/googleapis/api v0.0.0-20260921155816-b14227669459 // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20260921155816-b14227669459 // indirect
+	google.golang.org/grpc v1.84.0 // indirect
 	gopkg.in/tomb.v1 v1.0.0-20141024135613-dd632973f1e7 // indirect
 )
