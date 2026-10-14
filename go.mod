@@ -9,9 +9,9 @@ require (
 	github.com/prometheus/client_golang v1.24.1
 	github.com/rs/zerolog v1.35.1
 	github.com/stretchr/testify v1.12.1
-	golang.org/x/crypto v0.57.0 // indirect
-	golang.org/x/net v0.59.0
-	golang.org/x/sys v0.48.0 // indirect
+	golang.org/x/crypto v0.58.0 // indirect
+	golang.org/x/net v0.61.0
+	golang.org/x/sys v0.49.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0
 )
 
@@ -48,7 +48,7 @@ require (
 	github.com/rogpeppe/go-internal v1.15.0 // indirect
 	github.com/xhit/go-str2duration/v2 v2.2.0 // indirect
 	go.yaml.in/yaml/v3 v3.0.5 // indirect
-	golang.org/x/text v0.42.0 // indirect
+	golang.org/x/text v0.43.0 // indirect
 	google.golang.org/genproto v0.0.0-20260921155816-b14227669459 // indirect
 	google.golang.org/genproto/googleapis/api v0.0.0-20260921155816-b14227669459 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20260921155816-b14227669459 // indirect
