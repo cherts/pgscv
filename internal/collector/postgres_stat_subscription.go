@@ -61,6 +61,7 @@ const (
 // postgresStatSubscriptionCollector defines metric descriptors and stats store.
 type postgresStatSubscriptionCollector struct {
 	labelNames   []string
+	pid          typedDesc
 	receivedLsn  typedDesc
 	reportedLsn  typedDesc
 	msgSendtime  typedDesc
@@ -77,6 +78,12 @@ func NewPostgresStatSubscriptionCollector(constLabels labels, settings model.Col
 
 	return &postgresStatSubscriptionCollector{
 		labelNames: labelNames,
+		pid: newBuiltinTypedDesc(
+			descOpts{"postgres", "stat_subscription", "pid", "Process ID of the subscription worker.", 0},
+			prometheus.GaugeValue,
+			labelNames, constLabels,
+			settings.Filters,
+		),
 		receivedLsn: newBuiltinTypedDesc(
 			descOpts{"postgres", "stat_subscription", "received_lsn", "Last write-ahead log location received.", 0},
 			prometheus.GaugeValue,
@@ -195,9 +202,9 @@ func (c *postgresStatSubscriptionCollector) Update(config Config, ch chan<- prom
 
 // postgresSubscriptionStat represents per-subscription stats based on pg_stat_subscription.
 type postgresSubscriptionStat struct {
+	Pid        string // a pid
 	SubID      string // a subscription id
 	SubName    string // a subscription name
-	Pid        string // a pid
 	WorkerType string // a worker_type
 	values     map[string]float64
 }
@@ -225,11 +232,11 @@ func parsePostgresSubscriptionStat(r *model.PGResult, labelNames []string) map[s
 			}
 		}
 
-		// use pid as key in the map
-		pid := stat.Pid
+		// use SubID as key in the map
+		subID := stat.SubID
 
 		// Put stats with labels (but with no data values yet) into stats store.
-		stats[pid] = stat
+		stats[subID] = stat
 
 		// fetch data values from columns
 		for i, colname := range r.Colnames {
@@ -250,7 +257,7 @@ func parsePostgresSubscriptionStat(r *model.PGResult, labelNames []string) map[s
 				continue
 			}
 
-			s := stats[pid]
+			s := stats[subID]
 
 			// Run column-specific logic
 			switch string(colname.Name) {
@@ -286,7 +293,7 @@ func parsePostgresSubscriptionStat(r *model.PGResult, labelNames []string) map[s
 				continue
 			}
 
-			stats[pid] = s
+			stats[subID] = s
 		}
 	}
 
