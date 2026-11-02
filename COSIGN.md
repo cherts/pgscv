@@ -66,12 +66,12 @@ winget install sigstore.cosign
    cosign verify --key cosign.pub registry-1.docker.io/cherts/pgscv:<version>
 
    # Examples:
-   cosign verify --key cosign.pub registry-1.docker.io/cherts/pgscv:v0.15.3
+   cosign verify --key cosign.pub registry-1.docker.io/cherts/pgscv:v0.15.4
    ```
 
 3. **Successful verification output:**
    ```
-   Verification for registry-1.docker.io/cherts/pgscv:v0.15.3 --
+   Verification for registry-1.docker.io/cherts/pgscv:v0.15.4 --
    The following checks were performed on each of these signatures:
      - The cosign claims were validated
      - Existence of the claims in the transparency log was verified offline
