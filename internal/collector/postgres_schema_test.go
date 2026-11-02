@@ -52,14 +52,45 @@ func Test_getSchemaNonPKTables(t *testing.T) {
 
 func Test_getSchemaInvalidIndexes(t *testing.T) {
 	conn := store.NewTest(t)
-	got, err := getSchemaInvalidIndexes(conn)
+
+	var serverVersion int
+	err := conn.Conn().QueryRow(context.Background(),
+		"SELECT setting::int FROM pg_catalog.pg_settings WHERE name = 'server_version_num'").Scan(&serverVersion)
 	assert.NoError(t, err)
-	assert.Less(t, 0, len(got))
+
+	// Query with pg_stat_progress_create_index could be tested on Postgres 12 and newer only.
+	versions := []int{PostgresV95}
+	if serverVersion >= PostgresV12 {
+		versions = append(versions, PostgresV12)
+	}
+
+	// Both query variants should find fixture's invalid index.
+	for _, version := range versions {
+		got, err := getSchemaInvalidIndexes(conn, version)
+		assert.NoError(t, err)
+		assert.Less(t, 0, len(got))
+	}
 
 	_ = conn.Conn().Close(context.Background())
-	got, err = getSchemaInvalidIndexes(conn)
+	got, err := getSchemaInvalidIndexes(conn, PostgresV12)
 	assert.Error(t, err)
 	assert.Equal(t, 0, len(got))
+}
+
+func Test_selectSchemaInvalidIndexesQuery(t *testing.T) {
+	testcases := []struct {
+		version int
+		want    string
+	}{
+		{version: PostgresV95, want: schemaInvalidIndexesQuery11},
+		{version: PostgresV11, want: schemaInvalidIndexesQuery11},
+		{version: PostgresV12, want: schemaInvalidIndexesQuery12},
+		{version: PostgresV18, want: schemaInvalidIndexesQuery12},
+	}
+
+	for _, tc := range testcases {
+		assert.Equal(t, tc.want, selectSchemaInvalidIndexesQuery(tc.version))
+	}
 }
 
 func Test_getSchemaNonIndexedFK(t *testing.T) {
