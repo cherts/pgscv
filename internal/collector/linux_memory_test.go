@@ -109,7 +109,8 @@ func TestMeminfoCollector_Update(t *testing.T) {
 			"node_vmstat_pgdemote_proactive", "node_vmstat_direct_map_level2_collapses", "node_vmstat_direct_map_level3_collapses",
 			"node_vmstat_cma_alloc_success", "node_vmstat_nr_free_pages_blocks", "node_vmstat_nr_balloon_pages",
 			"node_vmstat_pgsteal_proactive", "node_vmstat_pgscan_proactive", "node_vmstat_cma_alloc_fail",
-			"node_memory_Balloon",
+			"node_memory_Balloon", "node_vmstat_nr_kernel_file_pages", "node_vmstat_pgpromote_candidate_nrl",
+			"node_memory_GPUActive", "node_memory_GPUReclaim", "node_vmstat_nr_gpu_active", "node_vmstat_nr_gpu_reclaim",
 		},
 		collector: NewMeminfoCollector,
 	}
