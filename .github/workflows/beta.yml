@@ -58,23 +58,23 @@ jobs:
           - name: PostgreSQL v15
             postgres: 15
             golang: 1.27.3
-            revive: 1.15.0
-            gosec: 2.28.0
+            revive: 1.17.1
+            gosec: 2.30.0
           - name: PostgreSQL v16
             postgres: 16
             golang: 1.27.3
-            revive: 1.15.0
-            gosec: 2.28.0
+            revive: 1.17.1
+            gosec: 2.30.0
           - name: PostgreSQL v17
             postgres: 17
             golang: 1.27.3
-            revive: 1.15.0
-            gosec: 2.28.0
+            revive: 1.17.1
+            gosec: 2.30.0
           - name: PostgreSQL v18
             postgres: 18
             golang: 1.27.3
-            revive: 1.15.0
-            gosec: 2.28.0
+            revive: 1.17.1
+            gosec: 2.30.0
     steps:
       - name: Set up pgbouncer ${{ matrix.pgbouncer.pgbouncer }}
         if: matrix.os.matrix == 'linux'
