@@ -151,6 +151,9 @@ func (c *postgresStatSubscriptionCollector) Update(config Config, ch chan<- prom
 			// Parse pg_stat_subscription stats.
 			stats := parsePostgresSubscriptionStat(res, c.labelNames)
 			for _, stat := range stats {
+				if value, ok := stat.values["pid"]; ok {
+					ch <- c.pid.newConstMetric(value, stat.SubID, stat.SubName, stat.WorkerType)
+				}
 				if value, ok := stat.values["received_lsn"]; ok {
 					ch <- c.receivedLsn.newConstMetric(value, stat.SubID, stat.SubName, stat.WorkerType)
 				}
@@ -261,6 +264,8 @@ func parsePostgresSubscriptionStat(r *model.PGResult, labelNames []string) map[s
 
 			// Run column-specific logic
 			switch string(colname.Name) {
+			case "pid":
+				s.values["pid"] = v
 			case "received_lsn":
 				s.values["received_lsn"] = v
 			case "reported_lsn":
