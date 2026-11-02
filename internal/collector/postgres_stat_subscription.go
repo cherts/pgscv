@@ -78,6 +78,7 @@ const (
 // postgresStatSubscriptionCollector defines metric descriptors and stats store.
 type postgresStatSubscriptionCollector struct {
 	labelNames   []string
+	pid          typedDesc
 	receivedLsn  typedDesc
 	reportedLsn  typedDesc
 	msgSendtime  typedDesc
@@ -94,6 +95,12 @@ func NewPostgresStatSubscriptionCollector(constLabels labels, settings model.Col
 
 	return &postgresStatSubscriptionCollector{
 		labelNames: labelNames,
+		pid: newBuiltinTypedDesc(
+			descOpts{"postgres", "stat_subscription", "pid", "Process ID of the subscription worker.", 0},
+			prometheus.GaugeValue,
+			labelNames, constLabels,
+			settings.Filters,
+		),
 		receivedLsn: newBuiltinTypedDesc(
 			descOpts{"postgres", "stat_subscription", "received_lsn", "Last write-ahead log location received.", 0},
 			prometheus.GaugeValue,
@@ -166,6 +173,9 @@ func (c *postgresStatSubscriptionCollector) Update(ctx context.Context, config C
 	// Parse pg_stat_subscription stats.
 	stats := parsePostgresSubscriptionStat(res, c.labelNames)
 	for _, stat := range stats {
+		if value, ok := stat.values["pid"]; ok {
+			ch <- c.pid.newConstMetric(value, stat.SubID, stat.SubName, stat.WorkerType)
+		}
 		if value, ok := stat.values["received_lsn"]; ok {
 			ch <- c.receivedLsn.newConstMetric(value, stat.SubID, stat.SubName, stat.WorkerType)
 		}
@@ -218,9 +228,9 @@ func (c *postgresStatSubscriptionCollector) Update(ctx context.Context, config C
 
 // postgresSubscriptionStat represents per-subscription stats based on pg_stat_subscription.
 type postgresSubscriptionStat struct {
+	Pid        string // a pid
 	SubID      string // a subscription id
 	SubName    string // a subscription name
-	Pid        string // a pid
 	WorkerType string // a worker_type
 	values     map[string]float64
 }
@@ -249,10 +259,10 @@ func parsePostgresSubscriptionStat(r *model.PGResult, labelNames []string) map[s
 		}
 
 		// use pid as key in the map
-		pid := stat.Pid
+		subID := stat.SubID
 
 		// Put stats with labels (but with no data values yet) into stats store.
-		stats[pid] = stat
+		stats[subID] = stat
 
 		// fetch data values from columns
 		for i, colname := range r.Colnames {
@@ -273,10 +283,12 @@ func parsePostgresSubscriptionStat(r *model.PGResult, labelNames []string) map[s
 				continue
 			}
 
-			s := stats[pid]
+			s := stats[subID]
 
 			// Run column-specific logic
 			switch string(colname.Name) {
+			case "pid":
+				s.values["pid"] = v
 			case "received_lsn":
 				s.values["received_lsn"] = v
 			case "reported_lsn":
@@ -321,7 +333,7 @@ func parsePostgresSubscriptionStat(r *model.PGResult, labelNames []string) map[s
 				continue
 			}
 
-			stats[pid] = s
+			stats[subID] = s
 		}
 	}
 
