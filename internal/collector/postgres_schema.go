@@ -14,25 +14,25 @@ import (
 )
 
 const (
-	// schemaInvalidIndexesQuery11 defines query for searching invalid indexes for versions prior 12.
+	// postgresSchemaInvalidIndexesQuery11 defines query for searching invalid indexes for versions < 12.
 	//
 	// Indexes locked in AccessExclusiveLock mode (DROP INDEX, REINDEX, etc. in progress) are skipped, because
 	// pg_relation_size() opens the index with AccessShareLock and waits until the lock is released - such wait
 	// hangs the whole collector.
-	schemaInvalidIndexesQuery11 = "SELECT c1.relnamespace::regnamespace::text AS schema, c2.relname AS table, c1.relname AS index, " +
+	postgresSchemaInvalidIndexesQuery11 = "SELECT c1.relnamespace::regnamespace::text AS schema, c2.relname AS table, c1.relname AS index, " +
 		"pg_relation_size(i.indexrelid) AS bytes " +
 		"FROM pg_index i JOIN pg_class c1 ON i.indexrelid = c1.oid JOIN pg_class c2 ON i.indrelid = c2.oid " +
 		"WHERE NOT i.indisvalid " +
 		"AND NOT EXISTS (SELECT 1 FROM pg_locks l WHERE l.relation = i.indexrelid AND l.mode = 'AccessExclusiveLock')"
 
-	// schemaInvalidIndexesQuery12 defines query for searching invalid indexes for versions 12 and newer.
+	// postgresSchemaInvalidIndexesQueryLatest defines query for searching invalid indexes for versions 12 and newer.
 	//
 	// CREATE INDEX CONCURRENTLY and REINDEX CONCURRENTLY create a transient index (with '_ccnew' suffix in case of
 	// reindex) which stays invalid until the command is finished. Such indexes are not a problem, but produce
 	// short-living flapping metrics, hence indexes which are being built at the moment are skipped. Indexes left over
 	// after *failed* concurrent builds are still reported - no progress entry is associated with them anymore.
 	// Note, pg_stat_progress_create_index view is available since Postgres 12.
-	schemaInvalidIndexesQuery12 = schemaInvalidIndexesQuery11 +
+	postgresSchemaInvalidIndexesQueryLatest = postgresSchemaInvalidIndexesQuery11 +
 		" AND NOT EXISTS (SELECT 1 FROM pg_stat_progress_create_index p WHERE p.index_relid = i.indexrelid OR p.relid = i.indrelid)"
 )
 
@@ -285,10 +285,12 @@ func getSchemaInvalidIndexes(conn *store.DB, version int) (map[string]postgresGe
 
 // selectSchemaInvalidIndexesQuery returns suitable invalid indexes query depending on passed version.
 func selectSchemaInvalidIndexesQuery(version int) string {
-	if version < PostgresV12 {
-		return schemaInvalidIndexesQuery11
+	switch {
+	case version < PostgresV12:
+		return postgresSchemaInvalidIndexesQuery11
+	default:
+		return postgresSchemaInvalidIndexesQueryLatest
 	}
-	return schemaInvalidIndexesQuery12
 }
 
 // collectSchemaNonIndexedFK collects metrics related to non indexed foreign key constraints.

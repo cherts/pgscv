@@ -2,10 +2,11 @@ package collector
 
 import (
 	"context"
+	"testing"
+
 	"github.com/cherts/pgscv/internal/model"
 	"github.com/cherts/pgscv/internal/store"
 	"github.com/stretchr/testify/assert"
-	"testing"
 )
 
 func TestPostgresSchemaCollector_Update(t *testing.T) {
@@ -82,10 +83,10 @@ func Test_selectSchemaInvalidIndexesQuery(t *testing.T) {
 		version int
 		want    string
 	}{
-		{version: PostgresV95, want: schemaInvalidIndexesQuery11},
-		{version: PostgresV11, want: schemaInvalidIndexesQuery11},
-		{version: PostgresV12, want: schemaInvalidIndexesQuery12},
-		{version: PostgresV18, want: schemaInvalidIndexesQuery12},
+		{version: PostgresV95, want: postgresSchemaInvalidIndexesQuery11},
+		{version: PostgresV11, want: postgresSchemaInvalidIndexesQuery11},
+		{version: PostgresV12, want: postgresSchemaInvalidIndexesQueryLatest},
+		{version: PostgresV18, want: postgresSchemaInvalidIndexesQueryLatest},
 	}
 
 	for _, tc := range testcases {
