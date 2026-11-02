@@ -30,7 +30,7 @@ jobs:
       matrix:
         os:
           - name: Linux
-            runs-on: ubuntu-latest
+            runs-on: ubuntu-24.04
             matrix: linux
             container:
               15: docker://postgres:15
