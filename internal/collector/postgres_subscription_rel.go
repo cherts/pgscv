@@ -87,7 +87,7 @@ func (c *postgresSubscriptionRelCollector) Update(ctx context.Context, config Co
 				case "i":
 					state = "initialize"
 				case "d":
-					state = "data_is_being_copied,"
+					state = "data_is_being_copied"
 				case "f":
 					state = "finished_table_copy"
 				case "s":
