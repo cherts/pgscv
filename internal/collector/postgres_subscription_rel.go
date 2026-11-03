@@ -126,7 +126,7 @@ func collectSubscriptionRel(conn *store.DB, config Config, ch chan<- prometheus.
 				case "i":
 					state = "initialize"
 				case "d":
-					state = "data_is_being_copied,"
+					state = "data_is_being_copied"
 				case "f":
 					state = "finished_table_copy"
 				case "s":
