@@ -94,8 +94,8 @@ github.com/stretchr/testify v1.12.1 h1:EuwCh5fleGS7H32xRwO3wRGT7DxrDhLAT6FF8MpWD
 github.com/stretchr/testify v1.12.1/go.mod h1:MDEgiDPPsNp5cuIrHPPCyornHKgEVbtFUmoNlxoYthg=
 github.com/xhit/go-str2duration/v2 v2.2.0 h1:SofrD1D+8IuhhkP+OiG1ij4Zq+FiiYSEY/sORBanDG0=
 github.com/xhit/go-str2duration/v2 v2.2.0/go.mod h1:ohY8p+0f07DiV6Em5LKB0s2YpLtXVyJfNt1+BlmyAsU=
-github.com/yandex-cloud/go-genproto v0.122.0 h1:jrff9UElZ5eigFWDsNmsYVZrlcYUA2bwrTF87D9/Rr4=
-github.com/yandex-cloud/go-genproto v0.122.0/go.mod h1:0LDD/IZLIUIV4iPH+YcF+jysO3jkSvADFGm4dCAuwQo=
+github.com/yandex-cloud/go-genproto v0.137.0 h1:H4d1qxiB4uxH/KMzvzkM1CyJaqUZDzOxu3K81et/moE=
+github.com/yandex-cloud/go-genproto v0.137.0/go.mod h1:0LDD/IZLIUIV4iPH+YcF+jysO3jkSvADFGm4dCAuwQo=
 github.com/yandex-cloud/go-sdk v0.36.0 h1:Z7Kc2+QTrbO/IBzW3t82pAz14MbbMhfqVfi44Imx++I=
 github.com/yandex-cloud/go-sdk v0.36.0/go.mod h1:lC7BLAq0j37/gtkDnDbD3iWOGJyTSA9I2QHNHtaWf00=
 go.uber.org/goleak v1.3.0 h1:2K3zAYmnTNqV73imy9J1T3WC+gmCePx2hEGkimedGto=
