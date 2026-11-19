@@ -184,7 +184,7 @@ const (
 		"NULLIF(p.temp_blks_read, 0) AS temp_blks_read, NULLIF(p.temp_blks_written, 0) AS temp_blks_written, " +
 		"NULLIF(p.wal_records, 0) AS wal_records, NULLIF(p.wal_fpi, 0) AS wal_fpi, NULLIF(p.wal_bytes, 0) AS wal_bytes, " +
 		"NULLIF(p.wal_buffers_full, 0) AS wal_buffers_full, NULLIF(p.generic_plan_calls, 0) AS generic_plan_calls, " +
-		"NULLIF(p.custom_plan_calls, 0) AS custom_plan_calls, " +
+		"NULLIF(p.custom_plan_calls, 0) AS custom_plan_calls " +
 		"FROM %s.pg_stat_statements p JOIN pg_database d ON d.oid=p.dbid"
 
 	postgresStatementsQueryLatestTopK = "WITH stat AS (SELECT d.datname AS DATABASE, pg_get_userbyid(p.userid) AS \"user\", p.queryid, " +
