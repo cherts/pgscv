@@ -18,6 +18,17 @@ if [ ! -f "/usr/lib/postgresql/${PG_VER}/bin/initdb" ]; then
 	exit 1
 fi
 
+if [ ! -d "${LOG_DIR}" ]; then
+	_logging "Creating log directory..."
+	mkdir -p "${LOG_DIR}" 2>/dev/null
+	chown postgres:postgres "${LOG_DIR}" 2>/dev/null
+	chmod 750 "${LOG_DIR}" 2>/dev/null
+else
+	_logging "Log directory already exists, setting ownership and permissions..."
+	chown postgres:postgres "${LOG_DIR}" 2>/dev/null
+	chmod 750 "${LOG_DIR}" 2>/dev/null
+fi
+
 # init postgres
 _logging "Init main database..."
 su - postgres -c "/usr/lib/postgresql/${PG_VER}/bin/initdb -k -E UTF8 --locale=en_US.UTF-8 -D ${MAIN_DATADIR}"
