@@ -140,7 +140,7 @@ jobs:
       - name: Set up gosec ${{ matrix.postgres.gosec }}
         if: matrix.os.matrix == 'linux'
         run: |
-          curl -sfL https://raw.githubusercontent.com/securego/gosec/master/install.sh | sh -s -- -b $(go env GOROOT)/bin v${{ matrix.postgres.gosec }}
+          go install github.com/securego/gosec/v2/cmd/gosec@v${{ matrix.postgres.gosec }}
       - name: Prepare testing environment
         if: matrix.os.matrix == 'linux'
         run: |
