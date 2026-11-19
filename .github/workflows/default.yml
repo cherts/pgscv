@@ -31,7 +31,7 @@ jobs:
       matrix:
         os:
           - name: Linux
-            runs-on: ubuntu-latest
+            runs-on: ubuntu-24.04
             matrix: linux
             container:
 #              12: docker://postgres:12
@@ -73,37 +73,37 @@ jobs:
         postgres:
 #          - name: PostgreSQL v12
 #            postgres: 12
-#            golang: 1.27.3
+#            golang: 1.27.4
 #            revive: 1.17.1
 #            gosec: 2.27.1
 #          - name: PostgreSQL v13
 #            postgres: 13
-#            golang: 1.27.3
+#            golang: 1.27.4
 #            revive: 1.17.1
 #            gosec: 2.27.1
           - name: PostgreSQL v14
             postgres: 14
-            golang: 1.27.3
+            golang: 1.27.4
             revive: 1.17.1
             gosec: 2.27.1
           - name: PostgreSQL v15
             postgres: 15
-            golang: 1.27.3
+            golang: 1.27.4
             revive: 1.17.1
             gosec: 2.27.1
           - name: PostgreSQL v16
             postgres: 16
-            golang: 1.27.3
+            golang: 1.27.4
             revive: 1.17.1
             gosec: 2.27.1
           - name: PostgreSQL v17
             postgres: 17
-            golang: 1.27.3
+            golang: 1.27.4
             revive: 1.17.1
             gosec: 2.27.1
           - name: PostgreSQL v18
             postgres: 18
-            golang: 1.27.3
+            golang: 1.27.4
             revive: 1.17.1
             gosec: 2.27.1
     steps:
