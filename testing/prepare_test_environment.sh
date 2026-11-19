@@ -5,6 +5,7 @@ MAIN_DATADIR=/var/lib/postgresql/data/main
 STDB1_DATADIR=/var/lib/postgresql/data/standby1
 STDB2_DATADIR=/var/lib/postgresql/data/standby2
 LGDB1_DATADIR=/var/lib/postgresql/data/logical1
+LOG_DIR=/var/log/postgresql
 
 _logging() {
 	local MSG=${1}
