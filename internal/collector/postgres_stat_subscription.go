@@ -68,7 +68,7 @@ const (
 		"s2.confl_insert_exists, s2.confl_update_origin_differs, " +
 		"s2.confl_update_exists, s2.confl_update_missing, " +
 		"s2.confl_delete_origin_differs, s2.confl_delete_missing, " +
-		"s2.confl_multiple_unique_conflicts " +
+		"s2.confl_multiple_unique_conflicts, " +
 		"s2.sync_seq_error_count " +
 		"FROM pg_stat_subscription s1 JOIN pg_stat_subscription_stats s2 ON s1.subid = s2.subid " +
 		"WHERE s1.relid ISNULL;"
