@@ -68,11 +68,10 @@ func getDummyHandler() func(w http.ResponseWriter, r *http.Request) {
 
 func TestServer_Serve_HTTPS(t *testing.T) {
 	addr := "127.0.0.1:17891"
-	srv := NewServer(ServerConfig{Addr: addr, AuthConfig: AuthConfig{
+	srv := NewServer(ServerConfig{Addr: addr,
 		EnableTLS: true,
 		Keyfile:   "./testdata/example.key",
-		Certfile:  "./testdata/example.crt",
-	}}, getDummyHandler(), getDummyHandler(), getDummyHandler())
+		Certfile:  "./testdata/example.crt"}, getDummyHandler(), getDummyHandler(), getDummyHandler())
 
 	var wg sync.WaitGroup
 	wg.Go(func() {

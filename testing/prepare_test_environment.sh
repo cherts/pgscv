@@ -5,6 +5,7 @@ MAIN_DATADIR=/var/lib/postgresql/data/main
 STDB1_DATADIR=/var/lib/postgresql/data/standby1
 STDB2_DATADIR=/var/lib/postgresql/data/standby2
 LGDB1_DATADIR=/var/lib/postgresql/data/logical1
+LOG_DIR=/var/log/postgresql
 
 _logging() {
 	local MSG=${1}
@@ -16,6 +17,17 @@ _logging "Use PostgreSQL v${PG_VER}"
 if [ ! -f "/usr/lib/postgresql/${PG_VER}/bin/initdb" ]; then
 	_logging "PostgreSQL v${PG_VER} is not installed. Please install it first."
 	exit 1
+fi
+
+if [ ! -d "${LOG_DIR}" ]; then
+	_logging "Creating log directory..."
+	mkdir -p "${LOG_DIR}" 2>/dev/null
+	chown postgres:postgres "${LOG_DIR}" 2>/dev/null
+	chmod 750 "${LOG_DIR}" 2>/dev/null
+else
+	_logging "Log directory already exists, setting ownership and permissions..."
+	chown postgres:postgres "${LOG_DIR}" 2>/dev/null
+	chmod 750 "${LOG_DIR}" 2>/dev/null
 fi
 
 # init postgres
