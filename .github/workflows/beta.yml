@@ -30,7 +30,7 @@ jobs:
       matrix:
         os:
           - name: Linux
-            runs-on: ubuntu-latest
+            runs-on: ubuntu-24.04
             matrix: linux
             container:
               15: docker://postgres:15
@@ -57,22 +57,22 @@ jobs:
         postgres:
           - name: PostgreSQL v15
             postgres: 15
-            golang: 1.27.3
+            golang: 1.27.4
             revive: 1.17.1
             gosec: 2.30.0
           - name: PostgreSQL v16
             postgres: 16
-            golang: 1.27.3
+            golang: 1.27.4
             revive: 1.17.1
             gosec: 2.30.0
           - name: PostgreSQL v17
             postgres: 17
-            golang: 1.27.3
+            golang: 1.27.4
             revive: 1.17.1
             gosec: 2.30.0
           - name: PostgreSQL v18
             postgres: 18
-            golang: 1.27.3
+            golang: 1.27.4
             revive: 1.17.1
             gosec: 2.30.0
     steps:
@@ -170,20 +170,20 @@ jobs:
           tags: |
             type=raw,value=v${{ steps.version.outputs.VERSION }}-${{ steps.version.outputs.GIT_BRANCH }}-${{ steps.version.outputs.GIT_COMMIT }}-${{ steps.version.outputs.GIT_DATE }}-beta
       - name: Set up Cosign
-        uses: sigstore/cosign-installer@v4.1.2
+        uses: sigstore/cosign-installer@v4.1.3
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v4
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v4
       - name: Login to GHCR registry
-        uses: docker/login-action@v4.7.0
+        uses: docker/login-action@v4.8.0
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Login to DockerHub registry
         if: ${{ steps.dockerhub.outputs.DOCKERHUB_USERNAME != '' && steps.dockerhub.outputs.DOCKERHUB_TOKEN != '' }}
-        uses: docker/login-action@v4.7.0
+        uses: docker/login-action@v4.8.0
         with:
           username: ${{ steps.dockerhub.outputs.DOCKERHUB_USERNAME }}
           password: ${{ steps.dockerhub.outputs.DOCKERHUB_TOKEN }}
@@ -242,7 +242,7 @@ jobs:
           go-version-file: go.mod
           check-latest: true
       - name: Set up Cosign
-        uses: sigstore/cosign-installer@v4.1.2
+        uses: sigstore/cosign-installer@v4.1.3
       - name: Run GoReleaser
         uses: goreleaser/goreleaser-action@v7
         with:
