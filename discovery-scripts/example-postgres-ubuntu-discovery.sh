@@ -78,6 +78,7 @@ for PORT in ${CLUSTER_LIST[@]}; do
 	fi
 	#echo "svc-pg-${PORT} 127.0.0.1 ${PORT} postgres ${PG_USER} PG_PASSWORD"
 	_discover_databases "${PORT}" "svc-pg-${CLUSTER_NAME}" | while IFS= read -r SCV; do
+		[ -z "${SCV}" ] && continue
 		echo "${SCV} PG_PASSWORD"
 	done
 done
