@@ -35,6 +35,8 @@ Temporary Items
 .vs
 # JetBrains IDEs
 .idea
+# OpenIDE
+.aiforopenide
 # Debug
 debug_run.*
 # Bin
