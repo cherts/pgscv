@@ -14,7 +14,7 @@ Every pgSCV docker images published to `registry-1.docker.io/cherts/pgscv` is si
 
 All pgSCV docker images are signed with the following Cosign public key:
 
-**Download:** [cosign.pub](https://raw.githubusercontent.com/cherts/pgscv/refs/heads/release/0.15/cosign.pub)
+**Download:** [cosign.pub](https://raw.githubusercontent.com/cherts/pgscv/refs/heads/master/cosign.pub)
 
 ```
 -----BEGIN PUBLIC KEY-----
@@ -48,7 +48,7 @@ winget install sigstore.cosign
 
    ```bash
    # Option 1: Download directly from GitHub
-   curl -o cosign.pub https://raw.githubusercontent.com/cherts/pgscv/refs/heads/release/0.15/cosign.pub
+   curl -o cosign.pub https://raw.githubusercontent.com/cherts/pgscv/refs/heads/master/cosign.pub
 
    # Option 2: Create manually
    cat > cosign.pub << 'EOF'
@@ -66,12 +66,12 @@ winget install sigstore.cosign
    cosign verify --key cosign.pub registry-1.docker.io/cherts/pgscv:<version>
 
    # Examples:
-   cosign verify --key cosign.pub registry-1.docker.io/cherts/pgscv:v0.15.3
+   cosign verify --key cosign.pub registry-1.docker.io/cherts/pgscv:v1.0.0
    ```
 
 3. **Successful verification output:**
    ```
-   Verification for registry-1.docker.io/cherts/pgscv:v0.15.3 --
+   Verification for registry-1.docker.io/cherts/pgscv:v1.0.0 --
    The following checks were performed on each of these signatures:
      - The cosign claims were validated
      - Existence of the claims in the transparency log was verified offline
