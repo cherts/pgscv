@@ -14,8 +14,8 @@ PSQL_DB="postgres"
 PSQL_ADDITIONAL_CONNSTR_OPTS="sslrootcert=aws-global-bundle.pem&sslmode=verify-full"
 
 ## Function to display usage information
-usage() {
-  cat << EOF
+_usage() {
+	cat <<EOF
 Usage: $0 [OPTIONS]
 
 A demo script discovery PostgreSQL instance from AWS RDS
@@ -31,11 +31,11 @@ Examples:
   $0 --profile=default --region=us-west-1 
   $0 --profile=default --region=us-west-1 --verbose
 EOF
-  exit 1
+	exit 1
 }
 
 ## Print verbose message
-verbose() {
+_verbose() {
 	MSG=$1
 	if [ "${VERBOSE}" = true ]; then
 		echo "${MSG}"
@@ -46,8 +46,8 @@ verbose() {
 OPTS=$(getopt -o p:r:vh --long profile:,region:,verbose,help -n 'example-aws-discovery.sh' -- "$@")
 
 if [ $? -ne 0 ]; then
-  echo "Failed to parse options" >&2
-  usage
+	echo "Failed to parse options" >&2
+	_usage
 fi
 
 ## Reset the positional parameters to the parsed options
@@ -60,37 +60,37 @@ VERBOSE=false
 
 ## Process the options
 while true; do
-  case "$1" in
-    -p | --profile)
-      AWS_CLI_PROFILE="$2"
-      shift 2
-      ;;
-    -r | --region)
-      AWS_REGION="$2"
-      shift 2
-      ;;
-    -v | --verbose)
-      VERBOSE=true
-      shift
-      ;;
-    -h | --help)
-      usage
-      ;;
-    --)
-      shift
-      break
-      ;;
-    *)
-      echo "Internal error!"
-      exit 1
-      ;;
-  esac
+	case "$1" in
+	-p | --profile)
+		AWS_CLI_PROFILE="$2"
+		shift 2
+		;;
+	-r | --region)
+		AWS_REGION="$2"
+		shift 2
+		;;
+	-v | --verbose)
+		VERBOSE=true
+		shift
+		;;
+	-h | --help)
+		_usage
+		;;
+	--)
+		shift
+		break
+		;;
+	*)
+		echo "Internal error!"
+		exit 1
+		;;
+	esac
 done
 
 ## Check if required options are provided
 if [ -z "${AWS_CLI_PROFILE}" ]; then
-  echo "Error: AWS profile name must be specified with -p or --profile option." >&2
-  usage
+	echo "Error: AWS profile name must be specified with -p or --profile option." >&2
+	_usage
 fi
 
 # Check command exist function
@@ -105,13 +105,13 @@ else
 	exit 2
 fi
 
-verbose "Using AWS CLI binary: ${AWS_BIN}"
-verbose "AWS CLI profile: ${AWS_CLI_PROFILE}"
-verbose "AWS region: ${AWS_REGION}"
+_verbose "Using AWS CLI binary: ${AWS_BIN}"
+_verbose "AWS CLI profile: ${AWS_CLI_PROFILE}"
+_verbose "AWS region: ${AWS_REGION}"
 
 ${AWS_BIN} configure get region --profile ${AWS_CLI_PROFILE} >/dev/null 2>&1
 if [[ $? -ne 0 ]]; then
-	verbose "Error: AWS CLI profile '${AWS_CLI_PROFILE}' not found or not configured." >&2
+	_verbose "Error: AWS CLI profile '${AWS_CLI_PROFILE}' not found or not configured." >&2
 	exit 2
 fi
 
@@ -121,7 +121,7 @@ fi
 #	exit 2
 #fi
 
-discover_databases() {
+_discover_databases() {
 	local HOST=$1
 	local PORT=${2:-"5432"}
 	local SERVICE_ID=$3
@@ -167,7 +167,7 @@ for PG in ${AWS_INSTANCE_LIST[@]}; do
 		continue
 	fi
 	#echo "svc-pg-${PORT} postgres://${PSQL_USER}@${HOST}:${PORT}/${PSQL_DB}?${PSQL_ADDITIONAL_CONNSTR_OPTS} PG_PASSWORD"
-	discover_databases "${HOST}" "${PORT}" "svc-pg-${INSTANCE}" | while IFS= read -r SVC; do
+	_discover_databases "${HOST}" "${PORT}" "svc-pg-${INSTANCE}" | while IFS= read -r SVC; do
 		echo "${SVC} PG_PASSWORD"
 	done
 done

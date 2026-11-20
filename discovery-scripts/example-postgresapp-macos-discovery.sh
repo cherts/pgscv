@@ -3,9 +3,9 @@
 # Discovery PostgreSQL instance (use https://postgresapp.com) from macOS
 #
 # Usage: example-postgresapp-macos-discovery.sh [PG_VERSION|ALL]
-# PG_VERSION - 14/15/16/17/18/...
+# PG_VERSION - 14/15/16/17/18/19/...
 # ALL - discover all PostgreSQL instances
-# Example: example-postgresapp-macos-discovery.sh 15
+# Example: example-postgresapp-macos-discovery.sh 18
 #          example-postgresapp-macos-discovery.sh ALL
 #
 # Author: Mikhail Grigorev
@@ -13,7 +13,7 @@
 if [[ $# -eq 0 ]]; then
 	ARGS="ALL"
 else
-	ARGS=$1
+	ARGS=${1:-"18"}
 fi
 
 if [[ "${ARGS}" == "ALL" ]]; then
@@ -24,7 +24,7 @@ fi
 
 echo "# service-id host port database user password-from-env"
 
-discover_databases() {
+_discover_databases() {
 	local PORT=$1
 	local SERVICE_ID=$2
 
@@ -52,7 +52,7 @@ for PG in ${PG_PROCESS_LIST[@]}; do
 		continue
 	fi
 	#echo "svc-pg-${PORT} 127.0.0.1 ${PORT} postgres pgscv PG_PASSWORD"
-	discover_databases "${PORT}" "svc-pg" | while IFS= read -r SCV; do
+	_discover_databases "${PORT}" "svc-pg" | while IFS= read -r SCV; do
 		echo "${SCV} PG_PASSWORD"
 	done
 done

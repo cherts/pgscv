@@ -33,6 +33,8 @@ Temporary Items
 # VSCode settings
 .vscode
 .vs
+# JetBrains IDEs
+.idea
 # Debug
 debug_run.*
 # Bin
