@@ -39,7 +39,7 @@ GOVULNCHECK_RUN_CMD = testing/govulncheck-wrapper.sh
 
 .PHONY: help \
 		clean lint test race \
-		build docker-lint docker-build docker-push go-update \
+		build docker-lint docker-buildx-setup docker-build docker-push go-update \
 		modernize modernize-fix modernize-check govulncheck
 
 .DEFAULT_GOAL := help
