@@ -58,7 +58,7 @@ _discover_databases() {
 	local PORT=${1:-"5432"}
 	local SERVICE_ID=${2:-"svc-pg-${PORT}"}
 
-	local DB_LIST=($(PGPASSWORD=${PG_PASSWORD} ${PSQL_BIN} -X -t -A -h "127.0.0.1" -p "${PORT}" -d "postgres" -U "${PG_USER}" -c "SELECT datname FROM pg_database WHERE datistemplate = false AND datname NOT IN ('postgres', 'template0', 'template1');" 2>/dev/null || true))
+	local DB_LIST=$(PGPASSWORD=${PG_PASSWORD} ${PSQL_BIN} -X -t -A -h "127.0.0.1" -p "${PORT}" -d "postgres" -U "${PG_USER}" -c "SELECT datname FROM pg_database WHERE datistemplate = false AND datname NOT IN ('postgres', 'template0', 'template1');" 2>/dev/null || true)
 
 	if [ -z "${DB_LIST}" ]; then
 		return
